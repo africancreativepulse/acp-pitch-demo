@@ -3,6 +3,22 @@ import { BAND_HEX, type Band } from "@/data/demo";
 // A single reusable arc gauge for any 0-10 metric with a resolved band
 // color (CDI, Decay, or anything future). Semicircular, sweeping
 // left-to-right, matching how score gauges read in most analytics UIs.
+//
+// Re-skin note: CDI moved to the real app's own DepthGauge.tsx (see
+// CulturalRead.tsx) since that's a direct, correct fit -- CDI is exactly
+// what DepthGauge was built for. Decay Risk stays on this component
+// because DepthGauge can't safely stand in for it: DepthGauge hardcodes
+// CDI's specific band thresholds/colors internally (0-5 pulse/"Review
+// Needed", 5-7 language, 7-10 sound/"Highly Authentic") with no prop to
+// override them, and Decay's risk semantics are the OPPOSITE direction --
+// low decay is good, high is bad. Feeding Decay's score through DepthGauge
+// unmodified would render a low (good) decay reading in DepthGauge's
+// "Review Needed" red-orange band, a real, silently wrong signal on
+// investor-facing material. The real app has no Decay-specific gauge to
+// port (Decay doesn't exist there yet -- it's this demo's own forward-
+// looking metric), so this component keeps its own token/style pass
+// instead: same real fonts/colors as everywhere else, own thresholds via
+// BAND_HEX/decayBand() in data/demo.ts.
 export function GaugeArc({
   value,
   band,
@@ -36,7 +52,7 @@ export function GaugeArc({
         <path
           d={`M ${toXY(180).x} ${toXY(180).y} A ${r} ${r} 0 1 1 ${toXY(0).x} ${toXY(0).y}`}
           fill="none"
-          stroke="#262A33"
+          stroke="var(--line)"
           strokeWidth={10}
           strokeLinecap="round"
         />
@@ -47,7 +63,7 @@ export function GaugeArc({
           strokeWidth={10}
           strokeLinecap="round"
         />
-        <text x="84" y="78" textAnchor="middle" fontFamily="JetBrains Mono, monospace" fontSize={30} fontWeight={700} fill="#F4F5F7" className="tabular">
+        <text x="84" y="78" textAnchor="middle" fontFamily="var(--font-mono)" fontSize={30} fontWeight={700} fill="var(--paper)" className="tabular">
           {value.toFixed(1)}
         </text>
       </svg>

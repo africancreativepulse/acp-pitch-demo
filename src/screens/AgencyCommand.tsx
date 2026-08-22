@@ -17,7 +17,7 @@ export function AgencyCommand() {
     <div className="min-h-screen bg-ink">
       <TopBar
         right={
-          <Button accent="#38C6FF" onClick={() => navigate("/agency/new")}>
+          <Button color="var(--visual)" onClick={() => navigate("/agency/new")}>
             + New Campaign
           </Button>
         }

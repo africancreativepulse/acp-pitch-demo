@@ -8,7 +8,7 @@ import { TASK_TYPES, type BuilderTask, type TaskTypeKey } from "@/data/demo";
 import { useDemoState } from "@/state/DemoState";
 
 const STEPS = ["Details", "Tasks", "Review"];
-const ACCENT = "#38C6FF";
+const ACCENT = "var(--visual)";
 
 const CITY_OPTIONS = [
   "Soweto (Johannesburg)",
@@ -153,7 +153,7 @@ export function CampaignBuilder() {
             </Field>
 
             <div className="pt-2">
-              <Button accent={ACCENT} disabled={!step1Valid} onClick={() => setStep(1)}>
+              <Button color={ACCENT} disabled={!step1Valid} onClick={() => setStep(1)}>
                 Next: Tasks →
               </Button>
               {!step1Valid && (
@@ -217,7 +217,7 @@ export function CampaignBuilder() {
 
             <div className="flex gap-3 pt-2">
               <Button variant="ghost" onClick={() => setStep(0)}>← Back</Button>
-              <Button accent={ACCENT} disabled={tasks.length === 0} onClick={() => setStep(2)}>
+              <Button color={ACCENT} disabled={tasks.length === 0} onClick={() => setStep(2)}>
                 Next: Review →
               </Button>
             </div>
@@ -241,7 +241,7 @@ export function CampaignBuilder() {
 
             <div className="flex gap-3">
               <Button variant="ghost" onClick={() => setStep(1)}>← Back</Button>
-              <Button accent={ACCENT} onClick={launch}>Launch Campaign</Button>
+              <Button color={ACCENT} onClick={launch}>Launch Campaign</Button>
             </div>
           </div>
         )}

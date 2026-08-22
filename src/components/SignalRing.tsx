@@ -1,151 +1,209 @@
-import { useId, useState } from "react";
+import { useId, useMemo, useState } from "react";
 
-export interface SignalRingDatum {
-  key: string;
-  label: string;
-  score: number; // 0-10
+/**
+ * Ported from the real app's SignalRing.tsx -- the six-dimension CEI
+ * radar, the brief's "signature motif." Visual geometry, gridlines, sweep
+ * animation and ripple pings are copied verbatim (down to the exact
+ * rgba(246,241,233,x) opacities the real component hardcodes for its
+ * guide circles/spokes/labels).
+ *
+ * One real, additive change from the original: the real component is
+ * marketing-only and has no click handling at all -- but its own header
+ * comment already anticipates dashboard reuse ("Dashboard/app screens
+ * should pass animated={false} if this ever gets reused there"). This
+ * app's Cultural Read screen needs genuine tap-to-navigate on each node
+ * (existing interaction logic this re-skin has to preserve, not just
+ * decorate), so `selected`/`onSelect` are added as optional props with
+ * zero effect on the default marketing rendering -- omit them and this
+ * renders pixel-identical to the real component's own default output.
+ */
+export interface SignalDimension {
+  /** Stable id for onSelect; defaults to `name` when omitted (marketing
+      call sites, which never pass onSelect, don't need this). */
+  key?: string;
+  name: string;
+  pct: number; // 0-100
   color: string;
 }
 
-const SIZE = 400;
-const CX = SIZE / 2;
-const CY = SIZE / 2;
-const MAX_R = 148;
-const GRID_LEVELS = [2, 4, 6, 8, 10];
+export const DEFAULT_SIGNAL_DIMENSIONS: SignalDimension[] = [
+  { name: "PULSE", pct: 85, color: "var(--pulse)" },
+  { name: "TASTE", pct: 72, color: "var(--taste)" },
+  { name: "SOUND", pct: 90, color: "var(--sound)" },
+  { name: "VISUAL", pct: 78, color: "var(--visual)" },
+  { name: "LANGUAGE", pct: 65, color: "var(--language)" },
+  { name: "RITUAL", pct: 82, color: "var(--ritual)" },
+];
+
+const CX = 200;
+const CY = 200;
+const MAX_R = 155;
 
 function pointAt(index: number, total: number, r: number) {
   const angle = ((index * (360 / total) - 90) * Math.PI) / 180;
   return { x: CX + r * Math.cos(angle), y: CY + r * Math.sin(angle) };
 }
 
-/**
- * Pure presentational hexagonal (or N-gon, geometry doesn't assume 6)
- * radar. Deliberately built with zero knowledge of what CEI/campaigns
- * are -- it only knows { key, label, score, color }[], so the same
- * component works unmodified for any future dimension set.
- *
- * Each node keeps its OWN token color rather than the ring rendering as
- * one single "campaign color" -- the filled area is a neutral translucent
- * shape (it's there to show the read's overall silhouette), the color
- * identity lives entirely in the per-dimension nodes, spokes-on-hover,
- * and labels.
- */
 export function SignalRing({
-  data,
+  dimensions = DEFAULT_SIGNAL_DIMENSIONS,
+  primaryColor = "var(--pulse)",
+  showLabels = true,
+  animated = true,
   selected,
   onSelect,
-  size = 400,
+  className = "",
 }: {
-  data: SignalRingDatum[];
+  dimensions?: SignalDimension[];
+  primaryColor?: string;
+  showLabels?: boolean;
+  animated?: boolean;
+  /** Dashboard-only addition -- see header comment. Omit both for the
+      real component's original marketing-only behavior. */
   selected?: string;
   onSelect?: (key: string) => void;
-  size?: number;
+  className?: string;
 }) {
+  const gradientId = useId();
+  const total = dimensions.length;
   const [hovered, setHovered] = useState<string | null>(null);
-  const gradId = useId();
-  const total = data.length;
   const active = hovered ?? selected ?? null;
 
-  const scorePoints = data.map((d, i) => pointAt(i, total, MAX_R * (Math.max(0, Math.min(10, d.score)) / 10)));
-  const polygonPath = scorePoints.map((p) => `${p.x},${p.y}`).join(" ");
+  const polygonPoints = useMemo(
+    () =>
+      dimensions
+        .map((d, i) => {
+          const p = pointAt(i, total, MAX_R * (d.pct / 100));
+          return `${p.x},${p.y}`;
+        })
+        .join(" "),
+    [dimensions, total],
+  );
 
   return (
-    <svg
-      viewBox={`0 0 ${SIZE} ${SIZE}`}
-      width={size}
-      height={size}
-      role="group"
-      aria-label="Cultural Engagement Index, six dimensions"
-    >
+    <svg viewBox="0 0 400 400" className={className} role={onSelect ? "group" : undefined} aria-hidden={onSelect ? undefined : "true"}>
       <defs>
-        <radialGradient id={gradId} cx="50%" cy="50%" r="65%">
-          <stop offset="0%" stopColor="#F4F5F7" stopOpacity="0.16" />
-          <stop offset="100%" stopColor="#F4F5F7" stopOpacity="0.03" />
-        </radialGradient>
+        <linearGradient id={gradientId} x1="0" y1="1" x2="0" y2="0">
+          <stop offset="0%" stopColor={primaryColor} stopOpacity="0" />
+          <stop offset="100%" stopColor={primaryColor} stopOpacity="0.55" />
+        </linearGradient>
       </defs>
 
-      {/* grid rings */}
-      {GRID_LEVELS.map((level) => {
-        const r = MAX_R * (level / 10);
-        const pts = data.map((_, i) => pointAt(i, total, r));
+      {/* concentric guide circles */}
+      {[0.33, 0.66, 1].map((f) => (
+        <circle key={f} cx={CX} cy={CY} r={MAX_R * f} fill="none" stroke="rgba(246,241,233,0.08)" strokeWidth={1} />
+      ))}
+
+      {/* spokes + labels */}
+      {dimensions.map((d, i) => {
+        const key = d.key ?? d.name;
+        const edge = pointAt(i, total, MAX_R);
+        const labelPt = pointAt(i, total, MAX_R + 26);
+        const isActive = active === key;
         return (
-          <polygon
-            key={level}
-            points={pts.map((p) => `${p.x},${p.y}`).join(" ")}
-            fill="none"
-            stroke="#262A33"
-            strokeWidth={level === 10 ? 1.2 : 1}
-          />
+          <g key={key}>
+            <line
+              x1={CX}
+              y1={CY}
+              x2={edge.x}
+              y2={edge.y}
+              stroke={isActive ? d.color : "rgba(246,241,233,0.1)"}
+              strokeOpacity={isActive ? 0.55 : 1}
+              strokeWidth={isActive ? 1.5 : 1}
+            />
+            {showLabels ? (
+              <text
+                x={labelPt.x}
+                y={labelPt.y}
+                textAnchor="middle"
+                dominantBaseline="middle"
+                fill={isActive ? d.color : "rgba(246,241,233,0.45)"}
+                fontSize={10}
+                fontFamily="var(--font-mono)"
+                fontWeight={isActive ? 700 : 500}
+                letterSpacing={1}
+              >
+                {d.name}
+              </text>
+            ) : null}
+          </g>
         );
       })}
 
-      {/* spokes */}
-      {data.map((d, i) => {
-        const outer = pointAt(i, total, MAX_R);
-        const isActive = active === d.key;
-        return (
-          <line
-            key={d.key}
-            x1={CX}
-            y1={CY}
-            x2={outer.x}
-            y2={outer.y}
-            stroke={isActive ? d.color : "#262A33"}
-            strokeOpacity={isActive ? 0.55 : 1}
-            strokeWidth={isActive ? 1.5 : 1}
-          />
-        );
-      })}
+      {/* filled area */}
+      <polygon
+        points={polygonPoints}
+        style={{ fill: primaryColor, fillOpacity: 0.1, stroke: primaryColor }}
+        strokeWidth={1.6}
+        className={animated ? "origin-center animate-ds-breathe" : undefined}
+      />
 
-      {/* filled read shape */}
-      <polygon points={polygonPath} fill={`url(#${gradId})`} stroke="#F4F5F7" strokeOpacity={0.3} strokeWidth={1.2} />
-
-      {/* labels + score + nodes */}
-      {data.map((d, i) => {
-        const labelPt = pointAt(i, total, MAX_R + 34);
-        const scorePt = scorePoints[i];
-        const isActive = active === d.key;
+      {/* per-dimension dots */}
+      {dimensions.map((d, i) => {
+        const key = d.key ?? d.name;
+        const p = pointAt(i, total, MAX_R * (d.pct / 100));
+        const isPrimary = d.color === primaryColor;
+        const isActive = active === key;
         return (
-          <g key={d.key}>
-            <text
-              x={labelPt.x}
-              y={labelPt.y}
-              textAnchor="middle"
-              dominantBaseline="middle"
-              fontSize={12}
-              fontFamily="JetBrains Mono, monospace"
-              fontWeight={isActive ? 700 : 500}
-              letterSpacing={1}
-              fill={isActive ? d.color : "#9AA0AB"}
-              style={{ textTransform: "uppercase" }}
-            >
-              {d.label}
-            </text>
-            {/* halo */}
-            <circle cx={scorePt.x} cy={scorePt.y} r={isActive ? 13 : 9} fill={d.color} fillOpacity={isActive ? 0.22 : 0.12} />
+          <g key={key} className={animated && !isPrimary ? "animate-ds-node-pulse" : undefined}>
+            <circle cx={p.x} cy={p.y} r={5} style={{ fill: d.color }} />
             <circle
-              cx={scorePt.x}
-              cy={scorePt.y}
-              r={isActive ? 7 : 5.5}
-              fill={d.color}
-              stroke="#0B0C10"
-              strokeWidth={2}
-              tabIndex={0}
-              role="button"
-              aria-label={`${d.label}, score ${d.score.toFixed(1)} of 10`}
-              className="cursor-pointer outline-none"
-              onMouseEnter={() => setHovered(d.key)}
-              onMouseLeave={() => setHovered(null)}
-              onFocus={() => setHovered(d.key)}
-              onBlur={() => setHovered(null)}
-              onClick={() => onSelect?.(d.key)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") onSelect?.(d.key);
-              }}
+              cx={p.x}
+              cy={p.y}
+              r={isActive ? 13 : 10}
+              style={{ fill: d.color, fillOpacity: isActive ? 0.28 : 0.18 }}
+              tabIndex={onSelect ? 0 : undefined}
+              role={onSelect ? "button" : undefined}
+              aria-label={onSelect ? `${d.name}, ${d.pct}%` : undefined}
+              className={onSelect ? "cursor-pointer outline-none" : undefined}
+              onMouseEnter={onSelect ? () => setHovered(key) : undefined}
+              onMouseLeave={onSelect ? () => setHovered(null) : undefined}
+              onFocus={onSelect ? () => setHovered(key) : undefined}
+              onBlur={onSelect ? () => setHovered(null) : undefined}
+              onClick={onSelect ? () => onSelect(key) : undefined}
+              onKeyDown={
+                onSelect
+                  ? (e) => {
+                      if (e.key === "Enter" || e.key === " ") onSelect(key);
+                    }
+                  : undefined
+              }
             />
           </g>
         );
       })}
+
+      <circle cx={CX} cy={CY} r={3} style={{ fill: primaryColor }} />
+
+      {animated ? (
+        <>
+          {/* radar sweep */}
+          <g className="origin-center animate-ds-sweep-rotate" style={{ transformOrigin: `${CX}px ${CY}px` }}>
+            <line x1={CX} y1={CY} x2={CX} y2={CY - MAX_R} style={{ stroke: primaryColor, strokeOpacity: 0.5 }} strokeWidth={1.5} />
+            <line
+              x1={CX}
+              y1={CY}
+              x2={CX}
+              y2={CY - MAX_R}
+              stroke={`url(#${gradientId})`}
+              strokeWidth={16}
+              strokeOpacity={0.35}
+            />
+          </g>
+
+          {/* staggered ripple pings */}
+          {[0, 1, 1.6].map((delay) => (
+            <circle
+              key={delay}
+              cx={CX}
+              cy={CY}
+              r={6}
+              fill="none"
+              style={{ stroke: primaryColor, transformOrigin: `${CX}px ${CY}px`, animationDelay: `${delay}s` }}
+              className="animate-ds-ripple-out"
+            />
+          ))}
+        </>
+      ) : null}
     </svg>
   );
 }

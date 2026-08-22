@@ -1,6 +1,7 @@
 import { useParams, useNavigate, Navigate, Link } from "react-router-dom";
 import { TopBar } from "@/components/TopBar";
 import { SignalRing } from "@/components/SignalRing";
+import { DepthGauge } from "@/components/DepthGauge";
 import { GaugeArc } from "@/components/GaugeArc";
 import { ScorePill } from "@/components/ScorePill";
 import {
@@ -30,10 +31,13 @@ export function CulturalRead() {
     return <Navigate to="/agency" replace />;
   }
 
+  // Real SignalRing's own shape: {name, pct(0-100), color}, not this
+  // screen's previous {label, score(0-10)} -- name is upper-cased to match
+  // the real component's DEFAULT_SIGNAL_DIMENSIONS convention.
   const ringData = CEI_ORDER.map((key) => ({
     key,
-    label: CEI_LABEL[key],
-    score: SONDELA.cei![key],
+    name: CEI_LABEL[key].toUpperCase(),
+    pct: SONDELA.cei![key] * 10,
     color: CEI_COLOR[key],
   }));
 
@@ -55,15 +59,32 @@ export function CulturalRead() {
           </p>
         </div>
 
+        {/* CDI gets the real DepthGauge -- its own full-width card, not
+            squeezed into the 360px sidebar. Its on-arc band labels
+            (Review Needed / Moderately Authentic / Highly Authentic) need
+            real horizontal room; the real app gives it a whole dedicated
+            section (CDISection.tsx) for the same reason. */}
+        <div className="card-surface mb-8 p-6 sm:p-8">
+          <div className="label-caps mb-1">Cultural Depth Index</div>
+          <DepthGauge score={SONDELA.cdi} animated={false} className="mx-auto max-w-xl" />
+        </div>
+
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1fr_360px]">
           <div className="card-surface flex flex-col items-center p-8">
-            <SignalRing data={ringData} onSelect={(key) => navigate(`/agency/campaign/${SONDELA.id}/evidence/${key}`)} />
+            <SignalRing
+              dimensions={ringData}
+              animated={false}
+              onSelect={(key) => navigate(`/agency/campaign/${SONDELA.id}/evidence/${key}`)}
+            />
             <p className="mt-4 text-center text-[12px] text-muted">Tap any dimension to see the evidence behind it →</p>
           </div>
 
           <div className="space-y-6">
-            <div className="card-surface flex items-center justify-around p-6">
-              <GaugeArc value={SONDELA.cdi} band={cdiBand(SONDELA.cdi)} label="CDI" />
+            {/* Decay Risk has no real-app gauge to port -- see GaugeArc.tsx's
+                own header comment for why DepthGauge can't safely stand in
+                for it. Kept as its own compact card now that CDI has moved
+                to the full-width DepthGauge above. */}
+            <div className="card-surface flex items-center justify-center p-6">
               <GaugeArc value={SONDELA.decay} band={decayBand(SONDELA.decay)} label="Decay Risk" />
             </div>
 

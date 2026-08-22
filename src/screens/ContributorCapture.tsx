@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { PhoneFrame } from "@/components/PhoneFrame";
 import { WaveformStatic } from "@/components/WaveformStatic";
+import { AcpMark } from "@/components/AcpMark";
 import { cn } from "@/lib/cn";
 import { CONTRIBUTOR_TASK, REWARD_OPTIONS, SONDELA } from "@/data/demo";
 
@@ -62,7 +63,12 @@ export function ContributorCapture() {
         <div className="flex h-full flex-col px-4 pb-6">
           {/* status area */}
           <div className="mb-4 flex items-center justify-between">
-            <span className="font-display text-[13px] font-bold text-paper">ACP</span>
+            {/* Icon-only, matching real phone status-bar branding
+                convention -- also the small/collapsed size the real
+                AcpMark is specifically designed to still read correctly
+                at. */}
+            <AcpMark className="h-4 w-auto text-paper" />
+            <span className="sr-only">African Creative Pulse</span>
             <span className="inline-flex items-center gap-1.5 rounded-full border border-language/40 bg-language/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-language">
               <span className="h-1.5 w-1.5 rounded-full bg-language" />
               Offline
@@ -74,7 +80,7 @@ export function ContributorCapture() {
 
           {/* GPS chip */}
           <div className="mb-5 inline-flex w-fit items-center gap-1.5 rounded-full border border-line bg-white/[0.03] px-2.5 py-1 text-[11px] text-muted">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#9AA0AB" strokeWidth="2">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" strokeWidth="2">
               <path d="M12 21s7-6.5 7-12a7 7 0 1 0-14 0c0 5.5 7 12 7 12Z" />
               <circle cx="12" cy="9" r="2.5" />
             </svg>
@@ -108,7 +114,7 @@ export function ContributorCapture() {
               aria-label={voiceState === "active" ? "Stop recording" : voiceState === "done" ? "Re-record" : "Start recording"}
             >
               {voiceState === "done" ? (
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F4F5F7" strokeWidth="2">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--paper)" strokeWidth="2">
                   <path d="M1 4v6h6M23 20v-6h-6" strokeLinecap="round" strokeLinejoin="round" />
                   <path d="M3.5 15a9 9 0 1 0 2.13-9.36L1 10" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
@@ -136,7 +142,7 @@ export function ContributorCapture() {
                   <path d="M20 6 9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               ) : (
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9AA0AB" strokeWidth="1.6">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" strokeWidth="1.6">
                   <rect x="3" y="6" width="18" height="13" rx="2" />
                   <circle cx="12" cy="12.5" r="3.2" />
                   <path d="M8 6l1.4-2h5.2L16 6" />

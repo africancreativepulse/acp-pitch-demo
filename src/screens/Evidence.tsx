@@ -115,7 +115,7 @@ function EvidenceCard({ item, color }: { item: EvidenceItem; color: string }) {
             className="flex h-24 w-24 shrink-0 items-center justify-center rounded-lg border border-line bg-white/[0.03]"
             aria-hidden="true"
           >
-            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#9AA0AB" strokeWidth="1.5">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" strokeWidth="1.5">
               <rect x="3" y="5" width="18" height="14" rx="2" />
               <circle cx="9" cy="10.5" r="1.75" />
               <path d="M21 15.5 15.5 10.5 6 19" strokeLinecap="round" strokeLinejoin="round" />
