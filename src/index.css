@@ -1,0 +1,40 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    color-scheme: dark;
+  }
+  body {
+    @apply bg-ink text-paper antialiased;
+    font-family: "Inter", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3, h4 {
+    font-family: "Geist", "Inter", system-ui, sans-serif;
+    letter-spacing: -0.01em;
+  }
+  ::selection {
+    background: rgba(56, 198, 255, 0.25);
+  }
+}
+
+@layer utilities {
+  .label-caps {
+    @apply font-mono text-[11px] uppercase tracking-[0.14em] text-muted;
+  }
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+  .card-surface {
+    @apply rounded-card border border-line bg-panel shadow-inner-glow;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
