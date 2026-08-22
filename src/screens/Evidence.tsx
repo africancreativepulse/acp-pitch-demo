@@ -149,7 +149,15 @@ function EvidenceCard({ item, color }: { item: EvidenceItem; color: string }) {
       <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-line pt-3.5">
         <span className="label-caps">{item.city}</span>
         <span className="label-caps !text-[10px]">Contributor {item.contributorId}</span>
-        <span className="label-caps !text-[10px]">{item.date}</span>
+        {/* Quote evidence can arrive without a capture date (the real Soul
+            Gap quote did) -- shown as an honest "pending" label rather than
+            fabricating a plausible-looking one. Photo/audio dates are still
+            required on their types, so this only ever applies to quotes. */}
+        {item.date ? (
+          <span className="label-caps !text-[10px]">{item.date}</span>
+        ) : (
+          <span className="label-caps !text-[10px] text-muted">Date pending</span>
+        )}
         <VerifiedBadge />
       </div>
     </div>

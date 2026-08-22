@@ -105,7 +105,12 @@ export interface QuoteEvidence {
   gloss?: string; // omitted when the quote itself is already in English
   city: string;
   contributorId: string;
-  date: string;
+  // Optional, not defaulted -- the real Soul Gap quote came through
+  // without a capture date. Inventing one to fill the gap would be
+  // exactly the kind of unlabeled fabrication this whole correction is
+  // about avoiding, so EvidenceCard renders an honest "pending" state
+  // instead when this is absent, rather than a fake specific date.
+  date?: string;
   verified: true;
 }
 
@@ -192,11 +197,11 @@ const sondela: Campaign = {
     evidence: [
       {
         kind: "quote",
-        quote: "Angifuni ukuphepha ngedwa. Ngifuna ukuphepha nomndeni wami wonke.",
-        gloss: "I don't want to be safe alone. I want my whole family to be safe.",
+        quote: "Peace of mind for who? If I die and there's no cover, it's my mother who carries the shame. That's what I'm paying for.",
         city: "Soweto",
-        contributorId: "CT-7754",
-        date: "11 Aug 2026",
+        contributorId: "#A4855",
+        // No date given for this one -- see QuoteEvidence's own comment on
+        // why this stays undefined rather than getting a fabricated value.
         verified: true,
       },
     ],
@@ -255,11 +260,10 @@ const sondela: Campaign = {
     language: [
       {
         kind: "quote",
-        quote: "Bathi 'cover', thina sithi 'umshwalense wokungcwaba'.",
-        gloss: "They say 'cover' — we say 'burial insurance'.",
-        city: "Soweto",
-        contributorId: "CT-3390",
-        date: "8 Aug 2026",
+        quote: "We don't say insurance, we say 'ipolicy yomngcwabo' — the funeral one. Insurance sounds like something for other people.",
+        city: "Khayelitsha",
+        contributorId: "#C7702",
+        date: "09 Feb 2026",
         verified: true,
       },
     ],
@@ -276,10 +280,10 @@ const sondela: Campaign = {
     taste: [
       {
         kind: "quote",
-        quote: "The colours on their leaflets feel like a bank, not like Sunday best.",
-        city: "Khayelitsha",
-        contributorId: "CT-1187",
-        date: "12 Aug 2026",
+        quote: "The cover I'd respect is the one my aunt has — it shows up with a proper programme and a marquee, not a cheap tent. That's the standard.",
+        city: "uMlazi",
+        contributorId: "#B1204",
+        date: "11 Feb 2026",
         verified: true,
       },
     ],
