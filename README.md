@@ -27,9 +27,20 @@ included so client-side routes don't 404 on refresh/direct link).
 
 - **Sondela Cover** is the one fully-detailed campaign — every number
   (CEI dimension scores, CDI, Decay, verified response count, the Soul
-  Gap headline, the Ritual dimension's quote/photo/audio evidence) comes
-  directly from the brief, used verbatim. This is the case study the demo
-  is built to walk through in depth.
+  Gap headline) comes directly from the brief, used verbatim. This is the
+  case study the demo is built to walk through in depth.
+- **Four evidence quotes are real, verbatim from the brief** — the
+  Ritual dimension's quote/photo/audio evidence, plus the Language and
+  Taste dimensions' quotes, plus the standalone Soul Gap panel's quote.
+  (The Language, Taste, and Soul Gap quotes were cut off in transmission
+  in the original brief and arrived separately after the initial build;
+  they replaced placeholder content once received.) The Soul Gap quote
+  came without a capture date — rather than inventing one, the evidence
+  card shows an honest "Date pending" label instead.
+- **Visual, Sound, and Pulse's evidence quotes are invented**, written
+  for this prototype since the brief never specified real ones for those
+  three dimensions — kept as clearly-labeled illustrative content by the
+  client's own choice, not a gap to fix.
 - **Kasi Brew** and **Tholulwazi Data** are two secondary portfolio
   campaigns with invented-but-plausible numbers, included so the Agency
   Command screen reads as a real, returning-usage product rather than a
@@ -37,10 +48,6 @@ included so client-side routes don't 404 on refresh/direct link).
   Read / Evidence screens — clicking them opens a lighter "Campaign
   Snapshot" panel instead, which is honest about the scope rather than
   faking a second full traceability story.
-- Every other quote/photo/audio caption across Sondela Cover's six CEI
-  dimensions and its Soul Gap panel was written for this prototype,
-  consistent with the one quote given in the brief (Ritual) — the brief
-  only specified that one directly.
 
 ## Screens
 
