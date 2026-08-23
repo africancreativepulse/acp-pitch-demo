@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { DemoStateProvider } from "@/state/DemoState";
 import { Splash } from "@/screens/Splash";
+import { Onboarding } from "@/screens/Onboarding";
 import { AgencyCommand } from "@/screens/AgencyCommand";
 import { CampaignBuilder } from "@/screens/CampaignBuilder";
 import { CulturalRead } from "@/screens/CulturalRead";
@@ -17,6 +18,7 @@ export default function App() {
       <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <Routes>
           <Route path="/" element={<Splash />} />
+          <Route path="/onboarding/:role" element={<Onboarding />} />
           <Route path="/agency" element={<AgencyCommand />} />
           <Route path="/agency/new" element={<CampaignBuilder />} />
           <Route path="/agency/campaign/:id" element={<CulturalRead />} />

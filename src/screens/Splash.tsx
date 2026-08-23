@@ -66,14 +66,18 @@ export function Splash() {
         </p>
 
         <div className="mt-11 flex flex-col gap-3.5 sm:flex-row">
+          {/* This tap is the role-choice step of onboarding (see
+              Onboarding.tsx's own header comment) -- it routes into the
+              Country/City/Language setup flow rather than straight to the
+              main screen. */}
           <Link
-            to="/agency"
+            to="/onboarding/agency"
             className="inline-flex items-center justify-center gap-2 rounded-sm bg-visual px-7 py-3.5 font-display text-[13px] font-semibold uppercase tracking-[0.06em] text-ink transition-transform hover:scale-[1.02] active:scale-[0.99]"
           >
             Enter as a Brand / Agency
           </Link>
           <Link
-            to="/contribute"
+            to="/onboarding/contributor"
             className="inline-flex items-center justify-center gap-2 rounded-sm border border-sound/50 bg-sound/10 px-7 py-3.5 font-display text-[13px] font-semibold uppercase tracking-[0.06em] text-sound transition-transform hover:scale-[1.02] active:scale-[0.99]"
           >
             Enter as a Contributor

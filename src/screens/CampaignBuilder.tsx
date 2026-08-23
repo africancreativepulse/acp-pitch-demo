@@ -24,8 +24,26 @@ const CITY_OPTIONS = [
   "Katlehong (Ekurhuleni)",
 ];
 
+// Client name and objective were previously free-text fields -- both are
+// now tap-only preset pickers (click-through audit, see commit message).
+// Names deliberately don't overlap Sondela Cover/Kasi Brew/Tholulwazi
+// Data (the existing portfolio) so a demo run never looks like it
+// duplicated an existing campaign.
+const CLIENT_PRESETS = ["Amanzi Foods", "Jozi Fintech", "Bantu Beauty Co.", "Sunrise Telecom", "Harambee Retail"];
+
+const OBJECTIVE_PRESETS = [
+  "Understand why people delay or distrust this category",
+  "Test how a new campaign concept actually lands",
+  "Benchmark authenticity against a competitor",
+  "Explore an underserved market segment",
+];
+
 const AGE_BANDS = ["18–24", "18–34", "25–44", "35–54", "55+"];
 const METHODOLOGIES = ["Digital Only", "Field Only", "Digital + Field Hybrid"];
+const SAMPLE_SIZES = [100, 300, 500, 1000, 2000];
+const POINTS_STEP = 5;
+const POINTS_MIN = 5;
+const POINTS_MAX = 100;
 
 let taskIdCounter = 0;
 function newTask(type: TaskTypeKey): BuilderTask {
@@ -39,9 +57,13 @@ export function CampaignBuilder() {
   const { addCampaign } = useDemoState();
   const [step, setStep] = useState(0);
 
-  const [client, setClient] = useState("");
-  const [objective, setObjective] = useState("");
-  const [cities, setCities] = useState<string[]>([]);
+  // Every field below starts pre-filled with a realistic default -- the
+  // whole wizard is completable end to end with zero taps at all (every
+  // "Next" is enabled from the first screen), but every field is still a
+  // real, changeable tap target for a presenter who wants to show it off.
+  const [client, setClient] = useState(CLIENT_PRESETS[0]);
+  const [objective, setObjective] = useState(OBJECTIVE_PRESETS[0]);
+  const [cities, setCities] = useState<string[]>([CITY_OPTIONS[0]]);
   const [ageBand, setAgeBand] = useState(AGE_BANDS[1]);
   const [methodology, setMethodology] = useState(METHODOLOGIES[2]);
   const [sampleSize, setSampleSize] = useState(300);
@@ -50,12 +72,20 @@ export function CampaignBuilder() {
   const toggleCity = (city: string) =>
     setCities((prev) => (prev.includes(city) ? prev.filter((c) => c !== city) : [...prev, city]));
 
-  const step1Valid = client.trim().length > 0 && cities.length > 0;
+  const adjustPoints = (id: string, delta: number) =>
+    setTasks((prev) =>
+      prev.map((t) => (t.id === id ? { ...t, points: Math.max(POINTS_MIN, Math.min(POINTS_MAX, t.points + delta)) } : t))
+    );
+
+  // Defensive only -- every field has a default, but a city chip can be
+  // tapped back off down to zero, so this still guards the one way this
+  // step could genuinely go empty.
+  const step1Valid = client.length > 0 && cities.length > 0;
 
   const totalPoints = tasks.reduce((sum, t) => sum + t.points, 0);
 
   const launch = () => {
-    addCampaign({ client: client.trim(), objective, cities, ageBand, methodology, sampleSize, tasks });
+    addCampaign({ client, objective, cities, ageBand, methodology, sampleSize, tasks });
     navigate("/agency");
   };
 
@@ -75,81 +105,65 @@ export function CampaignBuilder() {
 
         {step === 0 && (
           <div className="space-y-7">
-            <Field label="Client Name *">
-              <input
-                value={client}
-                onChange={(e) => setClient(e.target.value)}
-                placeholder="e.g. Sondela Cover"
-                className={inputCls}
-              />
+            <Field label="Client Name">
+              <ChipRow>
+                {CLIENT_PRESETS.map((name) => (
+                  <Chip key={name} active={client === name} onClick={() => setClient(name)}>
+                    {name}
+                  </Chip>
+                ))}
+              </ChipRow>
             </Field>
 
             <Field label="Objective">
-              <textarea
-                value={objective}
-                onChange={(e) => setObjective(e.target.value)}
-                placeholder="What are you trying to understand?"
-                rows={3}
-                className={inputCls}
-              />
+              <ChipRow>
+                {OBJECTIVE_PRESETS.map((text) => (
+                  <Chip key={text} active={objective === text} onClick={() => setObjective(text)}>
+                    {text}
+                  </Chip>
+                ))}
+              </ChipRow>
             </Field>
 
             <Field label="Target Cities * (never country-level)">
-              <div className="flex flex-wrap gap-2">
-                {CITY_OPTIONS.map((city) => {
-                  const active = cities.includes(city);
-                  return (
-                    <button
-                      key={city}
-                      type="button"
-                      onClick={() => toggleCity(city)}
-                      className={cn(
-                        "rounded-full border px-3.5 py-1.5 text-[13px] font-medium transition-colors",
-                        active ? "border-visual bg-visual/15 text-visual" : "border-line text-muted hover:border-white/25 hover:text-paper"
-                      )}
-                    >
-                      {city}
-                    </button>
-                  );
-                })}
-              </div>
+              <ChipRow>
+                {CITY_OPTIONS.map((city) => (
+                  <Chip key={city} active={cities.includes(city)} onClick={() => toggleCity(city)}>
+                    {city}
+                  </Chip>
+                ))}
+              </ChipRow>
             </Field>
 
-            <div className="grid grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
               <Field label="Age Band">
-                <select value={ageBand} onChange={(e) => setAgeBand(e.target.value)} className={inputCls}>
+                <ChipRow>
                   {AGE_BANDS.map((b) => (
-                    <option key={b} value={b}>{b}</option>
+                    <Chip key={b} active={ageBand === b} onClick={() => setAgeBand(b)}>
+                      {b}
+                    </Chip>
                   ))}
-                </select>
+                </ChipRow>
               </Field>
               <Field label="Sample Size">
-                <input
-                  type="number"
-                  min={0}
-                  value={sampleSize}
-                  onChange={(e) => setSampleSize(Number(e.target.value))}
-                  className={cn(inputCls, "tabular")}
-                />
+                <ChipRow>
+                  {SAMPLE_SIZES.map((n) => (
+                    <Chip key={n} active={sampleSize === n} onClick={() => setSampleSize(n)}>
+                      {n.toLocaleString()}
+                    </Chip>
+                  ))}
+                </ChipRow>
               </Field>
             </div>
 
             <Field label="Methodology">
-              <div className="flex flex-wrap gap-2">
+              <ChipRow>
                 {METHODOLOGIES.map((m) => (
-                  <button
-                    key={m}
-                    type="button"
-                    onClick={() => setMethodology(m)}
-                    className={cn(
-                      "rounded-full border px-3.5 py-1.5 text-[13px] font-medium transition-colors",
-                      methodology === m ? "border-visual bg-visual/15 text-visual" : "border-line text-muted hover:border-white/25 hover:text-paper"
-                    )}
-                  >
+                  <Chip key={m} active={methodology === m} onClick={() => setMethodology(m)}>
                     {m}
-                  </button>
+                  </Chip>
                 ))}
-              </div>
+              </ChipRow>
             </Field>
 
             <div className="pt-2">
@@ -157,7 +171,7 @@ export function CampaignBuilder() {
                 Next: Tasks →
               </Button>
               {!step1Valid && (
-                <p className="mt-2 text-xs text-pulse">Client name and at least one target city are required.</p>
+                <p className="mt-2 text-xs text-pulse">Pick at least one target city to continue.</p>
               )}
             </div>
           </div>
@@ -175,20 +189,10 @@ export function CampaignBuilder() {
                 return (
                   <div key={task.id} className="flex items-center gap-4 rounded-lg border border-line bg-panel px-4 py-3">
                     <span className="flex-1 text-sm font-medium text-paper">{meta.label}</span>
-                    <label className="flex items-center gap-2 text-xs text-muted">
+                    <div className="flex items-center gap-2 text-xs text-muted">
                       Points
-                      <input
-                        type="number"
-                        min={0}
-                        value={task.points}
-                        onChange={(e) =>
-                          setTasks((prev) =>
-                            prev.map((t) => (t.id === task.id ? { ...t, points: Number(e.target.value) } : t))
-                          )
-                        }
-                        className="w-16 rounded border border-line bg-ink px-2 py-1 text-center text-sm text-paper tabular"
-                      />
-                    </label>
+                      <PointsStepper value={task.points} onDecrement={() => adjustPoints(task.id, -POINTS_STEP)} onIncrement={() => adjustPoints(task.id, POINTS_STEP)} />
+                    </div>
                     <button
                       onClick={() => setTasks((prev) => prev.filter((t) => t.id !== task.id))}
                       aria-label={`Remove ${meta.label}`}
@@ -228,7 +232,7 @@ export function CampaignBuilder() {
           <div className="space-y-6">
             <div className="card-surface space-y-4 p-6">
               <SummaryRow label="Client" value={client} />
-              <SummaryRow label="Objective" value={objective || "—"} />
+              <SummaryRow label="Objective" value={objective} />
               <SummaryRow label="Cities" value={cities.join(", ")} />
               <SummaryRow label="Age Band" value={ageBand} />
               <SummaryRow label="Methodology" value={methodology} />
@@ -250,14 +254,56 @@ export function CampaignBuilder() {
   );
 }
 
-const inputCls =
-  "w-full rounded-lg border border-line bg-panel px-3.5 py-2.5 text-sm text-paper placeholder:text-muted/60 outline-none focus:border-visual/60";
-
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
       <div className="label-caps mb-2">{label}</div>
       {children}
+    </div>
+  );
+}
+
+function ChipRow({ children }: { children: React.ReactNode }) {
+  return <div className="flex flex-wrap gap-2">{children}</div>;
+}
+
+function Chip({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "rounded-full border px-3.5 py-1.5 text-left text-[13px] font-medium transition-colors",
+        active ? "border-visual bg-visual/15 text-visual" : "border-line text-muted hover:border-white/25 hover:text-paper"
+      )}
+    >
+      {children}
+    </button>
+  );
+}
+
+// Tap-only replacement for the old <input type="number"> points field --
+// two big tap targets (+/-), never a keyboard.
+function PointsStepper({ value, onDecrement, onIncrement }: { value: number; onDecrement: () => void; onIncrement: () => void }) {
+  return (
+    <div className="flex items-center gap-1.5">
+      <button
+        type="button"
+        onClick={onDecrement}
+        aria-label="Decrease points"
+        className="flex h-7 w-7 items-center justify-center rounded-full border border-line text-paper hover:border-white/25"
+      >
+        −
+      </button>
+      <span className="tabular w-9 text-center text-sm font-semibold text-paper">{value}</span>
+      <button
+        type="button"
+        onClick={onIncrement}
+        aria-label="Increase points"
+        className="flex h-7 w-7 items-center justify-center rounded-full border border-line text-paper hover:border-white/25"
+      >
+        +
+      </button>
     </div>
   );
 }

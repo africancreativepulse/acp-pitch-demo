@@ -390,3 +390,24 @@ export const CONTRIBUTOR_TASK = {
 };
 
 export const REWARD_OPTIONS = ["M-Pesa", "Airtime", "Bank Transfer"];
+
+// ---------------------------------------------------------------------------
+// Onboarding (Splash -> Country -> City -> Language, both personas) -- a
+// small, tap-only signup journey, not an exhaustive replica of the real
+// app's own signup form. Country drives which cities show on the next
+// step; language list is a representative subset of ACP's real supported
+// languages, not the full set.
+// ---------------------------------------------------------------------------
+
+export const COUNTRIES = ["South Africa", "Nigeria", "Kenya", "Ghana", "Ethiopia"] as const;
+export type Country = (typeof COUNTRIES)[number];
+
+export const CITIES_BY_COUNTRY: Record<Country, string[]> = {
+  "South Africa": ["Johannesburg", "Durban", "Cape Town", "Pretoria"],
+  Nigeria: ["Lagos", "Abuja", "Ibadan"],
+  Kenya: ["Nairobi", "Mombasa", "Kisumu"],
+  Ghana: ["Accra", "Kumasi"],
+  Ethiopia: ["Addis Ababa", "Bahir Dar"],
+};
+
+export const ONBOARDING_LANGUAGES = ["English", "isiZulu", "Yoruba", "Swahili", "Hausa", "Afrikaans"];
