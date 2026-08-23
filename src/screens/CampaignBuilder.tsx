@@ -1,13 +1,12 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { DashboardShell } from "@/components/DashboardShell";
 import { Button } from "@/components/Button";
 import { cn } from "@/lib/cn";
-import { TASK_TYPES, type BuilderTask, type TaskTypeKey } from "@/data/demo";
+import { TASK_TYPES, CAMPAIGN_CATEGORIES, type BuilderTask, type TaskTypeKey } from "@/data/demo";
 import { useDemoState } from "@/state/DemoState";
 
 const STEPS = ["Details", "Tasks", "Review"];
-const ACCENT = "var(--visual)";
 
 const CITY_OPTIONS = [
   "Soweto (Johannesburg)",
@@ -60,11 +59,17 @@ function newTask(type: TaskTypeKey): BuilderTask {
  */
 export function CampaignBuilder() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  // Part E, item 15 -- reused as-is by admin, same as the real app's own
+  // CreateCampaign.tsx (`role === "admin" ? ROLE_ACCENT.admin : ROLE_ACCENT.agency`).
+  const isAdmin = searchParams.get("admin") === "1";
+  const ACCENT = isAdmin ? "var(--ritual)" : "var(--visual)";
   const { addCampaign } = useDemoState();
   const [step, setStep] = useState(0);
 
   const [client, setClient] = useState(CLIENT_PRESETS[0]);
   const [objective, setObjective] = useState(OBJECTIVE_PRESETS[0]);
+  const [category, setCategory] = useState(CAMPAIGN_CATEGORIES[0].value);
   const [cities, setCities] = useState<string[]>([CITY_OPTIONS[0]]);
   const [ageBand, setAgeBand] = useState(AGE_BANDS[1]);
   const [methodology, setMethodology] = useState(METHODOLOGIES[2]);
@@ -83,20 +88,22 @@ export function CampaignBuilder() {
   const totalPoints = tasks.reduce((sum, t) => sum + t.points, 0);
 
   const launch = () => {
-    addCampaign({ client, objective, cities, ageBand, methodology, sampleSize, tasks });
-    navigate("/agency");
+    addCampaign({ client, objective, category, cities, ageBand, methodology, sampleSize, tasks, adminDirect: isAdmin });
+    navigate(isAdmin ? "/agency?admin=1" : "/agency");
   };
 
   return (
-    <DashboardShell role="agency">
+    <DashboardShell role={isAdmin ? "admin" : "agency"}>
       <div className="max-w-3xl px-6 py-10 md:p-10">
-        <button onClick={() => navigate("/agency")} className="mb-6 text-[13px] text-muted hover:text-paper">
+        <button onClick={() => navigate(isAdmin ? "/agency?admin=1" : "/agency")} className="mb-6 text-[13px] text-muted hover:text-paper">
           ← Back to Campaigns
         </button>
 
         <div className="mb-6 flex items-center gap-3">
           <div className="h-px w-12" style={{ backgroundColor: ACCENT }} />
-          <span className="font-mono text-xs font-medium uppercase tracking-[0.3em]" style={{ color: ACCENT }}>New Campaign</span>
+          <span className="font-mono text-xs font-medium uppercase tracking-[0.3em]" style={{ color: ACCENT }}>
+            New Campaign{isAdmin ? " (Admin Direct)" : ""}
+          </span>
         </div>
 
         {/* Real flat-tab step indicator -- clickable at any time, exactly
@@ -121,7 +128,7 @@ export function CampaignBuilder() {
             <Field label="Client Name">
               <ChipRow>
                 {CLIENT_PRESETS.map((name) => (
-                  <Chip key={name} active={client === name} onClick={() => setClient(name)}>
+                  <Chip key={name} active={client === name} accent={ACCENT} onClick={() => setClient(name)}>
                     {name}
                   </Chip>
                 ))}
@@ -131,8 +138,18 @@ export function CampaignBuilder() {
             <Field label="Objective">
               <ChipRow>
                 {OBJECTIVE_PRESETS.map((text) => (
-                  <Chip key={text} active={objective === text} onClick={() => setObjective(text)}>
+                  <Chip key={text} active={objective === text} accent={ACCENT} onClick={() => setObjective(text)}>
                     {text}
+                  </Chip>
+                ))}
+              </ChipRow>
+            </Field>
+
+            <Field label="Category — determines which contributor badges this reaches">
+              <ChipRow>
+                {CAMPAIGN_CATEGORIES.map((c) => (
+                  <Chip key={c.value} active={category === c.value} accent={ACCENT} onClick={() => setCategory(c.value)}>
+                    {c.label}
                   </Chip>
                 ))}
               </ChipRow>
@@ -141,7 +158,7 @@ export function CampaignBuilder() {
             <Field label="Target Cities * (never country-level)">
               <ChipRow>
                 {CITY_OPTIONS.map((city) => (
-                  <Chip key={city} active={cities.includes(city)} onClick={() => toggleCity(city)}>
+                  <Chip key={city} active={cities.includes(city)} accent={ACCENT} onClick={() => toggleCity(city)}>
                     {city}
                   </Chip>
                 ))}
@@ -152,7 +169,7 @@ export function CampaignBuilder() {
               <Field label="Age Band">
                 <ChipRow>
                   {AGE_BANDS.map((b) => (
-                    <Chip key={b} active={ageBand === b} onClick={() => setAgeBand(b)}>
+                    <Chip key={b} active={ageBand === b} accent={ACCENT} onClick={() => setAgeBand(b)}>
                       {b}
                     </Chip>
                   ))}
@@ -161,7 +178,7 @@ export function CampaignBuilder() {
               <Field label="Sample Size">
                 <ChipRow>
                   {SAMPLE_SIZES.map((n) => (
-                    <Chip key={n} active={sampleSize === n} onClick={() => setSampleSize(n)}>
+                    <Chip key={n} active={sampleSize === n} accent={ACCENT} onClick={() => setSampleSize(n)}>
                       {n.toLocaleString()}
                     </Chip>
                   ))}
@@ -172,7 +189,7 @@ export function CampaignBuilder() {
             <Field label="Methodology">
               <ChipRow>
                 {METHODOLOGIES.map((m) => (
-                  <Chip key={m} active={methodology === m} onClick={() => setMethodology(m)}>
+                  <Chip key={m} active={methodology === m} accent={ACCENT} onClick={() => setMethodology(m)}>
                     {m}
                   </Chip>
                 ))}
@@ -248,6 +265,7 @@ export function CampaignBuilder() {
               <h3 className="mb-2 font-display text-xl font-bold text-paper">{client}</h3>
               <p className="text-sm text-muted">{objective}</p>
               <div className="mt-4 flex flex-wrap gap-6 text-sm">
+                <span className="text-muted">{CAMPAIGN_CATEGORIES.find((c) => c.value === category)?.label}</span>
                 <span className="text-muted">{cities.length} {cities.length === 1 ? "city" : "cities"}</span>
                 <span className="text-muted">{ageBand}</span>
                 <span className="text-muted">{methodology}</span>
@@ -298,15 +316,16 @@ function ChipRow({ children }: { children: React.ReactNode }) {
 // convention (OnboardingWizard.tsx's country/language pickers) -- rounded-
 // full pills are reserved elsewhere in the real app for filter/status
 // chips, not selectable form options.
-function Chip({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
+function Chip({ active, accent, onClick, children }: { active: boolean; accent: string; onClick: () => void; children: React.ReactNode }) {
   return (
     <button
       type="button"
       onClick={onClick}
       className={cn(
         "rounded-none border px-3.5 py-2 text-left text-[13px] font-medium transition-colors",
-        active ? "border-visual bg-visual/15 text-visual" : "border-line text-muted hover:border-white/25 hover:text-paper"
+        active ? "" : "border-line text-muted hover:border-white/25 hover:text-paper"
       )}
+      style={active ? { borderColor: accent, backgroundColor: `${accent}26`, color: accent } : undefined}
     >
       {children}
     </button>

@@ -10,6 +10,8 @@ import { OperationsHub } from "@/screens/OperationsHub";
 import { FieldCapture } from "@/screens/FieldCapture";
 import { SupervisorReview } from "@/screens/SupervisorReview";
 import { AdminOversight } from "@/screens/AdminOversight";
+import { ResearchHub } from "@/screens/ResearchHub";
+import { AgencyVerification } from "@/screens/AgencyVerification";
 
 export default function App() {
   return (
@@ -35,6 +37,8 @@ export default function App() {
           <Route path="/operations/field" element={<FieldCapture />} />
           <Route path="/operations/review" element={<SupervisorReview />} />
           <Route path="/operations/admin" element={<AdminOversight />} />
+          <Route path="/operations/admin/agencies" element={<AgencyVerification />} />
+          <Route path="/operations/research" element={<ResearchHub />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>

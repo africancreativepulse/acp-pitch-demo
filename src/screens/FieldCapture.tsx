@@ -67,10 +67,13 @@ export function FieldCapture() {
         </StatGrid>
 
         <h2 className="mb-4 font-display text-base font-bold text-paper">My Assignment</h2>
-        <div className="mb-6 flex items-center justify-between rounded border border-line px-[18px] py-4">
+        <Link
+          to="/agency/campaign/sondela-cover"
+          className="mb-6 flex items-center justify-between rounded border border-line px-[18px] py-4 transition-colors hover:bg-panel"
+        >
           <div>
             <h3 className="text-sm font-semibold text-paper">{FIELD_WORKER.campaignClient}</h3>
-            <div className="mt-0.5 text-xs text-muted">{FIELD_WORKER.zone} · paper capture, no signal</div>
+            <div className="mt-0.5 text-xs text-muted">{FIELD_WORKER.zone} · paper capture, no signal · tap for the Cultural Read →</div>
           </div>
           <span
             className="rounded-full px-2.5 py-1 font-mono text-[10px] font-medium uppercase tracking-[0.06em]"
@@ -78,7 +81,7 @@ export function FieldCapture() {
           >
             active
           </span>
-        </div>
+        </Link>
 
         {sync !== "done" ? (
           <>

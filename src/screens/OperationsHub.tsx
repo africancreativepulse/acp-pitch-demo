@@ -11,6 +11,12 @@ import { AcpLogo } from "@/components/AcpLogo";
 // traceability story, not a bolted-on side path.
 const CARDS = [
   {
+    to: "/operations/research",
+    accent: "var(--taste)",
+    label: "Head of Research",
+    description: "The persistent, city-level team roster a project draws on -- built before it, still there after.",
+  },
+  {
     to: "/operations/field",
     accent: "var(--pulse)",
     label: "Field Worker Capture",
@@ -26,7 +32,7 @@ const CARDS = [
     to: "/operations/admin",
     accent: "var(--ritual)",
     label: "Admin Oversight",
-    description: "Platform-wide verification queue and quality flags, not just one campaign.",
+    description: "Platform-wide verification queue, agency vetting, and quality flags across every campaign.",
   },
 ];
 

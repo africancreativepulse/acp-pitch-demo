@@ -56,6 +56,13 @@ export default {
           "0%, 100%": { boxShadow: "0 0 0 0 rgba(255,90,41,0.45)" },
           "70%": { boxShadow: "0 0 0 10px rgba(255,90,41,0)" },
         },
+        // Push-notification toast entrance (CampaignDetail's "Mark
+        // Urgent" moment) -- demo-only, no real-app equivalent, same as
+        // pulse-dot/rec-pulse above.
+        "toast-in": {
+          from: { opacity: "0", transform: "translateY(12px)" },
+          to: { opacity: "1", transform: "translateY(0)" },
+        },
         // Below this line: the real design system's motion vocabulary
         // (var names `ds-*`), copied verbatim from ../acp-handoff's
         // tailwind.config.ts -- only the subset actually used by the
@@ -96,6 +103,7 @@ export default {
       animation: {
         "pulse-dot": "pulse-dot 1.6s ease-in-out infinite",
         "rec-pulse": "rec-pulse 1.4s ease-out infinite",
+        "toast-in": "toast-in 0.35s cubic-bezier(.16,.84,.44,1) forwards",
         "ds-sweep-rotate": "ds-sweep-rotate 2.2s linear infinite",
         "ds-ripple-out": "ds-ripple-out 1.9s cubic-bezier(.2,.7,.3,1) infinite",
         "ds-node-pulse": "ds-node-pulse 1.6s ease-in-out infinite",

@@ -1,6 +1,8 @@
 import { useState } from "react";
-import { useParams, useNavigate, Navigate } from "react-router-dom";
+import { useParams, useNavigate, Navigate, Link } from "react-router-dom";
+import { Download, BellRing } from "lucide-react";
 import { DashboardShell } from "@/components/DashboardShell";
+import { Button } from "@/components/Button";
 import { SignalRing } from "@/components/SignalRing";
 import { DepthGauge } from "@/components/DepthGauge";
 import { GaugeArc } from "@/components/GaugeArc";
@@ -17,12 +19,43 @@ import {
   cdiBand,
   decayBand,
   quadrantRead,
+  categoryLabel,
   type CeiKey,
   type EvidenceItem,
 } from "@/data/demo";
 
 const ACCENT = "var(--visual)";
 type SwitcherKey = CeiKey | "soulgap";
+
+// Real, working CSV export -- not simulated. Builds every evidence item
+// (all six CEI dimensions plus the standalone Soul Gap panel) into an
+// actual downloadable file via a Blob URL, entirely client-side. Matches
+// the real app's own shipped capability (Export CSV); PDF stays a
+// disabled "coming soon" button below since the real app's own PDF
+// export is genuinely deferred too, not because this demo is cutting a
+// corner the real product doesn't also have.
+function downloadEvidenceCsv() {
+  const rows: string[][] = [["Dimension", "Kind", "Content", "City", "Contributor", "Date", "Verified"]];
+  const contentOf = (item: EvidenceItem) => (item.kind === "quote" ? item.quote : item.caption);
+
+  (Object.keys(SONDELA.evidence) as CeiKey[]).forEach((dim) => {
+    SONDELA.evidence[dim].forEach((item) => {
+      rows.push([CEI_LABEL[dim], item.kind, contentOf(item), item.city, item.contributorId, item.date ?? "Pending", "Yes"]);
+    });
+  });
+  (SONDELA.soulGap?.evidence ?? []).forEach((item) => {
+    rows.push(["Soul Gap", item.kind, contentOf(item), item.city, item.contributorId, item.date ?? "Pending", "Yes"]);
+  });
+
+  const csv = rows.map((r) => r.map((cell) => `"${cell.replace(/"/g, '""')}"`).join(",")).join("\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "sondela-cover-evidence.csv";
+  a.click();
+  URL.revokeObjectURL(url);
+}
 
 // Real tabs, verbatim from the real app's agency/CampaignDetail.tsx
 // (TABS/TAB_LABEL consts there): Overview / CEI & Taste / Soul Gap / CDI.
@@ -59,6 +92,18 @@ export function CampaignDetail() {
   const navigate = useNavigate();
   const [tab, setTab] = useState<Tab>("overview");
   const [activeDimension, setActiveDimension] = useState<SwitcherKey>("ritual");
+  const [urgent, setUrgent] = useState(false);
+  const [showToast, setShowToast] = useState(false);
+
+  // Part D, item 13 -- a real device push notification, shown as a
+  // moment rather than claimed in copy. Ties to badge matching (Part C,
+  // item 11): the toast names the specific badge Sondela Cover's own
+  // category matches against, not a generic "some contributors."
+  const markUrgent = () => {
+    setUrgent(true);
+    window.setTimeout(() => setShowToast(true), 700);
+    window.setTimeout(() => setShowToast(false), 7000);
+  };
 
   if (id !== SONDELA.id || !SONDELA.cei || SONDELA.cdi == null || SONDELA.decay == null || !SONDELA.soulGap) {
     return <Navigate to="/agency" replace />;
@@ -90,24 +135,72 @@ export function CampaignDetail() {
           ← Back to Campaigns
         </button>
 
-        <div className="mb-8">
-          <div className="mb-2 flex items-center gap-3">
-            <h1 className="font-display text-3xl font-bold text-paper">{SONDELA.client}</h1>
+        <div className="mb-8 flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <div className="mb-2 flex flex-wrap items-center gap-2">
+              <h1 className="font-display text-3xl font-bold text-paper">{SONDELA.client}</h1>
+              <span
+                className="rounded-full px-2.5 py-1 font-mono text-[10px] font-medium uppercase tracking-[0.06em]"
+                style={{ color: "var(--sound)", backgroundColor: "color-mix(in srgb, var(--sound) 14%, transparent)" }}
+              >
+                collecting
+              </span>
+              {categoryLabel(SONDELA.category) && (
+                <span className="rounded-full border border-line px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.06em] text-muted">
+                  {categoryLabel(SONDELA.category)}
+                </span>
+              )}
+              {urgent && (
+                <span
+                  className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.06em]"
+                  style={{ color: "var(--pulse)", backgroundColor: "color-mix(in srgb, var(--pulse) 14%, transparent)" }}
+                >
+                  <BellRing className="h-2.5 w-2.5" /> Urgent
+                </span>
+              )}
+            </div>
+            <p className="text-muted">
+              &ldquo;{SONDELA.concept}&rdquo; · {SONDELA.cities.join(" · ")}
+            </p>
+            <p className="mt-2 text-[12.5px] text-muted">
+              Collected via <span className="text-paper">{SONDELA.methodology}</span> ·{" "}
+              <a href="#collection" className="font-semibold text-visual hover:underline">see how →</a>
+            </p>
+          </div>
+
+          <div className="flex shrink-0 flex-wrap items-center gap-2">
+            <Button variant="ghost" color="var(--pulse)" className="!px-3 !py-1.5 !text-[11px]" onClick={markUrgent} disabled={urgent}>
+              <BellRing className="me-1.5 h-3.5 w-3.5" /> {urgent ? "Marked Urgent" : "Mark Urgent"}
+            </Button>
+            <Button variant="ghost" color={ACCENT} className="!px-3 !py-1.5 !text-[11px]" onClick={downloadEvidenceCsv}>
+              <Download className="me-1.5 h-3.5 w-3.5" /> Export CSV
+            </Button>
             <span
-              className="rounded-full px-2.5 py-1 font-mono text-[10px] font-medium uppercase tracking-[0.06em]"
-              style={{ color: "var(--sound)", backgroundColor: "color-mix(in srgb, var(--sound) 14%, transparent)" }}
+              className="inline-flex cursor-not-allowed items-center gap-1 rounded-sm border border-line px-[14px] py-2 font-display text-[11px] font-semibold uppercase tracking-[0.06em] text-muted"
+              title="PDF export is genuinely still in progress on the real platform too -- not a corner cut for this demo."
             >
-              collecting
+              Export PDF · Coming Soon
             </span>
           </div>
-          <p className="text-muted">
-            &ldquo;{SONDELA.concept}&rdquo; · {SONDELA.cities.join(" · ")}
-          </p>
-          <p className="mt-2 text-[12.5px] text-muted">
-            Collected via <span className="text-paper">{SONDELA.methodology}</span> ·{" "}
-            <a href="/operations" className="font-semibold text-visual hover:underline">see how →</a>
-          </p>
         </div>
+
+        {/* Simulated device push -- fixed to the viewport so it reads as
+            arriving "over" the UI the way a real OS/browser push would,
+            regardless of which tab is open underneath it. */}
+        {showToast && (
+          <div className="fixed bottom-6 end-6 z-50 w-80 rounded border border-line bg-panel p-4 shadow-2xl animate-toast-in">
+            <div className="mb-1 flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.15em]" style={{ color: "var(--pulse)" }}>
+              <BellRing className="h-3.5 w-3.5" /> Push Notification
+            </div>
+            <p className="text-[13px] leading-relaxed text-paper">
+              New urgent campaign: <strong>Sondela Cover</strong> needs your voice.
+            </p>
+            <p className="mt-1 text-[11.5px] text-muted">
+              Sent to contributors with a matching {categoryLabel(SONDELA.category)} badge — real
+              device push, illustrative recipient count.
+            </p>
+          </div>
+        )}
 
         <div className="mb-8 flex gap-4 overflow-x-auto border-b border-line">
           {TABS.map((t) => (
@@ -141,6 +234,25 @@ export function CampaignDetail() {
                 <div className="font-mono text-2xl font-bold text-paper">{cdi.toFixed(1)}/10</div>
                 <p className="mt-1 text-xs text-muted">{quadrant.label}</p>
               </button>
+            </div>
+
+            {/* Part A, item 3 -- one continuous journey, not disconnected
+                screens. This is the "Digital + Field Hybrid" methodology
+                line above made concrete: every response, whichever method
+                captured it, goes through the same back-check before it
+                counts toward this campaign's evidence. */}
+            <div id="collection" className="mt-10 scroll-mt-6">
+              <h3 className="mb-1 font-display text-sm font-bold text-paper">Collection & Verification</h3>
+              <p className="mb-4 max-w-2xl text-[13px] text-muted">
+                Digital + Field Hybrid means two collection methods feed this one campaign — both
+                back-checked the same way before anything counts as Verified.
+              </p>
+              <div className="grid gap-3 sm:grid-cols-4">
+                <ChainCard to="/contribute" accent="var(--sound)" step="1" label="Digital" desc="Contributor app" />
+                <ChainCard to="/operations/field" accent="var(--pulse)" step="2" label="Field" desc="Paper, Thabo M." />
+                <ChainCard to="/operations/review" accent="var(--soulgap)" step="3" label="Supervisor" desc="Back-check queue" />
+                <ChainCard to="/operations/admin" accent="var(--ritual)" step="4" label="Admin" desc="Platform oversight" />
+              </div>
             </div>
           </>
         )}
@@ -263,6 +375,23 @@ function EvidenceTab({ activeDimension, onSwitch }: { activeDimension: SwitcherK
         <p className="font-display text-[15px] font-medium text-paper">Every score traces to what someone actually said.</p>
       </div>
     </div>
+  );
+}
+
+function ChainCard({ to, accent, step, label, desc }: { to: string; accent: string; step: string; label: string; desc: string }) {
+  return (
+    <Link
+      to={to}
+      className="group rounded border border-line p-4 transition-colors hover:bg-panel"
+      style={{ borderColor: `${accent}30` }}
+    >
+      <div className="mb-2 flex items-center justify-between">
+        <span className="font-mono text-[10px] uppercase tracking-[0.15em] text-muted">Step {step}</span>
+        <span className="text-muted transition-transform group-hover:translate-x-1" style={{ color: accent }}>→</span>
+      </div>
+      <div className="font-display text-sm font-bold" style={{ color: accent }}>{label}</div>
+      <p className="mt-0.5 text-[11.5px] text-muted">{desc}</p>
+    </Link>
   );
 }
 

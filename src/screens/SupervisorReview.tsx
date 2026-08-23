@@ -4,7 +4,8 @@ import { CheckCircle2, XCircle, AlertTriangle } from "lucide-react";
 import { DashboardShell } from "@/components/DashboardShell";
 import { StatGrid, StatCard } from "@/components/StatCard";
 import { IconButton } from "@/components/IconButton";
-import { REVIEW_QUEUE, FIELD_WORKER } from "@/data/demo";
+import { AlertSourceBadge } from "@/components/AlertSourceBadge";
+import { REVIEW_QUEUE, FIELD_WORKER, riskSignalLabel } from "@/data/demo";
 import { useDemoState } from "@/state/DemoState";
 
 const ACCENT = "var(--soulgap)";
@@ -59,11 +60,16 @@ export function SupervisorReview() {
   return (
     <DashboardShell role="supervisor">
       <div className="px-6 pb-[60px] pt-[30px] md:px-10">
-        <div className="mb-7 flex items-center gap-2.5">
-          <div className="h-0.5 w-[30px]" style={{ backgroundColor: ACCENT }} />
-          <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.2em]" style={{ color: ACCENT }}>
-            Supervisor Dashboard
-          </span>
+        <div className="mb-7 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5">
+            <div className="h-0.5 w-[30px]" style={{ backgroundColor: ACCENT }} />
+            <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.2em]" style={{ color: ACCENT }}>
+              Supervisor Dashboard
+            </span>
+          </div>
+          <Link to="/agency/campaign/sondela-cover" className="text-[13px] text-muted hover:text-paper">
+            ← Back to Sondela Cover
+          </Link>
         </div>
 
         <StatGrid className="mb-9 md:!grid-cols-3">
@@ -122,7 +128,7 @@ export function SupervisorReview() {
                 return (
                   <div key={item.id} className="flex items-center justify-between rounded border border-line p-4">
                     <div>
-                      <div className="mb-1 flex items-center gap-3">
+                      <div className="mb-1 flex flex-wrap items-center gap-2">
                         <span className="text-sm font-medium text-paper">{item.campaignClient} · {item.city}</span>
                         <span
                           className="rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide"
@@ -130,8 +136,14 @@ export function SupervisorReview() {
                         >
                           {METHOD_LABEL[item.method]}
                         </span>
+                        {status === "flagged" && item.riskSignal && <AlertSourceBadge source={item.riskSignal.source} />}
                       </div>
                       <p className="text-xs text-muted">&ldquo;{item.excerpt}&rdquo;</p>
+                      {status === "flagged" && item.riskSignal && (
+                        <p className="mt-1.5 text-[11.5px]" style={{ color: "var(--pulse)" }}>
+                          {riskSignalLabel(item.riskSignal.type)} — {item.riskSignal.detail}
+                        </p>
+                      )}
                     </div>
                     <span
                       className="shrink-0 rounded-full px-3 py-1 text-[11px] font-semibold"
@@ -153,8 +165,20 @@ export function SupervisorReview() {
                       >
                         {METHOD_LABEL[item.method]}
                       </span>
+                      {item.riskSignal && <AlertSourceBadge source={item.riskSignal.source} />}
                     </div>
                     <p className="text-xs text-muted">&ldquo;{item.excerpt}&rdquo; — Contributor {item.contributorId}</p>
+                    {/* Part C, item 9 -- concrete detection reasoning, not
+                        a generic "supervisor reviews things" screen. The
+                        platform's own hybrid AI + rule-based scan already
+                        surfaced this before a human even looked. */}
+                    {item.riskSignal ? (
+                      <p className="mt-1.5 text-[11.5px]" style={{ color: "var(--pulse)" }}>
+                        ⚠ {riskSignalLabel(item.riskSignal.type)} — {item.riskSignal.detail}
+                      </p>
+                    ) : (
+                      <p className="mt-1.5 text-[11.5px] text-muted">No automated flags on this one.</p>
+                    )}
                   </div>
                   <div className="flex shrink-0 items-center gap-2">
                     <IconButton tone="approve" onClick={() => setReviewStatus(item.id, "approved")}>
@@ -178,11 +202,17 @@ export function SupervisorReview() {
               flagged.map((item) => (
                 <div key={item.id} className="flex items-center justify-between rounded border border-line p-4">
                   <div>
-                    <div className="flex items-center gap-2">
+                    <div className="mb-1 flex items-center gap-2">
                       <AlertTriangle className="h-4 w-4 text-language" />
                       <span className="text-sm font-medium text-paper">{item.campaignClient} · {item.city}</span>
+                      {item.riskSignal && <AlertSourceBadge source={item.riskSignal.source} />}
                     </div>
                     <span className="text-xs text-muted">&ldquo;{item.excerpt}&rdquo;</span>
+                    {item.riskSignal && (
+                      <p className="mt-1 text-[11.5px] text-language">
+                        {riskSignalLabel(item.riskSignal.type)} — {item.riskSignal.detail}
+                      </p>
+                    )}
                   </div>
                 </div>
               ))

@@ -1,12 +1,13 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { DashboardShell } from "@/components/DashboardShell";
 import { Button } from "@/components/Button";
 import { Modal } from "@/components/Modal";
 import { ScorePill } from "@/components/ScorePill";
 import { StatGrid, StatCard } from "@/components/StatCard";
 import {
-  SONDELA, KASI_BREW, THOLULWAZI_DATA, cdiBand, decayBand, BAND_HEX, type CeiKey, type SecondaryCampaign,
+  SONDELA, KASI_BREW, THOLULWAZI_DATA, MZANSI_WELLNESS, cdiBand, decayBand, BAND_HEX, categoryLabel,
+  type CeiKey, type SecondaryCampaign,
 } from "@/data/demo";
 import { useDemoState } from "@/state/DemoState";
 
@@ -18,6 +19,8 @@ interface Row {
   id: string;
   client: string;
   cities: string[];
+  category?: string;
+  adminDirect?: boolean;
   verifiedResponses: number;
   cei: Partial<Record<CeiKey, number>> | null;
   cdi: number | null;
@@ -44,9 +47,21 @@ function compositeCei(cei?: Partial<Record<CeiKey, number>> | null) {
  * filter bucket stays honestly always-empty here too: this demo's
  * Campaign Builder always launches immediately, there's no save-as-draft
  * path to populate it from.
+ *
+ * Part E, item 15 -- this same screen doubles as Admin's own Campaign
+ * Oversight view (?admin=1, matching the real app's own route -- admin
+ * and agency share /dashboard/campaigns there too), same as the real
+ * page's `role === "admin" ? "Admin — Campaign Oversight" : "Agency
+ * Dashboard"` eyebrow swap. The real, meaningful difference: an admin
+ * view sees every campaign including admin-direct ones with no agency
+ * owner at all (Mzansi Wellness); an agency's own view only ever sees
+ * campaigns they own -- matching the real app's own agency_id-scoped
+ * RLS, not just a copy change.
  */
 export function AgencyCommand() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const isAdmin = searchParams.get("admin") === "1";
   const { draftCampaigns } = useDemoState();
   const [snapshot, setSnapshot] = useState<SecondaryCampaign | null>(null);
   const [filter, setFilter] = useState<Filter>("all");
@@ -56,6 +71,7 @@ export function AgencyCommand() {
       id: SONDELA.id,
       client: SONDELA.client,
       cities: SONDELA.cities,
+      category: SONDELA.category,
       verifiedResponses: SONDELA.verifiedResponses,
       cei: SONDELA.cei,
       cdi: SONDELA.cdi,
@@ -66,6 +82,7 @@ export function AgencyCommand() {
       id: KASI_BREW.id,
       client: KASI_BREW.client,
       cities: KASI_BREW.cities,
+      category: KASI_BREW.category,
       verifiedResponses: KASI_BREW.verifiedResponses,
       cei: KASI_BREW.cei,
       cdi: KASI_BREW.cdi,
@@ -76,6 +93,7 @@ export function AgencyCommand() {
       id: THOLULWAZI_DATA.id,
       client: THOLULWAZI_DATA.client,
       cities: THOLULWAZI_DATA.cities,
+      category: THOLULWAZI_DATA.category,
       verifiedResponses: THOLULWAZI_DATA.verifiedResponses,
       cei: THOLULWAZI_DATA.cei,
       cdi: THOLULWAZI_DATA.cdi,
@@ -86,6 +104,8 @@ export function AgencyCommand() {
       id: c.id,
       client: c.client,
       cities: c.cities,
+      category: c.category,
+      adminDirect: c.adminDirect,
       verifiedResponses: 0,
       cei: null,
       cdi: null,
@@ -104,6 +124,24 @@ export function AgencyCommand() {
           soulGap: { magnitude: "Narrow", headline: "" },
         }),
     })),
+    // Admin-direct example -- only ever visible from the admin view, same
+    // as the real app's own agency_id-scoped RLS would actually enforce.
+    ...(isAdmin
+      ? [
+          {
+            id: MZANSI_WELLNESS.id,
+            client: MZANSI_WELLNESS.client,
+            cities: MZANSI_WELLNESS.cities,
+            category: MZANSI_WELLNESS.category,
+            adminDirect: true,
+            verifiedResponses: MZANSI_WELLNESS.verifiedResponses,
+            cei: MZANSI_WELLNESS.cei,
+            cdi: MZANSI_WELLNESS.cdi,
+            status: "live" as const,
+            onClick: () => setSnapshot(MZANSI_WELLNESS),
+          },
+        ]
+      : []),
   ];
 
   const filtered = filter === "all" ? rows : rows.filter((r) => r.status === filter);
@@ -114,19 +152,19 @@ export function AgencyCommand() {
   const avgCdi = cdiValues.length > 0 ? (cdiValues.reduce((a, b) => a + b, 0) / cdiValues.length).toFixed(1) : "—";
 
   return (
-    <DashboardShell role="agency">
+    <DashboardShell role={isAdmin ? "admin" : "agency"}>
       <div className="max-w-6xl px-6 pb-[60px] pt-[30px] md:px-10">
         <div className="mb-7 flex items-center justify-between">
           <div>
             <div className="mb-2.5 flex items-center gap-2.5">
               <div className="h-0.5 w-[30px]" style={{ backgroundColor: ACCENT }} />
               <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.2em]" style={{ color: ACCENT }}>
-                Agency Dashboard
+                {isAdmin ? "Admin — Campaign Oversight" : "Agency Dashboard"}
               </span>
             </div>
             <h1 className="font-display text-[22px] font-bold text-paper">Campaigns</h1>
           </div>
-          <Button color={ACCENT} onClick={() => navigate("/agency/new")}>
+          <Button color={ACCENT} onClick={() => navigate(isAdmin ? "/agency/new?admin=1" : "/agency/new")}>
             + New Campaign
           </Button>
         </div>
@@ -174,8 +212,18 @@ export function AgencyCommand() {
                   className="grid min-w-[620px] cursor-pointer grid-cols-[2fr_0.9fr_0.9fr_1fr_0.8fr] items-center gap-2 border-t border-line px-[18px] py-[15px] transition-colors hover:bg-panel"
                 >
                   <div>
-                    <div className="text-[13.5px] font-semibold text-paper">{row.client}</div>
-                    <div className="mt-0.5 truncate text-[11.5px] text-muted">{row.cities.join(" · ")}</div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[13.5px] font-semibold text-paper">{row.client}</span>
+                      {row.adminDirect && (
+                        <span className="rounded-full border border-line px-1.5 py-0.5 font-mono text-[8.5px] uppercase tracking-[0.06em] text-muted">
+                          No agency · Admin Direct
+                        </span>
+                      )}
+                    </div>
+                    <div className="mt-0.5 truncate text-[11.5px] text-muted">
+                      {row.cities.join(" · ")}
+                      {categoryLabel(row.category) && <span className="text-muted/60"> · {categoryLabel(row.category)}</span>}
+                    </div>
                   </div>
                   {cei != null ? (
                     <div className="flex items-center gap-2">

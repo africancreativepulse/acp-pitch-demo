@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
-  LayoutDashboard, FileText, Users, Shield, MapPin, Menu, X, LogOut,
+  LayoutDashboard, FileText, Users, Shield, MapPin, Menu, X, LogOut, ShieldCheck,
 } from "lucide-react";
 
 /**
@@ -21,18 +21,20 @@ import {
  * responsive behavior (fixed desktop sidebar, mobile hamburger +
  * slide-out) -- not just its visual skin.
  */
-export type ShellRole = "agency" | "contributor" | "field_agent" | "supervisor" | "admin";
+export type ShellRole = "agency" | "contributor" | "field_agent" | "supervisor" | "admin" | "head_of_research";
 
 // Matches the real app's roleTheme.ts exactly -- not invented for this
 // demo. ROLE_LOGO_LABEL is the real sidebar wordmark per role;
 // ROLE_ACCENT already existed in this demo's own token set under the
-// same names.
+// same names. head_of_research = Taste (var(--taste)) is the real app's
+// own choice too, per roleTheme.ts's own documented hue-gap audit.
 const ROLE_ACCENT: Record<ShellRole, string> = {
   agency: "var(--visual)",
   contributor: "var(--sound)",
   field_agent: "var(--pulse)",
   supervisor: "var(--soulgap)",
   admin: "var(--ritual)",
+  head_of_research: "var(--taste)",
 };
 
 const ROLE_LOGO_LABEL: Record<ShellRole, string> = {
@@ -41,6 +43,7 @@ const ROLE_LOGO_LABEL: Record<ShellRole, string> = {
   field_agent: "ACP FIELDWORK",
   supervisor: "ACP FIELDWORK",
   admin: "ACP ADMIN",
+  head_of_research: "ACP RESEARCH",
 };
 
 const ROLE_AVATAR_GRADIENT: Record<ShellRole, [string, string]> = {
@@ -49,6 +52,7 @@ const ROLE_AVATAR_GRADIENT: Record<ShellRole, [string, string]> = {
   field_agent: ["var(--pulse)", "var(--soulgap)"],
   supervisor: ["var(--soulgap)", "var(--visual)"],
   admin: ["var(--ritual)", "var(--language)"],
+  head_of_research: ["var(--taste)", "var(--visual)"],
 };
 
 // No real accounts exist in this demo (no backend, see README) -- these
@@ -60,14 +64,15 @@ const ROLE_IDENTITY: Record<ShellRole, { initial: string; name: string; label: s
   field_agent: { initial: "T", name: "Thabo M.", label: "Field Agent" },
   supervisor: { initial: "S", name: "Duty Supervisor", label: "Supervisor" },
   admin: { initial: "A", name: "Platform Admin", label: "Admin" },
+  head_of_research: { initial: "N", name: "Nomvula D.", label: "Head of Research" },
 };
 
 // A pared-down version of the real per-role nav lists (agencyNav,
-// contributorNav, fieldAgentNav, supervisorNav, adminNav in the real
-// DashboardLayout.tsx) -- scoped to the screens this demo actually has,
-// not a full replica of the real product's much larger nav surface.
-// "Fieldwork"/"Team"/"Fieldwork Admin" labels below are the real labelKey
-// copy those roles' sidebars actually use.
+// contributorNav, fieldAgentNav, supervisorNav, adminNav, headOfResearchNav
+// in the real DashboardLayout.tsx) -- scoped to the screens this demo
+// actually has, not a full replica of the real product's much larger nav
+// surface. Labels below are the real labelKey copy those roles' sidebars
+// actually use.
 const NAV: Record<ShellRole, { label: string; icon: typeof LayoutDashboard; path: string }[]> = {
   agency: [
     { label: "Campaigns", icon: FileText, path: "/agency" },
@@ -87,8 +92,13 @@ const NAV: Record<ShellRole, { label: string; icon: typeof LayoutDashboard; path
   ],
   admin: [
     { label: "Fieldwork Admin", icon: Shield, path: "/operations/admin" },
-    { label: "Campaigns", icon: FileText, path: "/agency" },
+    { label: "Agency Verification", icon: ShieldCheck, path: "/operations/admin/agencies" },
+    { label: "Campaigns", icon: FileText, path: "/agency?admin=1" },
     { label: "Operations", icon: MapPin, path: "/operations" },
+  ],
+  head_of_research: [
+    { label: "Area Overview", icon: MapPin, path: "/operations/research" },
+    { label: "Operations", icon: Users, path: "/operations" },
   ],
 };
 
@@ -99,7 +109,15 @@ export function DashboardShell({ role, children }: { role: ShellRole; children: 
   const [avatarFrom, avatarTo] = ROLE_AVATAR_GRADIENT[role];
   const identity = ROLE_IDENTITY[role];
   const navItems = NAV[role];
-  const isActive = (path: string) => location.pathname === path;
+  // Handles nav items that carry a query string (admin's "Campaigns" links
+  // to /agency?admin=1, the same route agencies use) -- location.pathname
+  // alone never includes the query, so a plain equality check would never
+  // highlight that item as active.
+  const isActive = (path: string) => {
+    const [itemPathname, itemSearch] = path.split("?");
+    if (itemSearch) return location.pathname === itemPathname && location.search === `?${itemSearch}`;
+    return location.pathname === itemPathname;
+  };
 
   const navItemClass = (active: boolean) =>
     `flex items-center gap-[11px] w-full px-3 py-2.5 text-[13.5px] rounded transition-colors border-s-2 ${

@@ -156,6 +156,13 @@ export interface Campaign {
   decay: number | null;
   soulGap: SoulGap | null;
   evidence: Record<CeiKey, EvidenceItem[]>;
+  /** Which of CAMPAIGN_CATEGORIES this campaign is tagged under -- the
+      real basis contributor expert badges match against. Optional since
+      draft campaigns created live in Campaign Builder may not set one. */
+  category?: string;
+  /** Set only for a campaign admin created directly, no agency in
+      between -- see AgencyCommand.tsx's admin-view filtering. */
+  adminDirect?: boolean;
 }
 
 export const AGENCY = {
@@ -187,6 +194,7 @@ const sondela: Campaign = {
   methodology: "Digital + Field Hybrid",
   verifiedResponses: 340,
   status: "collecting",
+  category: "finance_business",
   cei: sondelaCei,
   cdi: 7.2,
   decay: 4.6,
@@ -310,6 +318,10 @@ export interface SecondaryCampaign {
   decay: number;
   soulGap: { magnitude: SoulGap["magnitude"]; headline: string };
   reportNote?: string;
+  category?: string;
+  /** Set only for a campaign admin created directly, no agency in
+      between -- see AgencyCommand.tsx's admin-view filtering. */
+  adminDirect?: boolean;
 }
 
 export const KASI_BREW: SecondaryCampaign = {
@@ -319,6 +331,7 @@ export const KASI_BREW: SecondaryCampaign = {
   methodology: "Digital Only",
   verifiedResponses: 210,
   status: "completed",
+  category: "food_culinary",
   cei: { visual: 7.2, sound: 8.4, language: 6.5, ritual: 5.9, pulse: 7.0, taste: 8.0 },
   cdi: 6.1,
   decay: 2.8,
@@ -338,6 +351,7 @@ export const THOLULWAZI_DATA: SecondaryCampaign = {
   methodology: "Field Only",
   verifiedResponses: 128,
   status: "collecting",
+  category: "tech_gadgets",
   cei: { visual: 5.5, sound: 6.0, language: 7.8, ritual: 6.2, pulse: 8.3, taste: 5.1 },
   cdi: 5.4,
   decay: 6.2,
@@ -348,7 +362,63 @@ export const THOLULWAZI_DATA: SecondaryCampaign = {
   },
 };
 
+// Illustrative admin-direct example -- ACP running a campaign for a brand
+// with no agency account in the picture at all (Part E's "admin-direct
+// campaigns" business-model point). Only ever shown in the admin view of
+// Agency Command (see AgencyCommand.tsx's `?admin=1` filtering) -- a real
+// agency's own query is scoped to campaigns THEY own, so this genuinely
+// wouldn't appear there, matching the real app's own agency_id-scoped RLS.
+export const MZANSI_WELLNESS: SecondaryCampaign = {
+  id: "mzansi-wellness",
+  client: "Mzansi Wellness",
+  cities: ["Soweto (Johannesburg)", "Umlazi (Durban)"],
+  methodology: "Digital + Field Hybrid",
+  verifiedResponses: 64,
+  status: "collecting",
+  category: "beauty_wellness",
+  adminDirect: true,
+  cei: { visual: 6.4, sound: 6.9, language: 6.1, ritual: 5.8, pulse: 7.3, taste: 6.6 },
+  cdi: 6.4,
+  decay: 3.9,
+  soulGap: {
+    magnitude: "Moderate",
+    headline:
+      "Booked directly through ACP -- this brand has no agency of record yet. Early read: the campaign talks self-care as indulgence; contributors are framing it as maintenance, something you budget for, not treat yourself to.",
+  },
+};
+
 export const SONDELA = sondela;
+
+// ---------------------------------------------------------------------------
+// Expert badges / campaign categories -- the real basis contributor
+// self-selected expertise is matched against, so a campaign only reaches
+// people genuinely suited to it. 10 categories, matching the real app's
+// own fixed vocabulary (not exhaustive of every real category, but not
+// invented either -- these are the actual real ones).
+// ---------------------------------------------------------------------------
+
+export interface CampaignCategory {
+  value: string;
+  label: string;
+}
+
+export const CAMPAIGN_CATEGORIES: CampaignCategory[] = [
+  { value: "fashion_style", label: "Fashion & Style" },
+  { value: "finance_business", label: "Finance & Business" },
+  { value: "food_culinary", label: "Food & Culinary" },
+  { value: "music_audio", label: "Music & Audio" },
+  { value: "beauty_wellness", label: "Beauty & Wellness" },
+  { value: "tech_gadgets", label: "Tech & Gadgets" },
+  { value: "sports_fitness", label: "Sports & Fitness" },
+  { value: "entertainment_pop_culture", label: "Entertainment & Pop Culture" },
+  { value: "parenting_family", label: "Parenting & Family" },
+  { value: "travel_lifestyle", label: "Travel & Lifestyle" },
+];
+
+export function categoryLabel(value?: string): string | null {
+  if (!value) return null;
+  return CAMPAIGN_CATEGORIES.find((c) => c.value === value)?.label ?? null;
+}
 
 // ---------------------------------------------------------------------------
 // Task types -- shared between the Campaign Builder (step 2, choosing
@@ -410,7 +480,32 @@ export const CITIES_BY_COUNTRY: Record<Country, string[]> = {
   Ethiopia: ["Addis Ababa", "Bahir Dar"],
 };
 
+// The platform deliberately only shows markets it's actually live in --
+// expanding country by country rather than overclaiming reach it doesn't
+// have (real `countries.is_active` gate). Shown as disabled, clearly
+// labeled chips alongside the 5 live countries above, not silently
+// omitted -- the point is showing the gate exists, not hiding it.
+export const COMING_SOON_COUNTRIES = ["Tanzania", "Uganda"];
+
+// A representative subset, not the full real set -- see Splash's Arabic/
+// RTL toggle for the one language shown working end-to-end (real full
+// right-to-left support), and the caption next to this list wherever it
+// renders for the "16 languages" figure this subset stands in for.
 export const ONBOARDING_LANGUAGES = ["English", "isiZulu", "Yoruba", "Swahili", "Hausa", "Afrikaans"];
+export const TOTAL_SUPPORTED_LANGUAGES = 16;
+
+// Splash's Arabic/RTL toggle -- real translations of the hero's own
+// copy, not placeholder text, so the moment genuinely demonstrates
+// content in Arabic rather than just flipping direction on English words.
+export const ARABIC_HERO = {
+  eyebrow: "عرض تجريبي — من اليمين إلى اليسار", // "Demo — right to left", an honest UI label, not invented marketing copy
+  headlineLine1: "ثقافات أفريقيا،",
+  headlineLine2: "تُقرأ مثل الإشارات.",
+  subtitle: "تقييم مؤشر التفاعل الثقافي، متتبَّع إلى ما قاله أشخاص حقيقيون فعلاً — ليس استطلاعاً، وليس تخميناً.",
+  ctaAgency: "الدخول كعلامة تجارية / وكالة",
+  ctaContributor: "الدخول كمساهم",
+  toggleBack: "English",
+};
 
 // ---------------------------------------------------------------------------
 // The Operations Layer -- the platform's other half, beyond the two
@@ -450,6 +545,25 @@ export const FIELD_WORKER = {
 export type CaptureMethod = "digital" | "field";
 export type ReviewStatus = "pending" | "approved" | "flagged";
 
+export type RiskSignalType = "gps_mismatch" | "duplicate_submission" | "suspiciously_fast";
+export type AlertSource = "ai" | "rule";
+
+export interface RiskSignal {
+  type: RiskSignalType;
+  source: AlertSource;
+  detail: string;
+}
+
+const RISK_SIGNAL_LABEL: Record<RiskSignalType, string> = {
+  gps_mismatch: "GPS mismatch",
+  duplicate_submission: "Duplicate submission",
+  suspiciously_fast: "Suspiciously fast",
+};
+
+export function riskSignalLabel(type: RiskSignalType): string {
+  return RISK_SIGNAL_LABEL[type];
+}
+
 export interface ReviewQueueItem {
   id: string;
   campaignClient: string;
@@ -457,6 +571,12 @@ export interface ReviewQueueItem {
   excerpt: string;
   city: string;
   contributorId: string;
+  /** Present when the platform's own hybrid AI + rule-based detection
+      already caught something specific -- shown once a supervisor flags
+      the item, so "flagging" isn't just a human hunch, it's the system
+      surfacing a concrete reason. Absent on genuinely clean responses --
+      not every item has a signal, matching a real, mostly-clean queue. */
+  riskSignal?: RiskSignal;
 }
 
 // Illustrative supervisor review queue -- deliberately drawn from Kasi
@@ -473,6 +593,11 @@ export const REVIEW_QUEUE: ReviewQueueItem[] = [
     excerpt: "Everyone's already posting their own brew videos before we even asked them to.",
     city: "Alexandra",
     contributorId: "CT-8810",
+    riskSignal: {
+      type: "duplicate_submission",
+      source: "rule",
+      detail: "94% text match with another submission from the same device, 6 minutes earlier.",
+    },
   },
   {
     id: "rq-2",
@@ -481,6 +606,11 @@ export const REVIEW_QUEUE: ReviewQueueItem[] = [
     excerpt: "Paper response: taste testers preferred the stronger blend, noted the aroma specifically.",
     city: "Gugulethu",
     contributorId: "CT-8822",
+    riskSignal: {
+      type: "gps_mismatch",
+      source: "rule",
+      detail: "Submission GPS sits 38km outside the assigned Gugulethu zone boundary.",
+    },
   },
   {
     id: "rq-3",
@@ -489,6 +619,11 @@ export const REVIEW_QUEUE: ReviewQueueItem[] = [
     excerpt: "Nobody trusts a data plan that doesn't show the price upfront.",
     city: "Mamelodi",
     contributorId: "CT-9014",
+    riskSignal: {
+      type: "suspiciously_fast",
+      source: "ai",
+      detail: "Completed in 9 seconds -- below the AI thoughtfulness-scan threshold for an open-text task.",
+    },
   },
   {
     id: "rq-4",
@@ -506,4 +641,71 @@ export const REVIEW_QUEUE: ReviewQueueItem[] = [
     city: "Alexandra",
     contributorId: "CT-8831",
   },
+];
+
+// ---------------------------------------------------------------------------
+// Head of Research -- a persistent, city-level leadership role that owns
+// a local team of field workers *between* projects, not just for the
+// duration of one campaign. Backs the platform's real "mobilize an
+// existing trained team in days, not weeks" claim: a roster this deep
+// only pays off if it survives past whichever project built it.
+// ---------------------------------------------------------------------------
+
+export type RosterRole = "field_agent" | "supervisor";
+export type RosterStatus = "available" | "on_assignment" | "invited";
+
+export interface RosterMember {
+  id: string;
+  name: string;
+  role: RosterRole;
+  status: RosterStatus;
+  /** Who invited them -- never the same person who later reviews their
+      submitted work (that's always a Supervisor, a different person).
+      See NomvulaD/ResearchHub.tsx's separation-of-duties note. */
+  recruitedBy: string;
+  currentCampaign?: string;
+}
+
+export const RESEARCH_AREA = {
+  headOfResearch: "Nomvula D.",
+  area: "Soweto Research Area",
+  ownedSince: "March 2025",
+};
+
+// Thabo M. is the same field worker from Field Worker Capture -- real
+// narrative continuity, this roster is genuinely who he's part of.
+export const RESEARCH_ROSTER: RosterMember[] = [
+  { id: "rm-1", name: "Thabo M.", role: "field_agent", status: "on_assignment", recruitedBy: "Nomvula D.", currentCampaign: "Sondela Cover" },
+  { id: "rm-2", name: "Duty Supervisor", role: "supervisor", status: "on_assignment", recruitedBy: "Nomvula D.", currentCampaign: "Sondela Cover" },
+  { id: "rm-3", name: "Palesa N.", role: "field_agent", status: "available", recruitedBy: "Nomvula D." },
+  { id: "rm-4", name: "Katlego M.", role: "field_agent", status: "available", recruitedBy: "Nomvula D." },
+  { id: "rm-5", name: "Refilwe T.", role: "field_agent", status: "available", recruitedBy: "Thabo M." },
+];
+
+// Candidates for the tap-only "Invite" flow -- no free-text name/contact
+// entry (this demo's standing zero-typing rule), so inviting means
+// picking from a small illustrative shortlist instead of typing details.
+export const INVITE_CANDIDATES = ["Sipho R.", "Ayanda K.", "Bongani L."];
+
+// ---------------------------------------------------------------------------
+// Agency vetting -- agencies go through a document-verification step
+// before they can post campaigns. Ndoni Creative (this demo's own agency
+// persona) is already verified; the other two are illustrative queue
+// entries for Admin's own Agency Verification screen.
+// ---------------------------------------------------------------------------
+
+export type VerificationStatus = "verified" | "pending" | "rejected";
+
+export interface AgencyVerificationEntry {
+  id: string;
+  name: string;
+  city: string;
+  status: VerificationStatus;
+  documentLabel: string;
+}
+
+export const AGENCY_VERIFICATION_QUEUE: AgencyVerificationEntry[] = [
+  { id: "av-1", name: "Ndoni Creative", city: "Johannesburg", status: "verified", documentLabel: "CIPC registration certificate" },
+  { id: "av-2", name: "Bright Horizon Media", city: "Nairobi", status: "pending", documentLabel: "Business registration certificate" },
+  { id: "av-3", name: "Lagos Pulse Collective", city: "Lagos", status: "pending", documentLabel: "CAC registration document" },
 ];

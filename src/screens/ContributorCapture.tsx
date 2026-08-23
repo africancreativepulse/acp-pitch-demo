@@ -6,7 +6,8 @@ import { PhoneFrame } from "@/components/PhoneFrame";
 import { WaveformStatic } from "@/components/WaveformStatic";
 import { AcpMark } from "@/components/AcpMark";
 import { cn } from "@/lib/cn";
-import { CONTRIBUTOR_TASK, REWARD_OPTIONS, SONDELA } from "@/data/demo";
+import { CONTRIBUTOR_TASK, REWARD_OPTIONS, SONDELA, categoryLabel } from "@/data/demo";
+import { useDemoState } from "@/state/DemoState";
 
 type TaskState = "pending" | "active" | "done";
 type TaskKey = "voice" | "photo";
@@ -31,6 +32,11 @@ const ACCENT = "var(--sound)";
  * deliberate presentation choice preserved.
  */
 export function ContributorCapture() {
+  const { contributorBadges } = useDemoState();
+  // Part C, item 11 payoff -- Onboarding's Expertise step wasn't just
+  // decorative; this is the real match it feeds, made visible: Sondela
+  // Cover's own category only reaches contributors who picked it.
+  const matchedBadge = SONDELA.category && contributorBadges.includes(SONDELA.category) ? categoryLabel(SONDELA.category) : null;
   const [activeTask, setActiveTask] = useState<TaskKey | null>(null);
   const [voiceState, setVoiceState] = useState<TaskState>("pending");
   const [photoState, setPhotoState] = useState<TaskState>("pending");
@@ -87,9 +93,15 @@ export function ContributorCapture() {
           <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.2em]" style={{ color: ACCENT }}>My Tasks</span>
         </div>
         <h1 className="mb-2 font-display text-2xl font-bold text-paper sm:text-[28px]">{SONDELA.client}</h1>
-        <p className="mb-8 text-sm text-muted sm:mb-10 sm:text-base">
+        <p className="mb-2 text-sm text-muted sm:text-base">
           Complete both tasks below to earn points. Your device stays offline until you submit.
         </p>
+        {matchedBadge && (
+          <p className="mb-8 text-[13px] sm:mb-10" style={{ color: ACCENT }}>
+            Matched to you via your {matchedBadge} badge, picked at Onboarding — this campaign only
+            reaches contributors genuinely suited to it, not everyone at once.
+          </p>
+        )}
 
         <div className="mb-6">
           <Link to={`/agency/campaign/${SONDELA.id}`} className="text-[13px] text-sound hover:underline">

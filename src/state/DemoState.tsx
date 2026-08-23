@@ -18,6 +18,11 @@ export interface DraftCampaign {
   sampleSize: number;
   tasks: BuilderTask[];
   createdAt: number;
+  category?: string;
+  /** Set when launched via Campaign Builder's admin view (?admin=1) --
+      no agency owner, matching the real app's own agency_id-nullable
+      admin-direct campaigns. */
+  adminDirect?: boolean;
 }
 
 interface DemoState {
@@ -28,6 +33,12 @@ interface DemoState {
   // independently. Keyed by ReviewQueueItem.id, all start "pending".
   reviewStatus: Record<string, ReviewStatus>;
   setReviewStatus: (id: string, status: ReviewStatus) => void;
+  // Set during Onboarding's Expertise step (contributor persona only) --
+  // read back by Contributor Capture to show the real "this task matched
+  // your badge" payoff. Defaults to Sondela Cover's own category so the
+  // match is visible even if a presenter skips past that step.
+  contributorBadges: string[];
+  setContributorBadges: (badges: string[]) => void;
 }
 
 const Ctx = createContext<DemoState | null>(null);
@@ -37,6 +48,7 @@ export function DemoStateProvider({ children }: { children: ReactNode }) {
   const [reviewStatus, setReviewStatusMap] = useState<Record<string, ReviewStatus>>(() =>
     Object.fromEntries(REVIEW_QUEUE.map((item) => [item.id, "pending" as ReviewStatus]))
   );
+  const [contributorBadges, setContributorBadges] = useState<string[]>(["finance_business"]);
 
   const value = useMemo<DemoState>(
     () => ({
@@ -48,8 +60,10 @@ export function DemoStateProvider({ children }: { children: ReactNode }) {
         ]),
       reviewStatus,
       setReviewStatus: (id, status) => setReviewStatusMap((prev) => ({ ...prev, [id]: status })),
+      contributorBadges,
+      setContributorBadges,
     }),
-    [draftCampaigns, reviewStatus]
+    [draftCampaigns, reviewStatus, contributorBadges]
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
