@@ -1,131 +1,154 @@
-import { useState } from "react";
 import { Link } from "react-router-dom";
-import { AcpLogo } from "@/components/AcpLogo";
+import { DemoHeader } from "@/components/DemoHeader";
+import { DotGrid } from "@/components/DotGrid";
 import { GlitchText } from "@/components/GlitchText";
-import { DataNodes } from "@/components/DataNodes";
-import { DecodeText, type DecodePhrase } from "@/components/DecodeText";
-import { SONDELA, ARABIC_HERO, TOTAL_SUPPORTED_LANGUAGES } from "@/data/demo";
+import { SignalRing } from "@/components/SignalRing";
+import { CountUp } from "@/components/CountUp";
+import { CULTURAL_LAYERS } from "@/data/demo";
 
-const HERO_PHRASES: DecodePhrase[] = [
-  {
-    eyebrow: "RITUAL · 8.6",
-    text: SONDELA.evidence.ritual[0].kind === "quote" ? SONDELA.evidence.ritual[0].quote : "",
-    meta: `${SONDELA.evidence.ritual[0].city} · Verified`,
-  },
-  {
-    eyebrow: "LANGUAGE · 7.4",
-    text: SONDELA.evidence.language[0].kind === "quote" ? SONDELA.evidence.language[0].quote : "",
-    meta: `${SONDELA.evidence.language[0].city} · Verified`,
-  },
-  {
-    eyebrow: "TASTE · 7.6",
-    text: SONDELA.evidence.taste[0].kind === "quote" ? SONDELA.evidence.taste[0].quote : "",
-    meta: `${SONDELA.evidence.taste[0].city} · Verified`,
-  },
-  {
-    eyebrow: "SOUL GAP",
-    text: SONDELA.soulGap!.evidence[0].kind === "quote" ? SONDELA.soulGap!.evidence[0].quote : "",
-    meta: `${SONDELA.soulGap!.evidence[0].city} · Verified`,
-  },
-];
-
+/**
+ * REFERENCE CORRECTION: this screen was previously built against Auth.tsx
+ * / BrandsSplash.tsx (the "/for-agencies" fork splash) -- both real, but
+ * neither is the real homepage. Confirmed by reading the real
+ * pages/Index.tsx, which renders (in order) Navbar → Hero →
+ * WaveformRibbon → Features → CEISection → CDISection → CulturalLayers →
+ * LiveNetwork → Testimonials → Participate → Pricing → CTA → Footer, and
+ * its Hero.tsx specifically: DotGrid background (not DataNodes -- that's
+ * BrandsSplash/ContributorSplash-only), the six-spoke SignalRing hero
+ * visual (not DecodeText's character-scramble -- also fork-splash/Auth-
+ * only), Pulse orange as the accent (not Visual blue -- Pulse is the
+ * real neutral brand/primary-CTA color; Visual blue is specifically the
+ * agency-fork accent, confirmed in both Hero.tsx's own header comment and
+ * tokens.css), and real copy: tagline "Positioning vs. Reality"
+ * (hero.tagline), headline "Africa's cultures, / read like signals."
+ * (hero.headline1/2, GlitchText on "signals." only), subheadline "Scored
+ * by contributors on the ground, with every score traceable to what
+ * someone actually said." (hero.subheadline) -- all copied verbatim from
+ * the real app's i18n/translations.ts, English locale.
+ *
+ * This demo's own routing (CTAs → /onboarding/:role, not /for-agencies or
+ * /for-contributors -- those fork-splash pages don't exist in this demo)
+ * and button copy stay this project's own, since nothing in the brief
+ * asked for a literal route/label match, only the real hero identity.
+ *
+ * Part D item 9's Cultural Layers content sits below the hero -- also
+ * copied verbatim from the real landing/CulturalLayers.tsx + its i18n
+ * strings, the most logical home for it per the brief's own suggestion.
+ */
 export function Splash() {
-  // Part D, item 12 -- the platform's real full right-to-left support,
-  // shown working rather than just claimed. Scoped to this hero's own
-  // headline/subtitle/CTA copy, real Arabic translations (ARABIC_HERO),
-  // not machine-flipped English. The DecodeText evidence panel below
-  // stays dir="ltr" even while the rest of the page is RTL -- those are
-  // real verbatim quotes (isiZulu/English), not translated content, and
-  // flipping their direction would misrepresent them as Arabic source
-  // material they aren't.
-  const [rtl, setRtl] = useState(false);
-
   return (
-    <div className="relative flex min-h-screen flex-col bg-ink" dir={rtl ? "rtl" : "ltr"}>
-      {/* Simple logo-only header, matching Onboarding's own header exactly
-          -- consistent branding chrome across the pre-shell screens
-          (Splash, Onboarding, Operations Hub all share this now), and the
-          one place on Splash a language toggle belongs. */}
-      <header className="relative z-10 border-b border-line px-6 py-4">
-        <div className="mx-auto flex max-w-5xl items-center justify-between">
-          <AcpLogo markClassName="h-6 w-6" textClassName="text-xs" />
-          <button
-            onClick={() => setRtl((v) => !v)}
-            className="text-[13px] text-muted hover:text-paper"
-            dir="ltr"
-          >
-            {rtl ? ARABIC_HERO.toggleBack : "عربي"}
-          </button>
-        </div>
-      </header>
+    <div className="relative flex min-h-screen flex-col bg-ink">
+      <DemoHeader />
 
-      <div className="relative flex flex-1 flex-col items-center justify-center overflow-hidden px-6 py-16">
-        <DataNodes color="var(--visual)" opacity={70} />
+      <div className="relative flex flex-1 flex-col items-center overflow-hidden px-6 py-16">
+        <DotGrid />
         <div
-          className="pointer-events-none absolute inset-0"
-          style={{ background: "radial-gradient(circle at 50% 40%, transparent 0%, var(--ink) 72%)" }}
+          className="pointer-events-none absolute -top-[120px] end-[6%] z-0 h-[420px] w-[420px] animate-ds-drift-1 rounded-full blur-[90px]"
+          style={{ background: "radial-gradient(circle, rgba(255,90,41,0.22), transparent 70%)" }}
+          aria-hidden="true"
+        />
+        <div
+          className="pointer-events-none absolute -bottom-[100px] start-[2%] z-0 h-[340px] w-[340px] animate-ds-drift-2 rounded-full blur-[90px]"
+          style={{ background: "radial-gradient(circle, rgba(155,107,255,0.16), transparent 70%)" }}
+          aria-hidden="true"
         />
 
-        <div className="relative z-10 flex flex-col items-center text-center">
-          {rtl && (
-            <div className="mb-6 label-caps !text-[10px]" style={{ color: "var(--visual)" }}>
-              {ARABIC_HERO.eyebrow}
+        <div className="relative z-[1] mx-auto grid w-full max-w-5xl grid-cols-1 items-center gap-14 py-8 md:grid-cols-[1.05fr_0.95fr]">
+          <div>
+            <div className="mb-[22px] flex items-center gap-[10px]">
+              <div className="h-0.5 w-[34px] bg-pulse" />
+              <span className="font-mono text-[11.5px] font-semibold uppercase tracking-[0.24em] text-pulse">
+                Positioning vs. Reality
+              </span>
             </div>
-          )}
 
-          {rtl ? (
-            <h1 className="max-w-2xl font-display text-[clamp(2.2rem,5.2vw,3.6rem)] font-extrabold leading-[1.05] tracking-tight text-paper">
-              {ARABIC_HERO.headlineLine1}
-              <br />
-              <GlitchText className="text-visual">{ARABIC_HERO.headlineLine2}</GlitchText>
+            <h1 className="mb-6 font-display text-[clamp(2.4rem,5vw,4rem)] font-bold leading-[1.05] tracking-tight text-paper">
+              <span className="block">Africa&rsquo;s cultures,</span>
+              <span className="block">
+                read like <GlitchText className="text-pulse">signals.</GlitchText>
+              </span>
             </h1>
-          ) : (
-            <h1 className="max-w-2xl font-display text-[clamp(2.2rem,5.2vw,3.6rem)] font-extrabold leading-[1.05] tracking-tight text-paper">
-              Africa&rsquo;s cultures,
-              <br />
-              read like <GlitchText className="text-visual">signals.</GlitchText>
-            </h1>
-          )}
 
-          <p className="mt-5 max-w-md text-[15px] leading-relaxed text-muted">
-            {rtl
-              ? ARABIC_HERO.subtitle
-              : "Cultural Engagement Index scoring, traced back to what real people actually said — not a survey panel, not a guess."}
-          </p>
+            <p className="mb-9 max-w-[440px] text-[15px] leading-relaxed text-muted">
+              Scored by contributors on the ground, with every score traceable to what someone
+              actually said.
+            </p>
 
-          <div className="mt-11 flex flex-col gap-3.5 sm:flex-row">
-            <Link
-              to="/onboarding/agency"
-              className="inline-flex items-center justify-center gap-2 rounded-sm bg-visual px-7 py-3.5 font-display text-[13px] font-semibold uppercase tracking-[0.06em] text-ink transition-transform hover:scale-[1.02] active:scale-[0.99]"
-            >
-              {rtl ? ARABIC_HERO.ctaAgency : "Enter as a Brand / Agency"}
-            </Link>
-            <Link
-              to="/onboarding/contributor"
-              className="inline-flex items-center justify-center gap-2 rounded-sm border border-sound/50 bg-sound/10 px-7 py-3.5 font-display text-[13px] font-semibold uppercase tracking-[0.06em] text-sound transition-transform hover:scale-[1.02] active:scale-[0.99]"
-            >
-              {rtl ? ARABIC_HERO.ctaContributor : "Enter as a Contributor"}
-            </Link>
+            <div className="mb-9 flex flex-col gap-3.5 sm:flex-row sm:flex-wrap">
+              <Link
+                to="/onboarding/agency"
+                className="inline-flex items-center justify-center gap-2 rounded-sm border bg-ink px-7 py-3.5 font-display text-[13px] font-semibold uppercase tracking-[0.06em] text-visual transition-colors hover:bg-visual hover:text-ink"
+                style={{ borderColor: "var(--visual)" }}
+              >
+                Enter as a Brand / Agency
+              </Link>
+              <Link
+                to="/onboarding/contributor"
+                className="inline-flex items-center justify-center gap-2 rounded-sm border bg-ink px-7 py-3.5 font-display text-[13px] font-semibold uppercase tracking-[0.06em] text-sound transition-colors hover:bg-sound hover:text-ink"
+                style={{ borderColor: "var(--sound)" }}
+              >
+                Enter as a Contributor
+              </Link>
+            </div>
+
+            <div className="flex flex-wrap gap-8 border-t border-line pt-7">
+              <div>
+                <CountUp target={6} className="block font-mono text-[26px] font-semibold text-paper" />
+                <div className="mt-1 font-mono text-[10.5px] uppercase tracking-[0.14em] text-muted">CEI Dimensions</div>
+              </div>
+            </div>
           </div>
 
-          <div dir="ltr">
-            <DecodeText phrases={HERO_PHRASES} accent="var(--pulse)" className="mt-14 w-full max-w-xl text-left" />
+          <div>
+            <div className="relative mx-auto aspect-square w-full max-w-[420px]">
+              <SignalRing />
+              <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
+                <div className="flex items-center gap-1.5 font-mono text-[13px] uppercase tracking-[0.18em] text-muted">
+                  <i className="h-1.5 w-1.5 rounded-full bg-sound" />
+                  Sample Signal
+                </div>
+                <div className="my-1 font-display text-[52px] font-bold text-paper">88</div>
+                <div className="font-mono text-[13px] uppercase tracking-[0.18em] text-muted">Cultural Engagement Index</div>
+              </div>
+            </div>
+            <div className="mt-3 text-center font-mono text-[11px] uppercase tracking-[0.1em] text-muted">
+              Illustrative sample, not measured results
+            </div>
           </div>
-
-          <Link to="/operations" className="mt-8 text-[13px] text-muted hover:text-paper hover:underline">
-            {rtl ? "شاهد كيف يتم جمع البيانات والتحقق منها ←" : "See how the data gets collected & verified →"}
-          </Link>
-
-          <p className="mt-4 label-caps !text-[10px]">
-            {rtl ? "نموذج تجريبي · لا يتطلب تسجيل دخول" : "Pitch prototype · No login required"}
-          </p>
-
-          <p className="mt-2 text-[11px] text-muted">
-            {rtl
-              ? `أنت تشاهد الآن باللغة العربية — واحدة من ${TOTAL_SUPPORTED_LANGUAGES} لغة مدعومة، بدعم كامل من اليمين إلى اليسار.`
-              : `${TOTAL_SUPPORTED_LANGUAGES} languages supported, including full Arabic right-to-left — tap "عربي" above to see it live.`}
-          </p>
         </div>
+      </div>
+
+      {/* Part D item 9 -- real content, verbatim from the real app's own
+          landing/CulturalLayers.tsx + i18n strings. */}
+      <div className="relative border-t border-line bg-panel/40 px-6 py-16">
+        <div className="mx-auto max-w-5xl">
+          <div className="mb-4 flex items-center gap-3">
+            <div className="h-px w-12 bg-pulse" />
+            <span className="font-mono text-xs font-semibold uppercase tracking-[0.3em] text-pulse">Cultural Intelligence</span>
+          </div>
+          <h2 className="mb-2 font-display text-2xl font-bold leading-tight text-paper sm:text-3xl">Five Cultural Layers</h2>
+          <p className="mb-10 max-w-lg text-[15px] text-muted">Complete intelligence through five interconnected lenses.</p>
+
+          <div className="grid grid-cols-1 gap-px overflow-hidden rounded-lg bg-line sm:grid-cols-2 lg:grid-cols-5">
+            {CULTURAL_LAYERS.map((layer) => (
+              <div key={layer.key} className="flex h-full flex-col bg-ink p-[26px_22px] transition-colors duration-300 hover:bg-panel">
+                <div className="mb-5 h-[3px] w-[34px] rounded-sm" style={{ backgroundColor: layer.color }} />
+                <h3 className="mb-2 font-display text-base font-bold text-paper">{layer.label}</h3>
+                <p className="mb-5 min-h-[48px] flex-1 text-[12.5px] leading-relaxed text-muted">{layer.description}</p>
+                <span className="font-mono text-[11px] font-semibold" style={{ color: layer.color }}>
+                  {layer.example}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="flex flex-col items-center gap-3 px-6 py-10 text-center">
+        <Link to="/operations" className="text-[13px] text-muted hover:text-paper hover:underline">
+          See how the data gets collected & verified →
+        </Link>
+        <p className="label-caps !text-[10px]">Pitch prototype · No login required</p>
       </div>
     </div>
   );

@@ -3,6 +3,8 @@ import { Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard, FileText, Users, Shield, MapPin, Menu, X, LogOut, ShieldCheck,
 } from "lucide-react";
+import { DemoHeader } from "@/components/DemoHeader";
+import { NotificationBell } from "@/components/NotificationBell";
 
 /**
  * Ported structural pattern from the real app's
@@ -102,7 +104,7 @@ const NAV: Record<ShellRole, { label: string; icon: typeof LayoutDashboard; path
   ],
 };
 
-export function DashboardShell({ role, children }: { role: ShellRole; children: ReactNode }) {
+export function DashboardShell({ role, backTo, children }: { role: ShellRole; backTo?: string; children: ReactNode }) {
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const accent = ROLE_ACCENT[role];
@@ -143,22 +145,32 @@ export function DashboardShell({ role, children }: { role: ShellRole; children: 
   );
 
   const IdentityFooter = () => (
-    <div className="flex items-center gap-2.5 px-2 py-2">
-      <span
-        className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full font-display text-xs font-bold text-ink"
-        style={{ background: `linear-gradient(135deg, ${avatarFrom}, ${avatarTo})` }}
-      >
-        {identity.initial}
-      </span>
-      <div className="min-w-0">
-        <div className="truncate text-xs text-paper">{identity.name}</div>
-        <div className="mt-0.5 text-[10px] uppercase tracking-[0.14em] text-muted">{identity.label}</div>
+    <div className="flex items-center justify-between gap-2.5 px-2 py-2">
+      <div className="flex min-w-0 items-center gap-2.5">
+        <span
+          className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full font-display text-xs font-bold text-ink"
+          style={{ background: `linear-gradient(135deg, ${avatarFrom}, ${avatarTo})` }}
+        >
+          {identity.initial}
+        </span>
+        <div className="min-w-0">
+          <div className="truncate text-xs text-paper">{identity.name}</div>
+          <div className="mt-0.5 text-[10px] uppercase tracking-[0.14em] text-muted">{identity.label}</div>
+        </div>
       </div>
+      {/* Part C item 7 -- real placement match: the real app's own
+          NotificationBell sits exactly here, "sidebar-footer" placement,
+          next to the identity row. */}
+      <NotificationBell placement="sidebar-footer" />
     </div>
   );
 
   return (
     <div className="relative flex min-h-screen flex-col bg-ink text-paper">
+      {/* Item 5 -- the same consistent logo+back header now sits above
+          every dashboard/operations screen, matching the real app's own
+          MinimalHeader-above-DashboardLayout structure exactly. */}
+      <DemoHeader backTo={backTo} />
       <div className="relative flex flex-1">
         {/* Desktop sidebar -- same w-60/border-e/bg-panel proportions as the
             real app's own <aside>. */}
@@ -190,12 +202,17 @@ export function DashboardShell({ role, children }: { role: ShellRole; children: 
               </button>
               <span className="font-display text-[13px] font-bold tracking-wide text-paper">{ROLE_LOGO_LABEL[role]}</span>
             </div>
+            <NotificationBell placement="header" />
           </header>
 
           {mobileOpen && (
             <>
               <div className="fixed inset-0 z-40 bg-ink/80 backdrop-blur-sm md:hidden" onClick={() => setMobileOpen(false)} />
-              <div className="fixed bottom-0 start-0 top-14 z-50 flex w-64 flex-col border-e border-line bg-panel md:hidden">
+              {/* top-[124px] = DemoHeader's own h-[68px] + this mobile
+                  header's h-14 (56px), now stacked above it -- matches the
+                  real app's own identical fix in DashboardLayout.tsx once
+                  it grew a MinimalHeader above its mobile header too. */}
+              <div className="fixed bottom-0 start-0 top-[124px] z-50 flex w-64 flex-col border-e border-line bg-panel md:hidden">
                 <NavList onNavigate={() => setMobileOpen(false)} />
                 <div className="border-t border-line px-3 py-4">
                   <IdentityFooter />

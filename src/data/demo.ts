@@ -33,6 +33,17 @@ export const CEI_COLOR: Record<CeiKey, string> = {
 
 export const SOULGAP_COLOR = "#9B6BFF";
 
+// Real definitions, verbatim from the real app's i18n/translations.ts
+// (features.cei.desc / features.cdi.desc, English) -- an investor unfamiliar
+// with the platform previously saw CEI/CDI/Decay numbers with nothing
+// explaining what they measure. Surfaced via InfoHint wherever a score is
+// shown (CampaignDetail's Overview cards + CEI/CDI tabs, Agency Command's
+// table headers), not invented copy.
+export const CEI_DEFINITION =
+  "Cultural Engagement Index — measures cultural velocity and market readiness on a scale of 0-100. Higher scores indicate content or trends that are primed for cross-cultural adoption and global export potential.";
+export const CDI_DEFINITION =
+  "Cultural Depth Index — an authenticity metric that measures cultural alignment and flags backlash risk on a scale of 0-10. Higher scores indicate genuine cultural connection; lower scores suggest potential inauthenticity.";
+
 // ---------------------------------------------------------------------------
 // Band logic -- pure functions, not hardcoded per-campaign, so the same
 // rules apply to Sondela Cover and to whatever a user creates live in the
@@ -421,6 +432,35 @@ export function categoryLabel(value?: string): string | null {
 }
 
 // ---------------------------------------------------------------------------
+// Cultural Layers -- the real lenses the platform tracks (real app's own
+// landing/CulturalLayers.tsx), not to be confused with the six CEI
+// dimensions above: this is five, Pulse deliberately excluded there too
+// (it's the real-time-engagement axis, not a "layer" of cultural content).
+// Copy, colors, and the named example signals (Amapiano, Kitenge
+// Futurism, Pidgin-English, Jollof) are verbatim from the real app's own
+// i18n/translations.ts (layer.*/layer.*.desc, English) and CulturalLayers.tsx's
+// own LAYERS array -- including its real, deliberate color choices (the
+// Visual layer card uses Soul Gap's purple, not Visual's own blue; that's
+// carried over unchanged from the real component, not a typo here).
+// ---------------------------------------------------------------------------
+
+export interface CulturalLayer {
+  key: string;
+  label: string;
+  description: string;
+  example: string;
+  color: string;
+}
+
+export const CULTURAL_LAYERS: CulturalLayer[] = [
+  { key: "sound", label: "Sound", description: "Streaming, radio, playlists → Artist & genre predictions", example: "Amapiano · Streaming & radio trend detection", color: "var(--sound)" },
+  { key: "visual", label: "Visual", description: "Fashion, design, NFTs → Aesthetic trends", example: "Kitenge Futurism", color: "var(--soulgap)" },
+  { key: "language", label: "Language", description: "Slang, creoles, memes → Vernacular shifts", example: "Pidgin-English · Slang & code-switching shifts", color: "var(--language)" },
+  { key: "ritual", label: "Ritual", description: "Events, challenges, traditions → Cultural moments", example: "Event & challenge tracking", color: "var(--visual)" },
+  { key: "taste", label: "Taste", description: "Cuisine, street food, spice culture → Flavor & culinary export", example: "Jollof · Food & lifestyle signals", color: "var(--taste)" },
+];
+
+// ---------------------------------------------------------------------------
 // Task types -- shared between the Campaign Builder (step 2, choosing
 // which collection tasks a campaign runs) and Contributor Capture (the
 // task a contributor actually completes).
@@ -487,25 +527,13 @@ export const CITIES_BY_COUNTRY: Record<Country, string[]> = {
 // omitted -- the point is showing the gate exists, not hiding it.
 export const COMING_SOON_COUNTRIES = ["Tanzania", "Uganda"];
 
-// A representative subset, not the full real set -- see Splash's Arabic/
-// RTL toggle for the one language shown working end-to-end (real full
-// right-to-left support), and the caption next to this list wherever it
-// renders for the "16 languages" figure this subset stands in for.
+// A representative subset, not the full real set -- this demo is
+// English-only (see README); the picker itself is real and working.
+// Arabic/RTL was represented here in an earlier pass (a toggle + real
+// Arabic hero translations) and was removed by explicit request -- not
+// wanted in this demo. Nothing else stood on top of that toggle, so
+// removing it was a clean deletion, not a downgrade of anything else.
 export const ONBOARDING_LANGUAGES = ["English", "isiZulu", "Yoruba", "Swahili", "Hausa", "Afrikaans"];
-export const TOTAL_SUPPORTED_LANGUAGES = 16;
-
-// Splash's Arabic/RTL toggle -- real translations of the hero's own
-// copy, not placeholder text, so the moment genuinely demonstrates
-// content in Arabic rather than just flipping direction on English words.
-export const ARABIC_HERO = {
-  eyebrow: "عرض تجريبي — من اليمين إلى اليسار", // "Demo — right to left", an honest UI label, not invented marketing copy
-  headlineLine1: "ثقافات أفريقيا،",
-  headlineLine2: "تُقرأ مثل الإشارات.",
-  subtitle: "تقييم مؤشر التفاعل الثقافي، متتبَّع إلى ما قاله أشخاص حقيقيون فعلاً — ليس استطلاعاً، وليس تخميناً.",
-  ctaAgency: "الدخول كعلامة تجارية / وكالة",
-  ctaContributor: "الدخول كمساهم",
-  toggleBack: "English",
-};
 
 // ---------------------------------------------------------------------------
 // The Operations Layer -- the platform's other half, beyond the two

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useParams, useNavigate, Navigate, Link } from "react-router-dom";
+import { useParams, Navigate, Link } from "react-router-dom";
 import { Download, BellRing } from "lucide-react";
 import { DashboardShell } from "@/components/DashboardShell";
 import { Button } from "@/components/Button";
@@ -9,6 +9,7 @@ import { GaugeArc } from "@/components/GaugeArc";
 import { ScorePill } from "@/components/ScorePill";
 import { VerifiedBadge } from "@/components/Badge";
 import { WaveformStatic } from "@/components/WaveformStatic";
+import { InfoHint } from "@/components/InfoHint";
 import { cn } from "@/lib/cn";
 import {
   SONDELA,
@@ -16,6 +17,8 @@ import {
   CEI_LABEL,
   CEI_COLOR,
   SOULGAP_COLOR,
+  CEI_DEFINITION,
+  CDI_DEFINITION,
   cdiBand,
   decayBand,
   quadrantRead,
@@ -89,7 +92,6 @@ const TAB_LABEL: Record<Tab, string> = {
  */
 export function CampaignDetail() {
   const { id } = useParams();
-  const navigate = useNavigate();
   const [tab, setTab] = useState<Tab>("overview");
   const [activeDimension, setActiveDimension] = useState<SwitcherKey>("ritual");
   const [urgent, setUrgent] = useState(false);
@@ -129,12 +131,8 @@ export function CampaignDetail() {
   };
 
   return (
-    <DashboardShell role="agency">
+    <DashboardShell role="agency" backTo="/agency">
       <div className="max-w-6xl px-6 pb-[60px] pt-[30px] md:px-10">
-        <button onClick={() => navigate("/agency")} className="mb-6 flex items-center gap-2 text-sm text-muted hover:text-paper">
-          ← Back to Campaigns
-        </button>
-
         <div className="mb-8 flex flex-wrap items-start justify-between gap-4">
           <div>
             <div className="mb-2 flex flex-wrap items-center gap-2">
@@ -219,21 +217,40 @@ export function CampaignDetail() {
           <>
             <h3 className="mb-3.5 font-display text-sm font-bold text-paper">Scores at a Glance</h3>
             <div className="grid gap-4 sm:grid-cols-3">
-              <button onClick={() => setTab("cei")} className="rounded border border-line p-5 text-start transition-colors hover:border-[color-mix(in_srgb,var(--visual)_40%,transparent)] hover:bg-panel">
-                <div className="mb-1 font-mono text-[11px] uppercase tracking-[0.15em] text-muted">CEI Overall</div>
+              {/* role="button" divs, not <button>, on these two -- each now
+                  contains InfoHint's own real (nested) button, and a
+                  <button> can't validly contain another <button>. */}
+              <div
+                role="button"
+                tabIndex={0}
+                onClick={() => setTab("cei")}
+                onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && setTab("cei")}
+                className="cursor-pointer rounded border border-line p-5 text-start transition-colors hover:border-[color-mix(in_srgb,var(--visual)_40%,transparent)] hover:bg-panel"
+              >
+                <div className="mb-1 flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-[0.15em] text-muted">
+                  CEI Overall <InfoHint text={CEI_DEFINITION} />
+                </div>
                 <div className="font-mono text-2xl font-bold text-paper">{ceiOverall.toFixed(1)}</div>
                 <p className="mt-1 text-xs text-muted">Six real dimensions — see CEI & Taste</p>
-              </button>
+              </div>
               <button onClick={() => setTab("soulgap")} className="rounded border border-line p-5 text-start transition-colors hover:border-[color-mix(in_srgb,var(--soulgap)_40%,transparent)] hover:bg-panel">
                 <div className="mb-1 font-mono text-[11px] uppercase tracking-[0.15em] text-muted">Soul Gap</div>
                 <div className="font-mono text-2xl font-bold text-paper">{soulGap.magnitude}</div>
                 <p className="mt-1 text-xs text-muted">Distance between claimed and felt</p>
               </button>
-              <button onClick={() => setTab("cdi")} className="rounded border border-line p-5 text-start transition-colors hover:border-[color-mix(in_srgb,var(--pulse)_40%,transparent)] hover:bg-panel">
-                <div className="mb-1 font-mono text-[11px] uppercase tracking-[0.15em] text-muted">CDI</div>
+              <div
+                role="button"
+                tabIndex={0}
+                onClick={() => setTab("cdi")}
+                onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && setTab("cdi")}
+                className="cursor-pointer rounded border border-line p-5 text-start transition-colors hover:border-[color-mix(in_srgb,var(--pulse)_40%,transparent)] hover:bg-panel"
+              >
+                <div className="mb-1 flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-[0.15em] text-muted">
+                  CDI <InfoHint text={CDI_DEFINITION} />
+                </div>
                 <div className="font-mono text-2xl font-bold text-paper">{cdi.toFixed(1)}/10</div>
                 <p className="mt-1 text-xs text-muted">{quadrant.label}</p>
-              </button>
+              </div>
             </div>
 
             {/* Part A, item 3 -- one continuous journey, not disconnected
@@ -260,7 +277,8 @@ export function CampaignDetail() {
         {tab === "cei" && (
           <div className="rounded border border-line p-6 sm:p-8">
             <h3 className="mb-1 font-display text-sm font-bold text-paper">CEI Snapshot</h3>
-            <p className="mb-4 text-xs text-muted">Overall: <span className="text-lg font-bold text-paper">{ceiOverall.toFixed(1)}</span></p>
+            <p className="mb-2 text-xs text-muted">Overall: <span className="text-lg font-bold text-paper">{ceiOverall.toFixed(1)}</span></p>
+            <p className="mb-4 max-w-lg text-[12.5px] leading-relaxed text-muted">{CEI_DEFINITION}</p>
             <div className="flex flex-col items-center">
               <SignalRing dimensions={ringData} animated={false} onSelect={(key) => goToEvidence(key as SwitcherKey)} />
               <p className="mt-4 text-center text-[12px] text-muted">Tap any dimension to see the evidence behind it →</p>
@@ -297,6 +315,7 @@ export function CampaignDetail() {
           <div className="space-y-6">
             <div className="rounded border border-line p-6">
               <h3 className="mb-1 font-display text-sm font-bold text-paper">CDI Snapshot</h3>
+              <p className="max-w-lg text-[12.5px] leading-relaxed text-muted">{CDI_DEFINITION}</p>
               <div className="mb-3 mt-3 flex items-center gap-2.5">
                 <span className="font-mono text-2xl font-bold text-paper">{cdi.toFixed(1)}<span className="text-sm text-muted">/10</span></span>
                 <span

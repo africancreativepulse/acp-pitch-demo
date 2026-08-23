@@ -5,8 +5,9 @@ import { DashboardShell } from "@/components/DashboardShell";
 import { PhoneFrame } from "@/components/PhoneFrame";
 import { WaveformStatic } from "@/components/WaveformStatic";
 import { AcpMark } from "@/components/AcpMark";
+import { ExpertBadge } from "@/components/ExpertBadge";
 import { cn } from "@/lib/cn";
-import { CONTRIBUTOR_TASK, REWARD_OPTIONS, SONDELA, categoryLabel } from "@/data/demo";
+import { CONTRIBUTOR_TASK, REWARD_OPTIONS, SONDELA } from "@/data/demo";
 import { useDemoState } from "@/state/DemoState";
 
 type TaskState = "pending" | "active" | "done";
@@ -36,7 +37,7 @@ export function ContributorCapture() {
   // Part C, item 11 payoff -- Onboarding's Expertise step wasn't just
   // decorative; this is the real match it feeds, made visible: Sondela
   // Cover's own category only reaches contributors who picked it.
-  const matchedBadge = SONDELA.category && contributorBadges.includes(SONDELA.category) ? categoryLabel(SONDELA.category) : null;
+  const matchedCategory = SONDELA.category && contributorBadges.includes(SONDELA.category) ? SONDELA.category : null;
   const [activeTask, setActiveTask] = useState<TaskKey | null>(null);
   const [voiceState, setVoiceState] = useState<TaskState>("pending");
   const [photoState, setPhotoState] = useState<TaskState>("pending");
@@ -86,7 +87,7 @@ export function ContributorCapture() {
   const ss = String(seconds % 60).padStart(2, "0");
 
   return (
-    <DashboardShell role="contributor">
+    <DashboardShell role="contributor" backTo="/">
       <div className="max-w-3xl px-4 pb-[60px] pt-[30px] sm:px-6 md:px-10">
         <div className="mb-2.5 flex items-center gap-2.5">
           <div className="h-0.5 w-[30px]" style={{ backgroundColor: ACCENT }} />
@@ -96,11 +97,18 @@ export function ContributorCapture() {
         <p className="mb-2 text-sm text-muted sm:text-base">
           Complete both tasks below to earn points. Your device stays offline until you submit.
         </p>
-        {matchedBadge && (
-          <p className="mb-8 text-[13px] sm:mb-10" style={{ color: ACCENT }}>
-            Matched to you via your {matchedBadge} badge, picked at Onboarding — this campaign only
-            reaches contributors genuinely suited to it, not everyone at once.
-          </p>
+        {/* Part C item 8 -- badges existed before this (Onboarding's
+            Expertise step, this exact match) but paid off as one small
+            muted text line, easy to scroll past. Same fact, given real
+            visual weight: a proper badge, not a sentence to read past. */}
+        {matchedCategory && (
+          <div className="mb-8 flex items-center gap-4 rounded-lg border p-4 sm:mb-10" style={{ borderColor: "color-mix(in srgb, var(--sound) 35%, transparent)", backgroundColor: "color-mix(in srgb, var(--sound) 6%, transparent)" }}>
+            <ExpertBadge category={matchedCategory} color={ACCENT} />
+            <p className="text-[12.5px] leading-relaxed text-muted">
+              Matched to you via this badge, picked at Onboarding — this campaign only reaches
+              contributors genuinely suited to it, not everyone at once.
+            </p>
+          </div>
         )}
 
         <div className="mb-6">

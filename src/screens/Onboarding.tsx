@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { useParams, useNavigate, Navigate, Link } from "react-router-dom";
+import { useParams, useNavigate, Navigate } from "react-router-dom";
 import { CheckCircle2, Upload } from "lucide-react";
 import { Button } from "@/components/Button";
-import { AcpLogo } from "@/components/AcpLogo";
+import { DemoHeader } from "@/components/DemoHeader";
+import { ExpertBadge } from "@/components/ExpertBadge";
 import { cn } from "@/lib/cn";
 import {
   COUNTRIES, COMING_SOON_COUNTRIES, CITIES_BY_COUNTRY, ONBOARDING_LANGUAGES,
@@ -62,12 +63,7 @@ export function Onboarding() {
 
   return (
     <div className="flex min-h-screen flex-col bg-ink">
-      <header className="border-b border-line px-6 py-4">
-        <div className="mx-auto flex max-w-lg items-center justify-between">
-          <AcpLogo markClassName="h-6 w-6" textClassName="text-xs" />
-          <Link to="/" className="text-[13px] text-muted hover:text-paper">← Splash</Link>
-        </div>
-      </header>
+      <DemoHeader backTo="/" />
 
       <div className="flex flex-1 items-center justify-center px-4 py-10">
         <div className="w-full max-w-lg">
@@ -213,7 +209,7 @@ export function Onboarding() {
                 to them, not everyone at once.
               </p>
 
-              <div className="mb-8 flex flex-wrap gap-2">
+              <div className="mb-6 flex flex-wrap gap-2">
                 {CAMPAIGN_CATEGORIES.map((c) => {
                   const active = badges.includes(c.value);
                   return (
@@ -232,6 +228,18 @@ export function Onboarding() {
                   );
                 })}
               </div>
+
+              {/* Part C item 8 -- the picker above selects; this is the
+                  real payoff shown immediately, in the same badge visual
+                  ContributorCapture pays it off with a step later, not
+                  just a checkmark on a chip. */}
+              {badges.length > 0 && (
+                <div className="mb-8 flex flex-wrap gap-x-6 gap-y-3 rounded-lg border border-line p-4">
+                  {badges.map((b) => (
+                    <ExpertBadge key={b} category={b} color={accent} size="sm" />
+                  ))}
+                </div>
+              )}
 
               <div className="flex gap-3">
                 <Button variant="ghost" color={accent} onClick={() => setStep(2)} className="!rounded-none">← Back</Button>

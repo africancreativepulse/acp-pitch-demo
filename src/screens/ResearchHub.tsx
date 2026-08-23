@@ -51,7 +51,7 @@ export function ResearchHub() {
   const onAssignment = roster.filter((m) => m.status === "on_assignment").length;
 
   return (
-    <DashboardShell role="head_of_research">
+    <DashboardShell role="head_of_research" backTo="/operations">
       <div className="px-6 pb-[60px] pt-[30px] md:px-10">
         <div className="mb-7 flex items-center justify-between">
           <div>

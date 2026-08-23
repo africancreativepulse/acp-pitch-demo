@@ -93,12 +93,8 @@ export function CampaignBuilder() {
   };
 
   return (
-    <DashboardShell role={isAdmin ? "admin" : "agency"}>
+    <DashboardShell role={isAdmin ? "admin" : "agency"} backTo={isAdmin ? "/agency?admin=1" : "/agency"}>
       <div className="max-w-3xl px-6 py-10 md:p-10">
-        <button onClick={() => navigate(isAdmin ? "/agency?admin=1" : "/agency")} className="mb-6 text-[13px] text-muted hover:text-paper">
-          ← Back to Campaigns
-        </button>
-
         <div className="mb-6 flex items-center gap-3">
           <div className="h-px w-12" style={{ backgroundColor: ACCENT }} />
           <span className="font-mono text-xs font-medium uppercase tracking-[0.3em]" style={{ color: ACCENT }}>

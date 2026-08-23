@@ -67,10 +67,14 @@ export default {
         // (var names `ds-*`), copied verbatim from ../acp-handoff's
         // tailwind.config.ts -- only the subset actually used by the
         // components this pass ports in (SignalRing, DepthGauge,
-        // GlitchText, DataNodes). The rest of that file's ds-* set
-        // (ds-ping, ds-net-*, ds-pan-grid, ds-scan-down, ds-fade-*,
-        // ds-line-draw) belongs to landing-page/dashboard chrome not
-        // being ported here, so it's left out rather than copied unused.
+        // GlitchText, DotGrid). The rest of that file's ds-* set
+        // (ds-ping, ds-net-*, ds-scan-down, ds-fade-*, ds-line-draw)
+        // belongs to landing-page/dashboard chrome not being ported here,
+        // so it's left out rather than copied unused. DataNodes and its
+        // own animations were removed in the header/reference-correction
+        // pass -- Splash's real hero background is DotGrid, not DataNodes
+        // (that belongs to BrandsSplash/ContributorSplash, the wrong page
+        // this demo's Splash was originally built from).
         "ds-sweep-rotate": {
           from: { transform: "rotate(0deg)" },
           to: { transform: "rotate(360deg)" },
@@ -99,6 +103,16 @@ export default {
           "0%, 100%": { transform: "translate(0,0) scale(1)" },
           "50%": { transform: "translate(-24px,26px) scale(1.08)" },
         },
+        // DotGrid's slow pan -- real value, copied verbatim from
+        // ../acp-handoff's tailwind.config.ts (this is the one entry from
+        // that file's own "left out, not ported" list the header comment
+        // above used to name; now actually needed, since Splash's hero was
+        // rebuilt to reference the real Index.tsx/Hero.tsx, which uses
+        // DotGrid, not DataNodes).
+        "ds-pan-grid": {
+          from: { transform: "translate(0,0)" },
+          to: { transform: "translate(46px,46px)" },
+        },
       },
       animation: {
         "pulse-dot": "pulse-dot 1.6s ease-in-out infinite",
@@ -110,6 +124,8 @@ export default {
         "ds-breathe": "ds-breathe 3.2s ease-in-out infinite",
         "ds-glitch-flicker": "ds-glitch-flicker 5.5s infinite",
         "ds-drift-1": "ds-drift 13s ease-in-out infinite",
+        "ds-drift-2": "ds-drift 16s ease-in-out infinite -4s",
+        "ds-pan-grid": "ds-pan-grid 34s linear infinite",
       },
     },
   },

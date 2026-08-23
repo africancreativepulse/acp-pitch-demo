@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { AcpLogo } from "@/components/AcpLogo";
+import { DemoHeader } from "@/components/DemoHeader";
 
 // Entry point into the platform's other half -- the demo previously only
 // showed the two consumer-facing surfaces (Agency Command, Contributor
@@ -39,12 +39,7 @@ const CARDS = [
 export function OperationsHub() {
   return (
     <div className="min-h-screen bg-ink">
-      <header className="border-b border-line px-6 py-4">
-        <div className="mx-auto flex max-w-3xl items-center justify-between">
-          <AcpLogo markClassName="h-6 w-6" textClassName="text-xs" />
-          <Link to="/" className="text-[13px] text-muted hover:text-paper">← Splash</Link>
-        </div>
-      </header>
+      <DemoHeader backTo="/" />
 
       <main className="mx-auto max-w-3xl px-6 py-14">
         <div className="mb-2 label-caps">The Operations Layer</div>

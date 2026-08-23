@@ -5,8 +5,10 @@ import { Button } from "@/components/Button";
 import { Modal } from "@/components/Modal";
 import { ScorePill } from "@/components/ScorePill";
 import { StatGrid, StatCard } from "@/components/StatCard";
+import { InfoHint } from "@/components/InfoHint";
 import {
   SONDELA, KASI_BREW, THOLULWAZI_DATA, MZANSI_WELLNESS, cdiBand, decayBand, BAND_HEX, categoryLabel,
+  CEI_DEFINITION, CDI_DEFINITION,
   type CeiKey, type SecondaryCampaign,
 } from "@/data/demo";
 import { useDemoState } from "@/state/DemoState";
@@ -152,7 +154,7 @@ export function AgencyCommand() {
   const avgCdi = cdiValues.length > 0 ? (cdiValues.reduce((a, b) => a + b, 0) / cdiValues.length).toFixed(1) : "—";
 
   return (
-    <DashboardShell role={isAdmin ? "admin" : "agency"}>
+    <DashboardShell role={isAdmin ? "admin" : "agency"} backTo="/">
       <div className="max-w-6xl px-6 pb-[60px] pt-[30px] md:px-10">
         <div className="mb-7 flex items-center justify-between">
           <div>
@@ -197,8 +199,11 @@ export function AgencyCommand() {
         </div>
 
         <div className="overflow-x-auto rounded-lg border border-line">
-          <div className="grid min-w-[620px] grid-cols-[2fr_0.9fr_0.9fr_1fr_0.8fr] gap-2 bg-panel px-[18px] py-3 font-mono text-[10.5px] uppercase tracking-[0.1em] text-muted">
-            <span>Campaign</span><span>CEI Score</span><span>CDI Score</span><span>Reach</span><span>Status</span>
+          <div className="grid min-w-[620px] grid-cols-[2fr_0.9fr_0.9fr_1fr_0.8fr] items-center gap-2 bg-panel px-[18px] py-3 font-mono text-[10.5px] uppercase tracking-[0.1em] text-muted">
+            <span>Campaign</span>
+            <span className="flex items-center gap-1.5">CEI Score <InfoHint text={CEI_DEFINITION} /></span>
+            <span className="flex items-center gap-1.5">CDI Score <InfoHint text={CDI_DEFINITION} /></span>
+            <span>Reach</span><span>Status</span>
           </div>
           {filtered.length === 0 ? (
             <div className="p-10 text-center text-sm text-muted">No campaigns match this filter.</div>
