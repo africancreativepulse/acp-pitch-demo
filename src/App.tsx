@@ -4,8 +4,7 @@ import { Splash } from "@/screens/Splash";
 import { Onboarding } from "@/screens/Onboarding";
 import { AgencyCommand } from "@/screens/AgencyCommand";
 import { CampaignBuilder } from "@/screens/CampaignBuilder";
-import { CulturalRead } from "@/screens/CulturalRead";
-import { Evidence } from "@/screens/Evidence";
+import { CampaignDetail } from "@/screens/CampaignDetail";
 import { ContributorCapture } from "@/screens/ContributorCapture";
 import { OperationsHub } from "@/screens/OperationsHub";
 import { FieldCapture } from "@/screens/FieldCapture";
@@ -25,8 +24,12 @@ export default function App() {
           <Route path="/onboarding/:role" element={<Onboarding />} />
           <Route path="/agency" element={<AgencyCommand />} />
           <Route path="/agency/new" element={<CampaignBuilder />} />
-          <Route path="/agency/campaign/:id" element={<CulturalRead />} />
-          <Route path="/agency/campaign/:id/evidence/:dimension" element={<Evidence />} />
+          {/* Single route now, matching the real app's own
+              CampaignDetail.tsx -- tabs (Overview/CEI & Taste/Soul
+              Gap/CDI/Evidence) are local component state, not sub-routes.
+              The old /evidence/:dimension route is gone; SignalRing's tap
+              now sets that state directly instead of navigating. */}
+          <Route path="/agency/campaign/:id" element={<CampaignDetail />} />
           <Route path="/contribute" element={<ContributorCapture />} />
           <Route path="/operations" element={<OperationsHub />} />
           <Route path="/operations/field" element={<FieldCapture />} />

@@ -5,7 +5,7 @@ import { BAND_HEX, type Band } from "@/data/demo";
 // left-to-right, matching how score gauges read in most analytics UIs.
 //
 // Re-skin note: CDI moved to the real app's own DepthGauge.tsx (see
-// CulturalRead.tsx) since that's a direct, correct fit -- CDI is exactly
+// CampaignDetail.tsx) since that's a direct, correct fit -- CDI is exactly
 // what DepthGauge was built for. Decay Risk stays on this component
 // because DepthGauge can't safely stand in for it: DepthGauge hardcodes
 // CDI's specific band thresholds/colors internally (0-5 pulse/"Review

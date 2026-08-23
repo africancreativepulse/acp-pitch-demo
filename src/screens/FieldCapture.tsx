@@ -1,21 +1,25 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { AcpLogo } from "@/components/AcpLogo";
+import { DashboardShell } from "@/components/DashboardShell";
 import { Button } from "@/components/Button";
+import { StatGrid, StatCard } from "@/components/StatCard";
 import { FIELD_ROUTE, FIELD_WORKER } from "@/data/demo";
 
-const ACCENT = "var(--pulse)"; // matches the real app's field_agent role accent
+const ACCENT = "var(--pulse)";
 
 type SyncState = "idle" | "syncing" | "done";
 
-// The paper-based, offline half of "Digital + Field Hybrid" -- a field
-// worker in an area with no smartphone/data coverage, going door to door,
-// marking physical response forms as complete, then syncing the whole
-// batch once back in signal range. Deliberately NOT a PhoneFrame like
-// ContributorCapture: that visual specifically signals "this happens on a
-// phone," which is the one thing this screen exists to show isn't always
-// true. Tap-only throughout -- marking a stop captured and triggering
-// sync are both single taps, no typing anywhere.
+/**
+ * Ported structural pattern from the real app's fieldwork/AgentDashboard.tsx
+ * -- accent rule + eyebrow + "Welcome back" H1, a StatGrid summary, and an
+ * assignment-row list (rounded border + hover, Badge-style status), now
+ * wrapped in DashboardShell like every other real dashboard page. The
+ * actual offline/paper capture interaction below the assignment row has
+ * no real page to mirror -- a genuine field worker with no signal
+ * couldn't load this Supabase-backed real page at all, which is exactly
+ * the gap this screen exists to illustrate -- so that part stays this
+ * demo's own content, just housed in the same real structural language.
+ */
 export function FieldCapture() {
   const [captured, setCaptured] = useState<Set<string>>(new Set());
   const [sync, setSync] = useState<SyncState>("idle");
@@ -32,34 +36,53 @@ export function FieldCapture() {
 
   const startSync = () => {
     setSync("syncing");
-    // Illustrative delay only -- no network call, nothing to await.
     window.setTimeout(() => setSync("done"), 1600);
   };
 
   return (
-    <div className="min-h-screen bg-ink">
-      <header className="border-b border-line px-6 py-4">
-        <div className="mx-auto flex max-w-2xl items-center justify-between">
-          <AcpLogo markClassName="h-6 w-6" textClassName="text-xs" />
-          <Link to="/operations" className="text-[13px] text-muted hover:text-paper">← Operations</Link>
+    <DashboardShell role="field_agent">
+      <div className="px-6 pb-[60px] pt-[30px] md:px-10">
+        <div className="mb-7 flex items-center justify-between">
+          <div>
+            <div className="flex items-center gap-2.5">
+              <div className="h-0.5 w-[30px]" style={{ backgroundColor: ACCENT }} />
+              <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.2em]" style={{ color: ACCENT }}>
+                Field Agent Dashboard
+              </span>
+            </div>
+            <h1 className="mt-2.5 font-display text-[22px] font-bold text-paper">
+              Welcome back, {FIELD_WORKER.name.split(" ")[0]}
+            </h1>
+          </div>
+          <div className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide" style={{ borderColor: `${ACCENT}40`, backgroundColor: `${ACCENT}12`, color: ACCENT }}>
+            <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: ACCENT }} />
+            No signal
+          </div>
         </div>
-      </header>
 
-      <main className="mx-auto max-w-2xl px-6 py-12">
-        <div className="mb-2 label-caps" style={{ color: ACCENT }}>Field Worker Capture</div>
-        <h1 className="mb-1 font-display text-2xl font-bold text-paper">{FIELD_WORKER.name}</h1>
-        <p className="mb-6 text-[13.5px] text-muted">
-          {FIELD_WORKER.zone} · Collecting for {FIELD_WORKER.campaignClient}
-        </p>
+        <StatGrid className="mb-9 md:!grid-cols-3">
+          <StatCard label="Households on Route" value={total} />
+          <StatCard label="Captured Today" value={count} />
+          <StatCard label="Capture Method" value="Paper" />
+        </StatGrid>
 
-        <div className="mb-8 inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide" style={{ borderColor: `${ACCENT}40`, backgroundColor: `${ACCENT}12`, color: ACCENT }}>
-          <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: ACCENT }} />
-          No signal · paper capture only
+        <h2 className="mb-4 font-display text-base font-bold text-paper">My Assignment</h2>
+        <div className="mb-6 flex items-center justify-between rounded border border-line px-[18px] py-4">
+          <div>
+            <h3 className="text-sm font-semibold text-paper">{FIELD_WORKER.campaignClient}</h3>
+            <div className="mt-0.5 text-xs text-muted">{FIELD_WORKER.zone} · paper capture, no signal</div>
+          </div>
+          <span
+            className="rounded-full px-2.5 py-1 font-mono text-[10px] font-medium uppercase tracking-[0.06em]"
+            style={{ color: "var(--sound)", backgroundColor: "color-mix(in srgb, var(--sound) 14%, transparent)" }}
+          >
+            active
+          </span>
         </div>
 
         {sync !== "done" ? (
           <>
-            <div className="card-surface p-6">
+            <div className="rounded border border-line p-6">
               <div className="mb-4 flex items-center justify-between">
                 <div className="label-caps">Today's Route</div>
                 <div className="tabular label-caps !text-paper">{count} of {total} captured</div>
@@ -73,7 +96,7 @@ export function FieldCapture() {
                       key={stop.id}
                       type="button"
                       onClick={() => toggleCaptured(stop.id)}
-                      className="flex w-full items-center gap-3 rounded-lg border border-line bg-white/[0.02] px-4 py-3 text-left transition-colors hover:border-white/20"
+                      className="flex w-full items-center gap-3 rounded border border-line bg-white/[0.02] px-4 py-3 text-left transition-colors hover:border-white/20"
                     >
                       <PaperIcon done={done} accent={ACCENT} />
                       <span className="flex-1 text-sm font-medium text-paper">{stop.label}</span>
@@ -96,7 +119,7 @@ export function FieldCapture() {
             </div>
           </>
         ) : (
-          <div className="card-surface p-7 text-center" style={{ borderColor: `${ACCENT}40` }}>
+          <div className="rounded border border-line p-7 text-center" style={{ borderColor: `${ACCENT}40` }}>
             <div className="mb-2 font-display text-xl font-bold" style={{ color: ACCENT }}>
               Synced — {count} paper response{count === 1 ? "" : "s"} digitized
             </div>
@@ -115,8 +138,8 @@ export function FieldCapture() {
           Illustrative capture flow — no real GPS, households, or field roster behind this
           screen. It exists to show the collection method itself, not to simulate a real route.
         </p>
-      </main>
-    </div>
+      </div>
+    </DashboardShell>
   );
 }
 

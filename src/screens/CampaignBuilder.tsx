@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { TopBar } from "@/components/TopBar";
+import { DashboardShell } from "@/components/DashboardShell";
 import { Button } from "@/components/Button";
-import { ProgressSteps } from "@/components/ProgressSteps";
 import { cn } from "@/lib/cn";
 import { TASK_TYPES, type BuilderTask, type TaskTypeKey } from "@/data/demo";
 import { useDemoState } from "@/state/DemoState";
@@ -24,11 +23,6 @@ const CITY_OPTIONS = [
   "Katlehong (Ekurhuleni)",
 ];
 
-// Client name and objective were previously free-text fields -- both are
-// now tap-only preset pickers (click-through audit, see commit message).
-// Names deliberately don't overlap Sondela Cover/Kasi Brew/Tholulwazi
-// Data (the existing portfolio) so a demo run never looks like it
-// duplicated an existing campaign.
 const CLIENT_PRESETS = ["Amanzi Foods", "Jozi Fintech", "Bantu Beauty Co.", "Sunrise Telecom", "Harambee Retail"];
 
 const OBJECTIVE_PRESETS = [
@@ -52,15 +46,23 @@ function newTask(type: TaskTypeKey): BuilderTask {
   return { id: `task-${taskIdCounter}`, type, points: meta.defaultPoints };
 }
 
+/**
+ * Ported structural pattern from the real app's agency/CreateCampaign.tsx:
+ * narrower max-w-3xl form-page wrapper (vs. the list page's max-w-6xl),
+ * thin-rule eyebrow ("New Campaign"), and -- the real structural fix --
+ * the step indicator is the real page's own flat, always-clickable
+ * text-tab convention (border-b-2 pb-2, mono uppercase tracked), not the
+ * circular numbered-badge ProgressSteps component this screen used
+ * before, which has no equivalent anywhere in the real product. Review
+ * step's panels are now plain `rounded border border-line` (the real
+ * form-page convention), not the filled card-surface treatment reserved
+ * for data-display contexts elsewhere in this demo.
+ */
 export function CampaignBuilder() {
   const navigate = useNavigate();
   const { addCampaign } = useDemoState();
   const [step, setStep] = useState(0);
 
-  // Every field below starts pre-filled with a realistic default -- the
-  // whole wizard is completable end to end with zero taps at all (every
-  // "Next" is enabled from the first screen), but every field is still a
-  // real, changeable tap target for a presenter who wants to show it off.
   const [client, setClient] = useState(CLIENT_PRESETS[0]);
   const [objective, setObjective] = useState(OBJECTIVE_PRESETS[0]);
   const [cities, setCities] = useState<string[]>([CITY_OPTIONS[0]]);
@@ -77,11 +79,7 @@ export function CampaignBuilder() {
       prev.map((t) => (t.id === id ? { ...t, points: Math.max(POINTS_MIN, Math.min(POINTS_MAX, t.points + delta)) } : t))
     );
 
-  // Defensive only -- every field has a default, but a city chip can be
-  // tapped back off down to zero, so this still guards the one way this
-  // step could genuinely go empty.
   const step1Valid = client.length > 0 && cities.length > 0;
-
   const totalPoints = tasks.reduce((sum, t) => sum + t.points, 0);
 
   const launch = () => {
@@ -90,21 +88,36 @@ export function CampaignBuilder() {
   };
 
   return (
-    <div className="min-h-screen bg-ink">
-      <TopBar />
-      <main className="mx-auto max-w-3xl px-6 py-10">
+    <DashboardShell role="agency">
+      <div className="max-w-3xl px-6 py-10 md:p-10">
         <button onClick={() => navigate("/agency")} className="mb-6 text-[13px] text-muted hover:text-paper">
-          ← Back to Agency Command
+          ← Back to Campaigns
         </button>
 
-        <h1 className="mb-7 font-display text-2xl font-bold text-paper">New Campaign</h1>
+        <div className="mb-6 flex items-center gap-3">
+          <div className="h-px w-12" style={{ backgroundColor: ACCENT }} />
+          <span className="font-mono text-xs font-medium uppercase tracking-[0.3em]" style={{ color: ACCENT }}>New Campaign</span>
+        </div>
 
-        <div className="mb-10">
-          <ProgressSteps steps={STEPS} current={step} accent={ACCENT} />
+        {/* Real flat-tab step indicator -- clickable at any time, exactly
+            matching CreateCampaign.tsx's own `onClick={() => setStep(i+1)}`
+            (no forward-progress gating on the tabs themselves; validation
+            still blocks the Next button below). */}
+        <div className="mb-10 flex items-center gap-4">
+          {STEPS.map((s, i) => (
+            <button
+              key={s}
+              onClick={() => setStep(i)}
+              className="border-b-2 pb-2 font-mono text-xs font-medium uppercase tracking-[0.15em] transition-colors"
+              style={step === i ? { borderColor: ACCENT, color: "var(--paper)" } : { borderColor: "transparent", color: "var(--muted)" }}
+            >
+              {s}
+            </button>
+          ))}
         </div>
 
         {step === 0 && (
-          <div className="space-y-7">
+          <div className="space-y-6">
             <Field label="Client Name">
               <ChipRow>
                 {CLIENT_PRESETS.map((name) => (
@@ -166,7 +179,7 @@ export function CampaignBuilder() {
               </ChipRow>
             </Field>
 
-            <div className="pt-2">
+            <div>
               <Button color={ACCENT} disabled={!step1Valid} onClick={() => setStep(1)}>
                 Next: Tasks →
               </Button>
@@ -183,23 +196,23 @@ export function CampaignBuilder() {
               Add point-weighted collection tasks. Contributors earn points per task completed.
             </p>
 
-            <div className="space-y-2.5">
+            <div className="space-y-4">
               {tasks.map((task) => {
                 const meta = TASK_TYPES.find((t) => t.key === task.type)!;
                 return (
-                  <div key={task.id} className="flex items-center gap-4 rounded-lg border border-line bg-panel px-4 py-3">
-                    <span className="flex-1 text-sm font-medium text-paper">{meta.label}</span>
+                  <div key={task.id} className="relative rounded border border-line p-5">
+                    <button
+                      onClick={() => setTasks((prev) => prev.filter((t) => t.id !== task.id))}
+                      aria-label={`Remove ${meta.label}`}
+                      className="absolute end-4 top-4 text-muted hover:text-paper"
+                    >
+                      ✕
+                    </button>
+                    <div className="mb-3 font-mono text-[10px] uppercase tracking-[0.2em] text-muted">{meta.label}</div>
                     <div className="flex items-center gap-2 text-xs text-muted">
                       Points
                       <PointsStepper value={task.points} onDecrement={() => adjustPoints(task.id, -POINTS_STEP)} onIncrement={() => adjustPoints(task.id, POINTS_STEP)} />
                     </div>
-                    <button
-                      onClick={() => setTasks((prev) => prev.filter((t) => t.id !== task.id))}
-                      aria-label={`Remove ${meta.label}`}
-                      className="text-muted hover:text-pulse"
-                    >
-                      ✕
-                    </button>
                   </div>
                 );
               })}
@@ -219,8 +232,8 @@ export function CampaignBuilder() {
 
             <div className="label-caps">Total: {totalPoints} pts per completed set</div>
 
-            <div className="flex gap-3 pt-2">
-              <Button variant="ghost" onClick={() => setStep(0)}>← Back</Button>
+            <div className="flex flex-wrap items-center gap-4 pt-2">
+              <Button variant="ghost" color={ACCENT} onClick={() => setStep(0)}>← Back</Button>
               <Button color={ACCENT} disabled={tasks.length === 0} onClick={() => setStep(2)}>
                 Next: Review →
               </Button>
@@ -229,35 +242,49 @@ export function CampaignBuilder() {
         )}
 
         {step === 2 && (
-          <div className="space-y-6">
-            <div className="card-surface space-y-4 p-6">
-              <SummaryRow label="Client" value={client} />
-              <SummaryRow label="Objective" value={objective} />
-              <SummaryRow label="Cities" value={cities.join(", ")} />
-              <SummaryRow label="Age Band" value={ageBand} />
-              <SummaryRow label="Methodology" value={methodology} />
-              <SummaryRow label="Sample Size" value={sampleSize.toLocaleString()} />
-              <SummaryRow
-                label="Tasks"
-                value={tasks.map((t) => `${TASK_TYPES.find((m) => m.key === t.type)!.label} (${t.points}pt)`).join(", ")}
-              />
+          <div className="space-y-8">
+            <div className="rounded border border-line p-6">
+              <div className="mb-3 font-mono text-[10px] uppercase tracking-[0.2em] text-muted">Campaign</div>
+              <h3 className="mb-2 font-display text-xl font-bold text-paper">{client}</h3>
+              <p className="text-sm text-muted">{objective}</p>
+              <div className="mt-4 flex flex-wrap gap-6 text-sm">
+                <span className="text-muted">{cities.length} {cities.length === 1 ? "city" : "cities"}</span>
+                <span className="text-muted">{ageBand}</span>
+                <span className="text-muted">{methodology}</span>
+                <span className="text-muted">{sampleSize.toLocaleString()} sample</span>
+              </div>
             </div>
 
-            <div className="flex gap-3">
-              <Button variant="ghost" onClick={() => setStep(1)}>← Back</Button>
+            <div className="divide-y divide-line rounded border border-line">
+              <div className="p-4 font-mono text-[10px] uppercase tracking-[0.2em] text-muted">
+                {tasks.length} Tasks
+              </div>
+              {tasks.map((task) => {
+                const meta = TASK_TYPES.find((t) => t.key === task.type)!;
+                return (
+                  <div key={task.id} className="flex items-center justify-between p-4">
+                    <span className="font-medium text-paper">{meta.label}</span>
+                    <span className="text-sm text-muted">{task.points} pts</span>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="flex gap-4">
+              <Button variant="ghost" color={ACCENT} onClick={() => setStep(1)}>← Back</Button>
               <Button color={ACCENT} onClick={launch}>Launch Campaign</Button>
             </div>
           </div>
         )}
-      </main>
-    </div>
+      </div>
+    </DashboardShell>
   );
 }
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div>
-      <div className="label-caps mb-2">{label}</div>
+    <div className="space-y-2">
+      <div className="text-xs uppercase tracking-[0.1em] text-muted">{label}</div>
       {children}
     </div>
   );
@@ -267,13 +294,17 @@ function ChipRow({ children }: { children: React.ReactNode }) {
   return <div className="flex flex-wrap gap-2">{children}</div>;
 }
 
+// Sharp-cornered (rounded-none), matching the real app's own form-picker
+// convention (OnboardingWizard.tsx's country/language pickers) -- rounded-
+// full pills are reserved elsewhere in the real app for filter/status
+// chips, not selectable form options.
 function Chip({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
   return (
     <button
       type="button"
       onClick={onClick}
       className={cn(
-        "rounded-full border px-3.5 py-1.5 text-left text-[13px] font-medium transition-colors",
+        "rounded-none border px-3.5 py-2 text-left text-[13px] font-medium transition-colors",
         active ? "border-visual bg-visual/15 text-visual" : "border-line text-muted hover:border-white/25 hover:text-paper"
       )}
     >
@@ -282,8 +313,6 @@ function Chip({ active, onClick, children }: { active: boolean; onClick: () => v
   );
 }
 
-// Tap-only replacement for the old <input type="number"> points field --
-// two big tap targets (+/-), never a keyboard.
 function PointsStepper({ value, onDecrement, onIncrement }: { value: number; onDecrement: () => void; onIncrement: () => void }) {
   return (
     <div className="flex items-center gap-1.5">
@@ -304,15 +333,6 @@ function PointsStepper({ value, onDecrement, onIncrement }: { value: number; onD
       >
         +
       </button>
-    </div>
-  );
-}
-
-function SummaryRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-start justify-between gap-6 border-b border-line pb-3 last:border-0 last:pb-0">
-      <span className="label-caps shrink-0">{label}</span>
-      <span className="text-right text-sm text-paper">{value}</span>
     </div>
   );
 }

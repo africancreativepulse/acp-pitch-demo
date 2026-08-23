@@ -1,103 +1,226 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { TopBar } from "@/components/TopBar";
+import { DashboardShell } from "@/components/DashboardShell";
 import { Button } from "@/components/Button";
-import { CampaignCard } from "@/components/CampaignCard";
 import { Modal } from "@/components/Modal";
 import { ScorePill } from "@/components/ScorePill";
-import { SONDELA, KASI_BREW, THOLULWAZI_DATA, cdiBand, decayBand, type SecondaryCampaign } from "@/data/demo";
+import { StatGrid, StatCard } from "@/components/StatCard";
+import {
+  SONDELA, KASI_BREW, THOLULWAZI_DATA, cdiBand, decayBand, BAND_HEX, type CeiKey, type SecondaryCampaign,
+} from "@/data/demo";
 import { useDemoState } from "@/state/DemoState";
 
+const ACCENT = "var(--visual)";
+const FILTERS = ["all", "live", "draft", "ended"] as const;
+type Filter = (typeof FILTERS)[number];
+
+interface Row {
+  id: string;
+  client: string;
+  cities: string[];
+  verifiedResponses: number;
+  cei: Partial<Record<CeiKey, number>> | null;
+  cdi: number | null;
+  status: "live" | "draft" | "ended";
+  onClick: () => void;
+}
+
+function compositeCei(cei?: Partial<Record<CeiKey, number>> | null) {
+  if (!cei) return null;
+  const values = Object.values(cei).filter((v): v is number => typeof v === "number" && v > 0);
+  if (values.length === 0) return null;
+  return values.reduce((a, b) => a + b, 0) / values.length;
+}
+
+/**
+ * Ported structural pattern from the real app's agency/Campaigns.tsx --
+ * header (accent rule + eyebrow + H1 + New Campaign button), a StatGrid
+ * summary row, filter chips, then campaigns as a real TABLE (grid header
+ * row + hover-to-navigate grid rows), not the card-grid this screen used
+ * before. "Budget" (a real column) is dropped -- this demo's data model
+ * has no budget concept at all (CampaignBuilder never collects one), and
+ * fabricating a number for it would be exactly the kind of invented stat
+ * this project has avoided everywhere else. The real page's own "draft"
+ * filter bucket stays honestly always-empty here too: this demo's
+ * Campaign Builder always launches immediately, there's no save-as-draft
+ * path to populate it from.
+ */
 export function AgencyCommand() {
   const navigate = useNavigate();
   const { draftCampaigns } = useDemoState();
   const [snapshot, setSnapshot] = useState<SecondaryCampaign | null>(null);
+  const [filter, setFilter] = useState<Filter>("all");
+
+  const rows: Row[] = [
+    {
+      id: SONDELA.id,
+      client: SONDELA.client,
+      cities: SONDELA.cities,
+      verifiedResponses: SONDELA.verifiedResponses,
+      cei: SONDELA.cei,
+      cdi: SONDELA.cdi,
+      status: "live",
+      onClick: () => navigate(`/agency/campaign/${SONDELA.id}`),
+    },
+    {
+      id: KASI_BREW.id,
+      client: KASI_BREW.client,
+      cities: KASI_BREW.cities,
+      verifiedResponses: KASI_BREW.verifiedResponses,
+      cei: KASI_BREW.cei,
+      cdi: KASI_BREW.cdi,
+      status: KASI_BREW.status === "completed" ? "ended" : "live",
+      onClick: () => setSnapshot(KASI_BREW),
+    },
+    {
+      id: THOLULWAZI_DATA.id,
+      client: THOLULWAZI_DATA.client,
+      cities: THOLULWAZI_DATA.cities,
+      verifiedResponses: THOLULWAZI_DATA.verifiedResponses,
+      cei: THOLULWAZI_DATA.cei,
+      cdi: THOLULWAZI_DATA.cdi,
+      status: THOLULWAZI_DATA.status === "completed" ? "ended" : "live",
+      onClick: () => setSnapshot(THOLULWAZI_DATA),
+    },
+    ...draftCampaigns.map((c) => ({
+      id: c.id,
+      client: c.client,
+      cities: c.cities,
+      verifiedResponses: 0,
+      cei: null,
+      cdi: null,
+      status: "live" as const,
+      onClick: () =>
+        setSnapshot({
+          id: c.id,
+          client: c.client,
+          cities: c.cities,
+          methodology: c.methodology,
+          verifiedResponses: 0,
+          status: "collecting",
+          cei: { visual: 0, sound: 0, language: 0, ritual: 0, pulse: 0, taste: 0 },
+          cdi: 0,
+          decay: 0,
+          soulGap: { magnitude: "Narrow", headline: "" },
+        }),
+    })),
+  ];
+
+  const filtered = filter === "all" ? rows : rows.filter((r) => r.status === filter);
+  const totalReach = rows.reduce((sum, r) => sum + r.verifiedResponses, 0);
+  const ceiValues = rows.map((r) => compositeCei(r.cei)).filter((v): v is number => v != null);
+  const avgCei = ceiValues.length > 0 ? (ceiValues.reduce((a, b) => a + b, 0) / ceiValues.length).toFixed(1) : "—";
+  const cdiValues = rows.map((r) => r.cdi).filter((v): v is number => v != null);
+  const avgCdi = cdiValues.length > 0 ? (cdiValues.reduce((a, b) => a + b, 0) / cdiValues.length).toFixed(1) : "—";
 
   return (
-    <div className="min-h-screen bg-ink">
-      <TopBar
-        right={
-          <Button color="var(--visual)" onClick={() => navigate("/agency/new")}>
+    <DashboardShell role="agency">
+      <div className="max-w-6xl px-6 pb-[60px] pt-[30px] md:px-10">
+        <div className="mb-7 flex items-center justify-between">
+          <div>
+            <div className="mb-2.5 flex items-center gap-2.5">
+              <div className="h-0.5 w-[30px]" style={{ backgroundColor: ACCENT }} />
+              <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.2em]" style={{ color: ACCENT }}>
+                Agency Dashboard
+              </span>
+            </div>
+            <h1 className="font-display text-[22px] font-bold text-paper">Campaigns</h1>
+          </div>
+          <Button color={ACCENT} onClick={() => navigate("/agency/new")}>
             + New Campaign
           </Button>
-        }
-      />
-
-      <main className="mx-auto max-w-6xl px-6 py-10">
-        <div className="mb-2 label-caps">Featured</div>
-        <div className="mb-12">
-          <CampaignCard
-            featured
-            client={SONDELA.client}
-            cities={SONDELA.cities}
-            methodology={SONDELA.methodology}
-            verifiedResponses={SONDELA.verifiedResponses}
-            status={SONDELA.status}
-            cei={SONDELA.cei ?? undefined}
-            cdi={SONDELA.cdi}
-            decay={SONDELA.decay}
-            onClick={() => navigate(`/agency/campaign/${SONDELA.id}`)}
-          />
         </div>
+
+        <StatGrid className="mb-8 md:!grid-cols-4">
+          <StatCard label="Active Campaigns" value={rows.filter((r) => r.status === "live").length} />
+          <StatCard label="Total Reach" value={totalReach.toLocaleString()} />
+          <StatCard label="Avg CEI Score" value={avgCei} />
+          <StatCard label="Avg CDI Score" value={avgCdi !== "—" ? `${avgCdi}/10` : "—"} />
+        </StatGrid>
 
         <div className="mb-4 flex items-center justify-between">
-          <div className="label-caps">Portfolio</div>
-          <div className="label-caps !text-[10px]">
-            {2 + draftCampaigns.length} more campaign{2 + draftCampaigns.length === 1 ? "" : "s"}
+          <h2 className="font-display text-base font-bold text-paper">All Campaigns</h2>
+          <div className="flex gap-2">
+            {FILTERS.map((f) => (
+              <button
+                key={f}
+                onClick={() => setFilter(f)}
+                className="rounded-full border px-3 py-1.5 font-mono text-[11px] uppercase transition-colors"
+                style={
+                  filter === f
+                    ? { color: ACCENT, borderColor: `color-mix(in srgb, ${ACCENT} 35%, transparent)`, backgroundColor: `color-mix(in srgb, ${ACCENT} 6%, transparent)` }
+                    : { color: "var(--muted)", borderColor: "var(--line)" }
+                }
+              >
+                {f}
+              </button>
+            ))}
           </div>
         </div>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          {draftCampaigns.map((c) => (
-            <CampaignCard
-              key={c.id}
-              client={c.client}
-              cities={c.cities}
-              methodology={c.methodology}
-              verifiedResponses={0}
-              status="new"
-              onClick={() =>
-                setSnapshot({
-                  id: c.id,
-                  client: c.client,
-                  cities: c.cities,
-                  methodology: c.methodology,
-                  verifiedResponses: 0,
-                  status: "collecting",
-                  cei: { visual: 0, sound: 0, language: 0, ritual: 0, pulse: 0, taste: 0 },
-                  cdi: 0,
-                  decay: 0,
-                  soulGap: { magnitude: "Narrow", headline: "" },
-                })
-              }
-            />
-          ))}
-          <CampaignCard
-            client={KASI_BREW.client}
-            cities={KASI_BREW.cities}
-            methodology={KASI_BREW.methodology}
-            verifiedResponses={KASI_BREW.verifiedResponses}
-            status={KASI_BREW.status}
-            cei={KASI_BREW.cei}
-            cdi={KASI_BREW.cdi}
-            decay={KASI_BREW.decay}
-            onClick={() => setSnapshot(KASI_BREW)}
-          />
-          <CampaignCard
-            client={THOLULWAZI_DATA.client}
-            cities={THOLULWAZI_DATA.cities}
-            methodology={THOLULWAZI_DATA.methodology}
-            verifiedResponses={THOLULWAZI_DATA.verifiedResponses}
-            status={THOLULWAZI_DATA.status}
-            cei={THOLULWAZI_DATA.cei}
-            cdi={THOLULWAZI_DATA.cdi}
-            decay={THOLULWAZI_DATA.decay}
-            onClick={() => setSnapshot(THOLULWAZI_DATA)}
-          />
+
+        <div className="overflow-x-auto rounded-lg border border-line">
+          <div className="grid min-w-[620px] grid-cols-[2fr_0.9fr_0.9fr_1fr_0.8fr] gap-2 bg-panel px-[18px] py-3 font-mono text-[10.5px] uppercase tracking-[0.1em] text-muted">
+            <span>Campaign</span><span>CEI Score</span><span>CDI Score</span><span>Reach</span><span>Status</span>
+          </div>
+          {filtered.length === 0 ? (
+            <div className="p-10 text-center text-sm text-muted">No campaigns match this filter.</div>
+          ) : (
+            filtered.map((row) => {
+              const cei = compositeCei(row.cei);
+              return (
+                <div
+                  key={row.id}
+                  onClick={row.onClick}
+                  className="grid min-w-[620px] cursor-pointer grid-cols-[2fr_0.9fr_0.9fr_1fr_0.8fr] items-center gap-2 border-t border-line px-[18px] py-[15px] transition-colors hover:bg-panel"
+                >
+                  <div>
+                    <div className="text-[13.5px] font-semibold text-paper">{row.client}</div>
+                    <div className="mt-0.5 truncate text-[11.5px] text-muted">{row.cities.join(" · ")}</div>
+                  </div>
+                  {cei != null ? (
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-[12.5px] text-paper">{cei.toFixed(1)}</span>
+                      <div className="h-1 w-[50px] overflow-hidden rounded-full bg-line">
+                        <div className="h-full" style={{ width: `${Math.min(100, cei * 10)}%`, backgroundColor: ACCENT }} />
+                      </div>
+                    </div>
+                  ) : (
+                    <span className="font-mono text-[12.5px] text-muted">—</span>
+                  )}
+                  {row.cdi != null ? (
+                    <span className="font-mono text-[12.5px]" style={{ color: BAND_HEX[cdiBand(row.cdi)] }}>
+                      {row.cdi.toFixed(1)}/10
+                    </span>
+                  ) : (
+                    <span className="font-mono text-[12.5px] text-muted">—</span>
+                  )}
+                  <span className="font-mono text-[12.5px] text-muted">{row.verifiedResponses.toLocaleString()}</span>
+                  <StatusBadge status={row.status} />
+                </div>
+              );
+            })
+          )}
         </div>
-      </main>
+      </div>
 
       {snapshot && <SnapshotModal campaign={snapshot} onClose={() => setSnapshot(null)} />}
-    </div>
+    </DashboardShell>
+  );
+}
+
+function StatusBadge({ status }: { status: Row["status"] }) {
+  const meta = {
+    live: { label: "live", color: "var(--sound)" },
+    draft: { label: "draft", color: "var(--language)" },
+    ended: { label: "ended", color: "var(--muted)" },
+  }[status];
+  return (
+    <span
+      className="inline-flex w-fit items-center rounded-full px-2.5 py-1 font-mono text-[10px] font-medium uppercase tracking-[0.06em]"
+      style={{ color: meta.color, backgroundColor: `color-mix(in srgb, ${meta.color} 14%, transparent)` }}
+    >
+      {meta.label}
+    </span>
   );
 }
 
@@ -110,7 +233,7 @@ function SnapshotModal({ campaign, onClose }: { campaign: SecondaryCampaign; onC
       <p className="mb-5 text-[13px] text-muted">{campaign.cities.join(" · ")}</p>
 
       {isNew ? (
-        <p className="rounded-lg border border-line bg-white/[0.02] p-4 text-sm leading-relaxed text-muted">
+        <p className="rounded border border-line p-4 text-sm leading-relaxed text-muted">
           Just launched — awaiting first responses. Once verified responses start coming in, this
           campaign gets the same full Cultural Read and Evidence traceability as Sondela Cover.
         </p>
@@ -124,13 +247,13 @@ function SnapshotModal({ campaign, onClose }: { campaign: SecondaryCampaign; onC
             </span>
           </div>
 
-          <div className="mb-5 rounded-lg border border-soulgap/30 bg-soulgap/10 p-4">
+          <div className="mb-5 rounded border border-soulgap/30 bg-soulgap/10 p-4">
             <div className="label-caps mb-1.5 !text-soulgap">Soul Gap — {campaign.soulGap.magnitude}</div>
             <p className="text-sm leading-relaxed text-paper">{campaign.soulGap.headline}</p>
           </div>
 
           {campaign.reportNote && (
-            <div className="rounded-lg border border-line bg-white/[0.02] p-4">
+            <div className="rounded border border-line p-4">
               <div className="label-caps mb-1.5">Final Report</div>
               <p className="text-sm leading-relaxed text-muted">{campaign.reportNote}</p>
             </div>

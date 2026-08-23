@@ -1,19 +1,23 @@
 import { Link } from "react-router-dom";
-import { AcpLogo } from "@/components/AcpLogo";
+import { Shield, AlertTriangle } from "lucide-react";
+import { DashboardShell } from "@/components/DashboardShell";
+import { Button } from "@/components/Button";
+import { StatGrid, StatCard } from "@/components/StatCard";
 import { REVIEW_QUEUE } from "@/data/demo";
 import { useDemoState } from "@/state/DemoState";
 
-const ACCENT = "var(--ritual)"; // matches the real app's admin role accent
+const ACCENT = "var(--ritual)";
 
-// A glimpse of the platform-wide operational layer, not a full admin
-// panel -- verification counts and a quality-flags queue, enough to read
-// as "this is a real, operated platform" without pretending to be
-// exhaustive. Two of the four stats below and the whole flags list are
-// LIVE, derived from the same DemoState SupervisorReview writes to --
-// visit that screen first, flag something, and the numbers here actually
-// move. The other two stats are clearly labeled illustrative, since
-// there's no real campaign-roster or field-worker-roster model behind
-// this demo to derive them from honestly.
+/**
+ * Ported structural pattern from the real app's fieldwork/
+ * AdminFieldwork.tsx -- a Shield icon + eyebrow header (that page's own
+ * variation on the accent-rule convention every other real dashboard page
+ * uses), the real 4-up StatGrid, and its "alerts" tab's exact row shape:
+ * plain `rounded border border-line p-4` rows (NOT amber-tinted -- that
+ * treatment is reserved in the real page for Verification Queue/Aging
+ * Payments specifically) with a ghost "Resolve" Button, not a solid
+ * colored pill.
+ */
 export function AdminOversight() {
   const { reviewStatus, setReviewStatus } = useDemoState();
 
@@ -23,78 +27,61 @@ export function AdminOversight() {
   const resolveFlag = (id: string) => setReviewStatus(id, "approved");
 
   return (
-    <div className="min-h-screen bg-ink">
-      <header className="border-b border-line px-6 py-4">
-        <div className="mx-auto flex max-w-2xl items-center justify-between">
-          <AcpLogo markClassName="h-6 w-6" textClassName="text-xs" />
-          <Link to="/operations" className="text-[13px] text-muted hover:text-paper">← Operations</Link>
+    <DashboardShell role="admin">
+      <div className="px-6 pb-[60px] pt-[30px] md:px-10">
+        <div className="mb-7 flex items-center gap-2.5">
+          <Shield className="h-5 w-5" style={{ color: ACCENT }} />
+          <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.2em]" style={{ color: ACCENT }}>
+            Admin — Fieldwork Controls
+          </span>
         </div>
-      </header>
 
-      <main className="mx-auto max-w-2xl px-6 py-12">
-        <div className="mb-2 label-caps" style={{ color: ACCENT }}>Admin Oversight</div>
-        <h1 className="mb-2 font-display text-2xl font-bold text-paper">Platform Operations</h1>
         <p className="mb-8 max-w-lg text-[13.5px] leading-relaxed text-muted">
-          Illustrative platform snapshot — not live production metrics. Two of the numbers below
-          (Pending Verifications, Quality Flags Open) do move live with whatever's actually
-          happened in Supervisor Review this session.
+          Illustrative platform snapshot — not live production metrics. Pending Verifications and
+          Quality Flags Open do move live with whatever's actually happened in Supervisor Review
+          this session.
         </p>
 
-        <div className="mb-10 grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <StatGrid className="mb-9">
           <StatCard label="Active Campaigns" value="3" />
-          <StatCard label="Pending Verifications" value={pendingCount} live />
-          <StatCard label="Quality Flags Open" value={flaggedItems.length} live accent={flaggedItems.length > 0 ? ACCENT : undefined} />
+          <StatCard label="Pending Verifications" value={pendingCount} />
+          <StatCard
+            label="Quality Flags Open"
+            value={flaggedItems.length}
+            deltaTone={flaggedItems.length > 0 ? "warn" : "up"}
+            delta={flaggedItems.length > 0 ? "Needs review" : undefined}
+          />
           <StatCard label="Field Workers Today" value="6" />
-        </div>
+        </StatGrid>
 
-        <div className="card-surface p-6">
-          <div className="mb-4 label-caps">Quality Flags Queue</div>
-
+        <h2 className="mb-4 font-display text-base font-bold text-paper">Quality Flags</h2>
+        <div className="space-y-2.5">
           {flaggedItems.length === 0 ? (
-            <p className="text-[13.5px] text-muted">
-              No open quality flags right now. Flag something in Supervisor Review to see it
-              land here.
-            </p>
-          ) : (
-            <div className="space-y-3">
-              {flaggedItems.map((item) => (
-                <div key={item.id} className="rounded-lg border border-line bg-white/[0.02] p-4">
-                  <div className="mb-1.5 flex items-center justify-between gap-3">
-                    <span className="label-caps">{item.campaignClient} · {item.city}</span>
-                    <button
-                      type="button"
-                      onClick={() => resolveFlag(item.id)}
-                      className="shrink-0 rounded-full px-3 py-1 text-[11.5px] font-semibold"
-                      style={{ backgroundColor: "#2FBF7122", color: "#2FBF71" }}
-                    >
-                      ✓ Resolve
-                    </button>
-                  </div>
-                  <p className="text-[13.5px] leading-relaxed text-paper">&ldquo;{item.excerpt}&rdquo;</p>
-                </div>
-              ))}
+            <div className="rounded border border-line p-6 text-center text-xs text-muted">
+              No open alerts. Flag something in Supervisor Review to see it land here.
             </div>
+          ) : (
+            flaggedItems.map((item) => (
+              <div key={item.id} className="flex items-center justify-between rounded border border-line p-4">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <AlertTriangle className="h-4 w-4 text-language" />
+                    <span className="text-sm font-medium text-paper">{item.campaignClient} · {item.city}</span>
+                  </div>
+                  <span className="text-xs text-muted">&ldquo;{item.excerpt}&rdquo;</span>
+                </div>
+                <Button variant="ghost" color={ACCENT} className="!px-3 !py-1.5 !text-[11px]" onClick={() => resolveFlag(item.id)}>
+                  Resolve
+                </Button>
+              </div>
+            ))
           )}
         </div>
 
         <Link to="/operations/review" className="mt-6 inline-block text-[13px] font-semibold hover:underline" style={{ color: ACCENT }}>
           Go to Supervisor Review →
         </Link>
-      </main>
-    </div>
-  );
-}
-
-function StatCard({ label, value, live, accent }: { label: string; value: string | number; live?: boolean; accent?: string }) {
-  return (
-    <div className="card-surface p-4">
-      <div className="mb-1.5 flex items-center gap-1.5">
-        <div className="label-caps">{label}</div>
-        {live && <span className="h-1.5 w-1.5 shrink-0 animate-pulse-dot rounded-full bg-sound" aria-hidden="true" />}
       </div>
-      <div className="tabular font-display text-2xl font-bold" style={accent ? { color: accent } : { color: "var(--paper)" }}>
-        {value}
-      </div>
-    </div>
+    </DashboardShell>
   );
 }
