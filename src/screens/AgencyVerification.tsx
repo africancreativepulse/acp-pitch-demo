@@ -30,7 +30,7 @@ export function AgencyVerification() {
 
   return (
     <DashboardShell role="admin" backTo="/operations/admin">
-      <div className="px-6 pb-[60px] pt-[30px] md:px-10">
+      <div className="max-w-6xl px-6 pb-[60px] pt-[30px] md:px-10">
         <div className="mb-7 flex items-center gap-2.5">
           <div className="h-0.5 w-[30px]" style={{ backgroundColor: ACCENT }} />
           <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.2em]" style={{ color: ACCENT }}>
@@ -44,14 +44,14 @@ export function AgencyVerification() {
         </p>
 
         <div className="overflow-x-auto rounded border border-line">
-          <div className="grid min-w-[640px] grid-cols-4 gap-2 border-b border-line bg-panel p-3 font-mono text-[10px] uppercase tracking-[0.15em] text-muted">
+          <div className="grid min-w-[640px] grid-cols-4 gap-2 border-b border-line bg-panel px-[18px] py-3 font-mono text-[10px] uppercase tracking-[0.15em] text-muted">
             <span>Agency</span><span>Document</span><span>Status</span><span>Action</span>
           </div>
           {AGENCY_VERIFICATION_QUEUE.map((a) => {
             const status = statuses[a.id];
             const meta = STATUS_META[status];
             return (
-              <div key={a.id} className="grid min-w-[640px] items-center gap-2 border-b border-line p-3 text-sm last:border-0 grid-cols-4">
+              <div key={a.id} className="grid min-w-[640px] items-center gap-2 border-b border-line px-[18px] py-[15px] text-sm last:border-0 grid-cols-4">
                 <div>
                   <span className="font-medium text-paper">{a.name}</span>
                   <div className="mt-0.5 text-[11px] text-muted">{a.city}</div>

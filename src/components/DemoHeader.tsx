@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Flag } from "lucide-react";
 import { AcpLogo } from "@/components/AcpLogo";
 
 /**
@@ -30,10 +30,16 @@ import { AcpLogo } from "@/components/AcpLogo";
  * confirmed against its own source: the bell only ever lives inside the
  * dashboard shell (sidebar footer on desktop, the mobile-only secondary
  * header on small screens), never on this top bar.
+ *
+ * Item 5's closing moment -- a small, consistent "Wrap Up" link on the
+ * right, the same discoverable spot on every screen, so an investor never
+ * has to guess how to bring the tour to a deliberate stop. Suppressed only
+ * on Splash (the tour hasn't started) and on the Wrap Up screen itself
+ * (already there) -- the same two-exception pattern `backTo` already uses.
  */
-export function DemoHeader({ backTo }: { backTo?: string }) {
+export function DemoHeader({ backTo, showWrapUp = true }: { backTo?: string; showWrapUp?: boolean }) {
   return (
-    <header className="flex h-[68px] w-full shrink-0 items-center border-b border-line px-6">
+    <header className="flex h-[68px] w-full shrink-0 items-center justify-between border-b border-line px-6">
       <div className="flex items-center gap-5">
         {backTo && (
           <Link to={backTo} className="flex items-center gap-1.5 text-[13px] text-muted transition-colors hover:text-paper">
@@ -45,6 +51,12 @@ export function DemoHeader({ backTo }: { backTo?: string }) {
           <AcpLogo markClassName="h-9 w-9" textClassName="hidden sm:inline text-base" />
         </Link>
       </div>
+      {showWrapUp && (
+        <Link to="/wrap-up" className="flex items-center gap-1.5 text-[13px] text-muted transition-colors hover:text-paper">
+          <Flag className="h-3.5 w-3.5" />
+          <span className="hidden sm:inline">Wrap Up</span>
+        </Link>
+      )}
     </header>
   );
 }

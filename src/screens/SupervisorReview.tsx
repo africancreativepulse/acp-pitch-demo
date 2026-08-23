@@ -59,7 +59,7 @@ export function SupervisorReview() {
 
   return (
     <DashboardShell role="supervisor" backTo="/operations">
-      <div className="px-6 pb-[60px] pt-[30px] md:px-10">
+      <div className="max-w-6xl px-6 pb-[60px] pt-[30px] md:px-10">
         <div className="mb-7 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
             <div className="h-0.5 w-[30px]" style={{ backgroundColor: ACCENT }} />
@@ -98,11 +98,11 @@ export function SupervisorReview() {
 
         {tab === "team" && (
           <div className="overflow-x-auto rounded border border-line">
-            <div className="grid min-w-[520px] grid-cols-4 gap-2 border-b border-line bg-panel p-3 font-mono text-[10px] uppercase tracking-[0.15em] text-muted">
+            <div className="grid min-w-[520px] grid-cols-4 gap-2 border-b border-line bg-panel px-[18px] py-3 font-mono text-[10px] uppercase tracking-[0.15em] text-muted">
               <span>Agent</span><span>Campaign</span><span>Responses</span><span>Status</span>
             </div>
             {ROSTER.map((a) => (
-              <div key={a.name} className="grid min-w-[520px] grid-cols-4 items-center gap-2 border-b border-line p-3 text-sm last:border-0">
+              <div key={a.name} className="grid min-w-[520px] grid-cols-4 items-center gap-2 border-b border-line px-[18px] py-[15px] text-sm last:border-0">
                 <span className="flex items-center gap-2 font-medium text-paper">
                   <span className="h-2 w-2 flex-shrink-0 rounded-full bg-sound" />
                   {a.name}

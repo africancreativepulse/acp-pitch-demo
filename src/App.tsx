@@ -12,6 +12,7 @@ import { SupervisorReview } from "@/screens/SupervisorReview";
 import { AdminOversight } from "@/screens/AdminOversight";
 import { ResearchHub } from "@/screens/ResearchHub";
 import { AgencyVerification } from "@/screens/AgencyVerification";
+import { WrapUp } from "@/screens/WrapUp";
 
 export default function App() {
   return (
@@ -39,6 +40,7 @@ export default function App() {
           <Route path="/operations/admin" element={<AdminOversight />} />
           <Route path="/operations/admin/agencies" element={<AgencyVerification />} />
           <Route path="/operations/research" element={<ResearchHub />} />
+          <Route path="/wrap-up" element={<WrapUp />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>

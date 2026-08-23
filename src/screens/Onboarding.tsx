@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { useParams, useNavigate, Navigate } from "react-router-dom";
-import { CheckCircle2, Upload } from "lucide-react";
+import { CheckCircle2, Upload, Sparkles } from "lucide-react";
 import { Button } from "@/components/Button";
 import { DemoHeader } from "@/components/DemoHeader";
 import { ExpertBadge } from "@/components/ExpertBadge";
 import { cn } from "@/lib/cn";
 import {
   COUNTRIES, COMING_SOON_COUNTRIES, CITIES_BY_COUNTRY, ONBOARDING_LANGUAGES,
-  CAMPAIGN_CATEGORIES, type Country,
+  CAMPAIGN_CATEGORIES, CEI_DEFINITION, CDI_DEFINITION, type Country,
 } from "@/data/demo";
 import { useDemoState } from "@/state/DemoState";
 
@@ -59,7 +59,7 @@ export function Onboarding() {
     navigate(destination);
   };
 
-  const steps = ["country", "city", "language", "verify"];
+  const steps = ["country", "city", "language", "verify", "ready"];
 
   return (
     <div className="flex min-h-screen flex-col bg-ink">
@@ -193,8 +193,8 @@ export function Onboarding() {
 
               <div className="flex gap-3">
                 <Button variant="ghost" color={accent} onClick={() => setStep(2)} className="!rounded-none">← Back</Button>
-                <Button color={accent} onClick={finish} className="!rounded-none !px-8" disabled={!docUploaded}>
-                  Enter Agency Command →
+                <Button color={accent} onClick={() => setStep(4)} className="!rounded-none !px-8" disabled={!docUploaded}>
+                  Continue →
                 </Button>
               </div>
             </div>
@@ -243,8 +243,62 @@ export function Onboarding() {
 
               <div className="flex gap-3">
                 <Button variant="ghost" color={accent} onClick={() => setStep(2)} className="!rounded-none">← Back</Button>
+                <Button color={accent} onClick={() => setStep(4)} className="!rounded-none !px-8">
+                  Continue →
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Item 3 -- a genuinely unfamiliar investor was landing straight
+              on a data-dense screen (CEI/CDI scores, a campaigns table)
+              right after picking a language. This step is the light-touch
+              fix: a few sentences of real framing -- reusing the exact
+              CEI_DEFINITION/CDI_DEFINITION strings InfoHint shows later,
+              so nothing here contradicts what they'll read on the actual
+              dashboard -- before the numbers actually arrive. Not a
+              tutorial modal blocking the dashboard itself; one extra,
+              skippable-feeling step already inside the wizard's own
+              rhythm. */}
+          {step === 4 && (
+            <div>
+              <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-full" style={{ backgroundColor: `color-mix(in srgb, ${accent} 16%, transparent)` }}>
+                <Sparkles className="h-6 w-6" style={{ color: accent }} />
+              </div>
+              <h1 className="mb-4 font-display text-3xl font-bold text-paper">You&rsquo;re in.</h1>
+              {typedRole === "agency" ? (
+                <>
+                  <p className="mb-5 text-muted">
+                    One quick orientation before the dashboard: every campaign you&rsquo;ll see is
+                    scored two ways.
+                  </p>
+                  <div className="mb-8 space-y-3">
+                    <ScorePreview label="CEI — Cultural Engagement Index" color="var(--visual)" text={CEI_DEFINITION.replace("Cultural Engagement Index — ", "")} />
+                    <ScorePreview label="CDI — Cultural Depth Index" color="var(--pulse)" text={CDI_DEFINITION.replace("Cultural Depth Index — ", "")} />
+                  </div>
+                  <p className="mb-8 text-[13px] text-muted">
+                    Every number traces back to a real quote, photo, or voice note — tap any score
+                    to see it.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className="mb-5 text-muted">
+                    One quick orientation before your tasks: you&rsquo;ll see one campaign, matched
+                    to your own expert badge, not a random feed of everything on the platform.
+                  </p>
+                  <p className="mb-8 text-[13px] text-muted">
+                    Complete its two quick tasks — a voice note, a photo — and your submission
+                    enters the same verified pipeline every campaign here relies on. Points land
+                    the moment you submit.
+                  </p>
+                </>
+              )}
+
+              <div className="flex gap-3">
+                <Button variant="ghost" color={accent} onClick={() => setStep(3)} className="!rounded-none">← Back</Button>
                 <Button color={accent} onClick={finish} className="!rounded-none !px-8">
-                  Enter Contributor Capture →
+                  {typedRole === "agency" ? "Enter Agency Command →" : "Enter Contributor Capture →"}
                 </Button>
               </div>
             </div>
@@ -255,6 +309,17 @@ export function Onboarding() {
           </p>
         </div>
       </div>
+    </div>
+  );
+}
+
+function ScorePreview({ label, color, text }: { label: string; color: string; text: string }) {
+  return (
+    <div className="rounded border border-line p-4" style={{ borderColor: `${color}30` }}>
+      <div className="mb-1 font-mono text-[11px] font-semibold uppercase tracking-[0.1em]" style={{ color }}>
+        {label}
+      </div>
+      <p className="text-[13px] leading-relaxed text-muted">{text}</p>
     </div>
   );
 }

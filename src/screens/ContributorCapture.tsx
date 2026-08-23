@@ -41,6 +41,7 @@ export function ContributorCapture() {
   const [activeTask, setActiveTask] = useState<TaskKey | null>(null);
   const [voiceState, setVoiceState] = useState<TaskState>("pending");
   const [photoState, setPhotoState] = useState<TaskState>("pending");
+  const [capturing, setCapturing] = useState(false);
   const [seconds, setSeconds] = useState(0);
   const [submitted, setSubmitted] = useState(false);
   const [reward, setReward] = useState(REWARD_OPTIONS[0]);
@@ -72,8 +73,15 @@ export function ContributorCapture() {
   };
 
   const capturePhoto = () => {
-    setPhotoState("done");
-    setActiveTask(null);
+    // Item 1's polish -- a brief flash on the button itself before the row
+    // marks done, so the tap reads as a real capture moment rather than an
+    // instant state flip.
+    setCapturing(true);
+    window.setTimeout(() => {
+      setCapturing(false);
+      setPhotoState("done");
+      setActiveTask(null);
+    }, 260);
   };
 
   const bothDone = voiceState === "done" && photoState === "done";
@@ -185,7 +193,11 @@ export function ContributorCapture() {
                 <p className="mb-3 text-[12.5px] text-muted">Tap to attach a photo of your surroundings.</p>
                 <button
                   onClick={capturePhoto}
-                  className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-pulse transition-colors"
+                  disabled={capturing}
+                  className={cn(
+                    "mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-pulse transition-colors",
+                    capturing && "animate-capture-flash"
+                  )}
                   aria-label="Attach photo"
                 >
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" strokeWidth="2">

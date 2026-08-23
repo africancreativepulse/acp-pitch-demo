@@ -52,7 +52,7 @@ export function ResearchHub() {
 
   return (
     <DashboardShell role="head_of_research" backTo="/operations">
-      <div className="px-6 pb-[60px] pt-[30px] md:px-10">
+      <div className="max-w-6xl px-6 pb-[60px] pt-[30px] md:px-10">
         <div className="mb-7 flex items-center justify-between">
           <div>
             <div className="flex items-center gap-2.5">
@@ -117,12 +117,12 @@ export function ResearchHub() {
         </div>
 
         <div className="overflow-x-auto rounded border border-line">
-          <div className="grid min-w-[720px] grid-cols-5 gap-2 border-b border-line bg-panel p-3 font-mono text-[10px] uppercase tracking-[0.15em] text-muted">
+          <div className="grid min-w-[720px] grid-cols-5 gap-2 border-b border-line bg-panel px-[18px] py-3 font-mono text-[10px] uppercase tracking-[0.15em] text-muted">
             <span>Member</span><span>Role</span><span>Status</span><span>Recruited By</span><span>Action</span>
           </div>
 
           {roster.map((m) => (
-            <div key={m.id} className="grid min-w-[720px] items-center gap-2 border-b border-line p-3 text-sm last:border-0 grid-cols-5">
+            <div key={m.id} className="grid min-w-[720px] items-center gap-2 border-b border-line px-[18px] py-[15px] text-sm last:border-0 grid-cols-5">
               <div>
                 <span className="font-medium text-paper">{m.name}</span>
                 {m.currentCampaign && <div className="mt-0.5 text-[11px] text-muted">{m.currentCampaign}</div>}

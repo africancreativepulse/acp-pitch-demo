@@ -38,7 +38,7 @@ import { CULTURAL_LAYERS } from "@/data/demo";
 export function Splash() {
   return (
     <div className="relative flex min-h-screen flex-col bg-ink">
-      <DemoHeader />
+      <DemoHeader showWrapUp={false} />
 
       <div className="relative flex flex-1 flex-col items-center overflow-hidden px-6 py-16">
         <DotGrid />

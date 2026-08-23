@@ -29,7 +29,7 @@ export function AdminOversight() {
 
   return (
     <DashboardShell role="admin" backTo="/operations">
-      <div className="px-6 pb-[60px] pt-[30px] md:px-10">
+      <div className="max-w-6xl px-6 pb-[60px] pt-[30px] md:px-10">
         <div className="mb-7 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
             <Shield className="h-5 w-5" style={{ color: ACCENT }} />
