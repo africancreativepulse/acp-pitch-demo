@@ -104,7 +104,7 @@ const NAV: Record<ShellRole, { label: string; icon: typeof LayoutDashboard; path
   ],
 };
 
-export function DashboardShell({ role, backTo, children }: { role: ShellRole; backTo?: string; children: ReactNode }) {
+export function DashboardShell({ role, children }: { role: ShellRole; children: ReactNode }) {
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const accent = ROLE_ACCENT[role];
@@ -169,8 +169,10 @@ export function DashboardShell({ role, backTo, children }: { role: ShellRole; ba
     <div className="relative flex min-h-screen flex-col bg-ink text-paper">
       {/* Item 5 -- the same consistent logo+back header now sits above
           every dashboard/operations screen, matching the real app's own
-          MinimalHeader-above-DashboardLayout structure exactly. */}
-      <DemoHeader backTo={backTo} />
+          MinimalHeader-above-DashboardLayout structure exactly. Back now
+          resolves via real navigation history, not a fixed prop -- see
+          DemoHeader's own header comment. */}
+      <DemoHeader />
       <div className="relative flex flex-1">
         {/* Desktop sidebar -- same w-60/border-e/bg-panel proportions as the
             real app's own <aside>. */}

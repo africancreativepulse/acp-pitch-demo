@@ -154,7 +154,7 @@ export function AgencyCommand() {
   const avgCdi = cdiValues.length > 0 ? (cdiValues.reduce((a, b) => a + b, 0) / cdiValues.length).toFixed(1) : "—";
 
   return (
-    <DashboardShell role={isAdmin ? "admin" : "agency"} backTo="/">
+    <DashboardShell role={isAdmin ? "admin" : "agency"}>
       <div className="max-w-6xl px-6 pb-[60px] pt-[30px] md:px-10">
         <div className="mb-7 flex items-center justify-between">
           <div>

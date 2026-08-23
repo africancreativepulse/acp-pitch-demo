@@ -58,7 +58,7 @@ export function SupervisorReview() {
   const pending = REVIEW_QUEUE.length - approved - flagged.length;
 
   return (
-    <DashboardShell role="supervisor" backTo="/operations">
+    <DashboardShell role="supervisor">
       <div className="max-w-6xl px-6 pb-[60px] pt-[30px] md:px-10">
         <div className="mb-7 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">

@@ -39,7 +39,7 @@ const CARDS = [
 export function OperationsHub() {
   return (
     <div className="min-h-screen bg-ink">
-      <DemoHeader backTo="/" />
+      <DemoHeader />
 
       <main className="mx-auto max-w-3xl px-6 py-14">
         <div className="mb-2 label-caps">The Operations Layer</div>

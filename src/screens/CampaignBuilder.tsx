@@ -93,7 +93,7 @@ export function CampaignBuilder() {
   };
 
   return (
-    <DashboardShell role={isAdmin ? "admin" : "agency"} backTo={isAdmin ? "/agency?admin=1" : "/agency"}>
+    <DashboardShell role={isAdmin ? "admin" : "agency"}>
       <div className="max-w-3xl px-6 py-10 md:p-10">
         <div className="mb-6 flex items-center gap-3">
           <div className="h-px w-12" style={{ backgroundColor: ACCENT }} />

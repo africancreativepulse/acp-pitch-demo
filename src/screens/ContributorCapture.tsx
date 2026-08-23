@@ -95,7 +95,7 @@ export function ContributorCapture() {
   const ss = String(seconds % 60).padStart(2, "0");
 
   return (
-    <DashboardShell role="contributor" backTo="/">
+    <DashboardShell role="contributor">
       <div className="max-w-3xl px-4 pb-[60px] pt-[30px] sm:px-6 md:px-10">
         <div className="mb-2.5 flex items-center gap-2.5">
           <div className="h-0.5 w-[30px]" style={{ backgroundColor: ACCENT }} />

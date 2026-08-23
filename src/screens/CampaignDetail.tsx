@@ -131,7 +131,7 @@ export function CampaignDetail() {
   };
 
   return (
-    <DashboardShell role="agency" backTo="/agency">
+    <DashboardShell role="agency">
       <div className="max-w-6xl px-6 pb-[60px] pt-[30px] md:px-10">
         <div className="mb-8 flex flex-wrap items-start justify-between gap-4">
           <div>

@@ -26,10 +26,12 @@ const JOURNEY = [
  * any one of them, for an investor who wants to keep exploring rather
  * than stop here.
  *
- * No `backTo` on DemoHeader here -- like Splash, there's no single
- * logical parent for a screen reachable from everywhere; unlike Splash,
- * that's a deliberate bookend, not an oversight (see DemoHeader's own
- * header comment).
+ * Back works here now too (real-navigation-history fix) -- it used to be
+ * suppressed under the old fixed-`backTo` scheme, since Wrap Up has no
+ * single logical parent (it's reachable from every screen). Real history
+ * tracking doesn't need a single parent; it just returns to wherever this
+ * particular visit actually came from, so Back is left on its default
+ * here like everywhere else.
  */
 export function WrapUp() {
   return (

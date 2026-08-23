@@ -29,7 +29,7 @@ export function AgencyVerification() {
   const decide = (id: string, status: VerificationStatus) => setStatuses((prev) => ({ ...prev, [id]: status }));
 
   return (
-    <DashboardShell role="admin" backTo="/operations/admin">
+    <DashboardShell role="admin">
       <div className="max-w-6xl px-6 pb-[60px] pt-[30px] md:px-10">
         <div className="mb-7 flex items-center gap-2.5">
           <div className="h-0.5 w-[30px]" style={{ backgroundColor: ACCENT }} />
