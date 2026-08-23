@@ -158,7 +158,7 @@ function EvidenceCard({ item, color }: { item: EvidenceItem; color: string }) {
         ) : (
           <span className="label-caps !text-[10px] text-muted">Date pending</span>
         )}
-        <VerifiedBadge />
+        <VerifiedBadge linkTo="/operations/review" />
       </div>
     </div>
   );

@@ -7,6 +7,10 @@ import { CampaignBuilder } from "@/screens/CampaignBuilder";
 import { CulturalRead } from "@/screens/CulturalRead";
 import { Evidence } from "@/screens/Evidence";
 import { ContributorCapture } from "@/screens/ContributorCapture";
+import { OperationsHub } from "@/screens/OperationsHub";
+import { FieldCapture } from "@/screens/FieldCapture";
+import { SupervisorReview } from "@/screens/SupervisorReview";
+import { AdminOversight } from "@/screens/AdminOversight";
 
 export default function App() {
   return (
@@ -24,6 +28,10 @@ export default function App() {
           <Route path="/agency/campaign/:id" element={<CulturalRead />} />
           <Route path="/agency/campaign/:id/evidence/:dimension" element={<Evidence />} />
           <Route path="/contribute" element={<ContributorCapture />} />
+          <Route path="/operations" element={<OperationsHub />} />
+          <Route path="/operations/field" element={<FieldCapture />} />
+          <Route path="/operations/review" element={<SupervisorReview />} />
+          <Route path="/operations/admin" element={<AdminOversight />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>

@@ -57,6 +57,12 @@ export function CulturalRead() {
           <p className="mt-1 text-[14px] text-muted">
             &ldquo;{SONDELA.concept}&rdquo; · {SONDELA.cities.join(" · ")}
           </p>
+          <p className="mt-3 text-[12.5px] text-muted">
+            Collected via <span className="text-paper">{SONDELA.methodology}</span> ·{" "}
+            <Link to="/operations" className="font-semibold text-visual hover:underline">
+              see how →
+            </Link>
+          </p>
         </div>
 
         {/* CDI gets the real DepthGauge -- its own full-width card, not

@@ -411,3 +411,99 @@ export const CITIES_BY_COUNTRY: Record<Country, string[]> = {
 };
 
 export const ONBOARDING_LANGUAGES = ["English", "isiZulu", "Yoruba", "Swahili", "Hausa", "Afrikaans"];
+
+// ---------------------------------------------------------------------------
+// The Operations Layer -- the platform's other half, beyond the two
+// consumer-facing surfaces (Agency Command, Contributor Capture). Shows
+// the offline/paper field-collection method that backs up the "Digital +
+// Field Hybrid" methodology already sitting on Sondela Cover's own data,
+// plus the supervisor back-check and admin oversight that sit behind
+// every "Verified" badge in Evidence.tsx.
+//
+// Role accent colors below match the real ACP app's own role->color
+// convention (field_agent = Pulse, supervisor = Soul Gap purple,
+// admin = Ritual pink), not invented fresh for this demo.
+// ---------------------------------------------------------------------------
+
+export interface FieldStop {
+  id: string;
+  label: string;
+}
+
+// One field worker's route for one day -- illustrative, not a real roster
+// or real GPS trail. Deliberately small (5 stops): this is a demo beat,
+// not a logistics simulation.
+export const FIELD_ROUTE: FieldStop[] = [
+  { id: "fs-1", label: "Household 3" },
+  { id: "fs-2", label: "Household 7" },
+  { id: "fs-3", label: "Household 11" },
+  { id: "fs-4", label: "Household 15" },
+  { id: "fs-5", label: "Household 19" },
+];
+
+export const FIELD_WORKER = {
+  name: "Thabo M.",
+  zone: "Soweto, Ward 14",
+  campaignClient: "Sondela Cover",
+};
+
+export type CaptureMethod = "digital" | "field";
+export type ReviewStatus = "pending" | "approved" | "flagged";
+
+export interface ReviewQueueItem {
+  id: string;
+  campaignClient: string;
+  method: CaptureMethod;
+  excerpt: string;
+  city: string;
+  contributorId: string;
+}
+
+// Illustrative supervisor review queue -- deliberately drawn from Kasi
+// Brew / Tholulwazi Data (the demo's already-invented secondary
+// campaigns), not Sondela Cover. Sondela's evidence is the one deep,
+// content-audited case study (real quotes, verified verbatim against the
+// brief) -- adding new invented quotes under its name would blur that
+// real-vs-invented ledger. These are fresh content, clearly separate.
+export const REVIEW_QUEUE: ReviewQueueItem[] = [
+  {
+    id: "rq-1",
+    campaignClient: "Kasi Brew",
+    method: "digital",
+    excerpt: "Everyone's already posting their own brew videos before we even asked them to.",
+    city: "Alexandra",
+    contributorId: "CT-8810",
+  },
+  {
+    id: "rq-2",
+    campaignClient: "Kasi Brew",
+    method: "field",
+    excerpt: "Paper response: taste testers preferred the stronger blend, noted the aroma specifically.",
+    city: "Gugulethu",
+    contributorId: "CT-8822",
+  },
+  {
+    id: "rq-3",
+    campaignClient: "Tholulwazi Data",
+    method: "digital",
+    excerpt: "Nobody trusts a data plan that doesn't show the price upfront.",
+    city: "Mamelodi",
+    contributorId: "CT-9014",
+  },
+  {
+    id: "rq-4",
+    campaignClient: "Tholulwazi Data",
+    method: "field",
+    excerpt: "Paper response: respondent compared the offer directly to a competitor's SMS bundle.",
+    city: "KwaMashu",
+    contributorId: "CT-9027",
+  },
+  {
+    id: "rq-5",
+    campaignClient: "Kasi Brew",
+    method: "digital",
+    excerpt: "The queue outside on launch day was the real signal, not the survey.",
+    city: "Alexandra",
+    contributorId: "CT-8831",
+  },
+];

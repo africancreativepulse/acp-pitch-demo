@@ -93,7 +93,16 @@ export function Splash() {
             component's actual API instead of forcing a mismatch. */}
         <DecodeText phrases={HERO_PHRASES} accent="var(--pulse)" className="mt-14 w-full max-w-xl text-left" />
 
-        <p className="mt-8 label-caps !text-[10px]">Pitch prototype · No login required</p>
+        {/* Tertiary entry point -- deliberately below and visually
+            quieter than the two primary role-choice CTAs so it doesn't
+            compete with that fork moment, but still a genuine top-level
+            path into the platform's other half (field capture, review,
+            admin oversight), not something only reachable by accident. */}
+        <Link to="/operations" className="mt-8 text-[13px] text-muted hover:text-paper hover:underline">
+          See how the data gets collected & verified →
+        </Link>
+
+        <p className="mt-4 label-caps !text-[10px]">Pitch prototype · No login required</p>
       </div>
     </div>
   );

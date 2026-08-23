@@ -1,5 +1,6 @@
 import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
 import type { BuilderTask } from "@/data/demo";
+import { REVIEW_QUEUE, type ReviewStatus } from "@/data/demo";
 
 // A campaign someone creates live in the Campaign Builder. Deliberately
 // scores-less: it just launched, so there's honestly nothing to show yet
@@ -22,12 +23,20 @@ export interface DraftCampaign {
 interface DemoState {
   draftCampaigns: DraftCampaign[];
   addCampaign: (c: Omit<DraftCampaign, "id" | "createdAt">) => void;
+  // Shared between SupervisorReview (writes) and AdminOversight (reads) --
+  // a real connected pipeline, not two screens narrating the same idea
+  // independently. Keyed by ReviewQueueItem.id, all start "pending".
+  reviewStatus: Record<string, ReviewStatus>;
+  setReviewStatus: (id: string, status: ReviewStatus) => void;
 }
 
 const Ctx = createContext<DemoState | null>(null);
 
 export function DemoStateProvider({ children }: { children: ReactNode }) {
   const [draftCampaigns, setDraftCampaigns] = useState<DraftCampaign[]>([]);
+  const [reviewStatus, setReviewStatusMap] = useState<Record<string, ReviewStatus>>(() =>
+    Object.fromEntries(REVIEW_QUEUE.map((item) => [item.id, "pending" as ReviewStatus]))
+  );
 
   const value = useMemo<DemoState>(
     () => ({
@@ -37,8 +46,10 @@ export function DemoStateProvider({ children }: { children: ReactNode }) {
           { ...c, id: `draft-${Date.now()}`, createdAt: Date.now() },
           ...prev,
         ]),
+      reviewStatus,
+      setReviewStatus: (id, status) => setReviewStatusMap((prev) => ({ ...prev, [id]: status })),
     }),
-    [draftCampaigns]
+    [draftCampaigns, reviewStatus]
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
