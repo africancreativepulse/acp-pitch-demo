@@ -509,23 +509,41 @@ export const REWARD_OPTIONS = ["M-Pesa", "Airtime", "Bank Transfer"];
 // languages, not the full set.
 // ---------------------------------------------------------------------------
 
-export const COUNTRIES = ["South Africa", "Nigeria", "Kenya", "Ghana", "Ethiopia"] as const;
+// Synced against the real `countries` table's actual live is_active state
+// (checked directly, 2026-08-24 investigation) -- was previously a stale,
+// invented 5-country subset that had drifted from reality (the real table
+// went from an initial 5 active to 14 of 15 active as the country/signup
+// work landed). 14 active, only Mozambique still inactive.
+export const COUNTRIES = [
+  "Nigeria", "South Africa", "Kenya", "Ghana", "Tanzania", "Uganda", "Ethiopia",
+  "Senegal", "Rwanda", "Cameroon", "Côte d'Ivoire", "Morocco", "Egypt", "Angola",
+] as const;
 export type Country = (typeof COUNTRIES)[number];
 
 export const CITIES_BY_COUNTRY: Record<Country, string[]> = {
-  "South Africa": ["Johannesburg", "Durban", "Cape Town", "Pretoria"],
   Nigeria: ["Lagos", "Abuja", "Ibadan"],
+  "South Africa": ["Johannesburg", "Durban", "Cape Town", "Pretoria"],
   Kenya: ["Nairobi", "Mombasa", "Kisumu"],
   Ghana: ["Accra", "Kumasi"],
+  Tanzania: ["Dar es Salaam", "Dodoma", "Arusha"],
+  Uganda: ["Kampala", "Entebbe"],
   Ethiopia: ["Addis Ababa", "Bahir Dar"],
+  Senegal: ["Dakar", "Thiès"],
+  Rwanda: ["Kigali", "Butare"],
+  Cameroon: ["Douala", "Yaoundé"],
+  "Côte d'Ivoire": ["Abidjan", "Yamoussoukro"],
+  Morocco: ["Casablanca", "Rabat", "Marrakech"],
+  Egypt: ["Cairo", "Alexandria"],
+  Angola: ["Luanda", "Huambo"],
 };
 
 // The platform deliberately only shows markets it's actually live in --
 // expanding country by country rather than overclaiming reach it doesn't
 // have (real `countries.is_active` gate). Shown as disabled, clearly
-// labeled chips alongside the 5 live countries above, not silently
-// omitted -- the point is showing the gate exists, not hiding it.
-export const COMING_SOON_COUNTRIES = ["Tanzania", "Uganda"];
+// labeled chips alongside the live countries above, not silently omitted
+// -- the point is showing the gate exists, not hiding it. Mozambique is
+// the real table's only current is_active=false row.
+export const COMING_SOON_COUNTRIES = ["Mozambique"];
 
 // A representative subset, not the full real set -- this demo is
 // English-only (see README); the picker itself is real and working.
