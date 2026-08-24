@@ -80,9 +80,19 @@ const NAV: Record<ShellRole, { label: string; icon: typeof LayoutDashboard; path
     { label: "Campaigns", icon: FileText, path: "/agency" },
     { label: "Fieldwork", icon: Users, path: "/operations" },
   ],
+  // Fieldwork/Operations dropped from here -- the real app's own
+  // contributorNav never has it (confirmed against roleTheme.ts/
+  // DashboardLayout.tsx: nav.overview, nav.browse, nav.myTasks,
+  // nav.analytics, nav.files, nav.profile -- no fieldwork entry at
+  // all). Fieldwork operations (zones, field agent management) are an
+  // Agency/Admin tool in the real product; a Field Agent is a
+  // distinct role from Contributor, not an extension of it. This got
+  // misattached to Contributor when the Collection & Verification
+  // narrative chain was wired in -- the Field half of that story is
+  // already correctly reachable from the Agency side (Campaign
+  // Detail's own chain card), which is where it belongs.
   contributor: [
     { label: "My Tasks", icon: FileText, path: "/contribute" },
-    { label: "Fieldwork", icon: Users, path: "/operations" },
   ],
   field_agent: [
     { label: "Dashboard", icon: LayoutDashboard, path: "/operations/field" },
