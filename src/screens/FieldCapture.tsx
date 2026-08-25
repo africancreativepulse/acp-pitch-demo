@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { DashboardShell } from "@/components/DashboardShell";
 import { Button } from "@/components/Button";
 import { StatGrid, StatCard } from "@/components/StatCard";
@@ -19,8 +19,19 @@ type SyncState = "idle" | "syncing" | "done";
  * couldn't load this Supabase-backed real page at all, which is exactly
  * the gap this screen exists to illustrate -- so that part stays this
  * demo's own content, just housed in the same real structural language.
+ *
+ * ?supervisor=1 -- navigation-parity addition: the real app's own
+ * supervisorNav points its "Dashboard" item at this exact same route
+ * field_agent's own Dashboard uses (real supervisors can view the same
+ * field-capture experience their own team works in day to day). Same
+ * query-param-role-switch pattern AgencyCommand.tsx's own ?admin=1
+ * already established -- only the DashboardShell role (so the sidebar
+ * shows the right identity/nav) changes; the body content is intentionally
+ * the same real illustration either way.
  */
 export function FieldCapture() {
+  const [searchParams] = useSearchParams();
+  const isSupervisor = searchParams.get("supervisor") === "1";
   const [captured, setCaptured] = useState<Set<string>>(new Set());
   const [sync, setSync] = useState<SyncState>("idle");
 
@@ -40,7 +51,7 @@ export function FieldCapture() {
   };
 
   return (
-    <DashboardShell role="field_agent">
+    <DashboardShell role={isSupervisor ? "supervisor" : "field_agent"}>
       <div className="max-w-6xl px-6 pb-[60px] pt-[30px] md:px-10">
         <div className="mb-7 flex items-center justify-between">
           <div>

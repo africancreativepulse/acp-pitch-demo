@@ -2,6 +2,7 @@ import { useState, type ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard, FileText, Users, Shield, MapPin, Menu, X, LogOut, ShieldCheck,
+  User, FolderOpen, BarChart3, TrendingUp, Languages,
 } from "lucide-react";
 import { DemoHeader } from "@/components/DemoHeader";
 import { NotificationBell } from "@/components/NotificationBell";
@@ -30,7 +31,7 @@ export type ShellRole = "agency" | "contributor" | "field_agent" | "supervisor" 
 // ROLE_ACCENT already existed in this demo's own token set under the
 // same names. head_of_research = Taste (var(--taste)) is the real app's
 // own choice too, per roleTheme.ts's own documented hue-gap audit.
-const ROLE_ACCENT: Record<ShellRole, string> = {
+export const ROLE_ACCENT: Record<ShellRole, string> = {
   agency: "var(--visual)",
   contributor: "var(--sound)",
   field_agent: "var(--pulse)",
@@ -48,7 +49,7 @@ const ROLE_LOGO_LABEL: Record<ShellRole, string> = {
   head_of_research: "ACP RESEARCH",
 };
 
-const ROLE_AVATAR_GRADIENT: Record<ShellRole, [string, string]> = {
+export const ROLE_AVATAR_GRADIENT: Record<ShellRole, [string, string]> = {
   agency: ["var(--visual)", "var(--soulgap)"],
   contributor: ["var(--sound)", "var(--visual)"],
   field_agent: ["var(--pulse)", "var(--soulgap)"],
@@ -60,7 +61,7 @@ const ROLE_AVATAR_GRADIENT: Record<ShellRole, [string, string]> = {
 // No real accounts exist in this demo (no backend, see README) -- these
 // are honest role labels, not fabricated email addresses standing in for
 // a login that was never built.
-const ROLE_IDENTITY: Record<ShellRole, { initial: string; name: string; label: string }> = {
+export const ROLE_IDENTITY: Record<ShellRole, { initial: string; name: string; label: string }> = {
   agency: { initial: "N", name: "Ndoni Creative", label: "Agency" },
   contributor: { initial: "C", name: "Guest Contributor", label: "Contributor" },
   field_agent: { initial: "T", name: "Thabo M.", label: "Field Agent" },
@@ -69,16 +70,26 @@ const ROLE_IDENTITY: Record<ShellRole, { initial: string; name: string; label: s
   head_of_research: { initial: "N", name: "Nomvula D.", label: "Head of Research" },
 };
 
-// A pared-down version of the real per-role nav lists (agencyNav,
-// contributorNav, fieldAgentNav, supervisorNav, adminNav, headOfResearchNav
-// in the real DashboardLayout.tsx) -- scoped to the screens this demo
-// actually has, not a full replica of the real product's much larger nav
-// surface. Labels below are the real labelKey copy those roles' sidebars
-// actually use.
+// Full parity pass (today) -- this used to be "a pared-down version of the
+// real per-role nav lists, scoped to the screens this demo actually has."
+// That was the wrong call for what this demo is *for*: it's meant to be a
+// true, full representation of the real platform's navigation and depth --
+// click-through/no-signup is the only intentional difference from the real
+// app, not reduced scope. Every real labelKey/path below (from the real
+// app's own agencyNav/contributorNav/fieldAgentNav/supervisorNav/adminNav/
+// headOfResearchNav in DashboardLayout.tsx) now has a genuine, reachable
+// screen -- see each new screen's own header comment for what real content
+// backs it. "Operations"/"Fieldwork" hub-link items that have no real-app
+// equivalent are kept (they're this demo's own real navigational spine
+// into the Operations Layer, not a stand-in for a missing real item).
 const NAV: Record<ShellRole, { label: string; icon: typeof LayoutDashboard; path: string }[]> = {
   agency: [
+    { label: "Overview", icon: LayoutDashboard, path: "/agency/overview" },
     { label: "Campaigns", icon: FileText, path: "/agency" },
     { label: "Fieldwork", icon: Users, path: "/operations" },
+    { label: "Insights", icon: BarChart3, path: "/agency/insights" },
+    { label: "Files", icon: FolderOpen, path: "/files/agency" },
+    { label: "Profile", icon: User, path: "/profile/agency" },
   ],
   // Fieldwork/Operations dropped from here -- the real app's own
   // contributorNav never has it (confirmed against roleTheme.ts/
@@ -92,24 +103,49 @@ const NAV: Record<ShellRole, { label: string; icon: typeof LayoutDashboard; path
   // already correctly reachable from the Agency side (Campaign
   // Detail's own chain card), which is where it belongs.
   contributor: [
-    { label: "My Tasks", icon: FileText, path: "/contribute" },
+    { label: "Overview", icon: LayoutDashboard, path: "/contribute/overview" },
+    { label: "Browse", icon: FileText, path: "/contribute/browse" },
+    { label: "My Tasks", icon: Users, path: "/contribute" },
+    { label: "Analytics", icon: TrendingUp, path: "/contribute/analytics" },
+    { label: "Files", icon: FolderOpen, path: "/files/contributor" },
+    { label: "Profile", icon: User, path: "/profile/contributor" },
   ],
   field_agent: [
     { label: "Dashboard", icon: LayoutDashboard, path: "/operations/field" },
+    { label: "Earnings", icon: BarChart3, path: "/earnings/field_agent" },
+    { label: "Profile", icon: User, path: "/profile/field_agent" },
     { label: "Operations", icon: Users, path: "/operations" },
   ],
   supervisor: [
     { label: "Team", icon: Users, path: "/operations/review" },
-    { label: "Operations", icon: LayoutDashboard, path: "/operations" },
+    // Same route field_agent's own "Dashboard" uses -- matches the real
+    // app's own supervisorNav exactly (nav.dashboard points at the same
+    // /dashboard/fieldwork/agent field agents use). ?supervisor=1 keeps
+    // the sidebar correctly showing the supervisor's own identity/nav
+    // while viewing it, same query-param-role pattern AgencyCommand.tsx's
+    // ?admin=1 already established.
+    { label: "Dashboard", icon: LayoutDashboard, path: "/operations/field?supervisor=1" },
+    { label: "Earnings", icon: BarChart3, path: "/earnings/supervisor" },
+    { label: "Profile", icon: User, path: "/profile/supervisor" },
+    { label: "Operations", icon: MapPin, path: "/operations" },
   ],
+  // Badge Verification (real path /dashboard/admin/badges) is the one
+  // item deliberately NOT added here yet -- approved staging: it gets its
+  // real content (the pending-badge review queue) built directly in Part
+  // 2 alongside the taxonomy sync, rather than a placeholder screen now
+  // that Part 2 would then have to rebuild. Tracked, not forgotten.
   admin: [
+    { label: "Overview", icon: LayoutDashboard, path: "/operations/admin/overview" },
     { label: "Fieldwork Admin", icon: Shield, path: "/operations/admin" },
     { label: "Agency Verification", icon: ShieldCheck, path: "/operations/admin/agencies" },
     { label: "Campaigns", icon: FileText, path: "/agency?admin=1" },
+    { label: "Translation QA", icon: Languages, path: "/operations/admin/translation-qa" },
+    { label: "Profile", icon: User, path: "/profile/admin" },
     { label: "Operations", icon: MapPin, path: "/operations" },
   ],
   head_of_research: [
     { label: "Area Overview", icon: MapPin, path: "/operations/research" },
+    { label: "Profile", icon: User, path: "/profile/head_of_research" },
     { label: "Operations", icon: Users, path: "/operations" },
   ],
 };

@@ -14,6 +14,19 @@ import { AdminOversight } from "@/screens/AdminOversight";
 import { ResearchHub } from "@/screens/ResearchHub";
 import { AgencyVerification } from "@/screens/AgencyVerification";
 import { WrapUp } from "@/screens/WrapUp";
+// Navigation-parity pass (today) -- every real per-role nav item now has
+// a genuine, reachable screen. See DashboardShell.tsx's own NAV comment
+// for the full reasoning.
+import { Profile } from "@/screens/Profile";
+import { AgencyOverview } from "@/screens/AgencyOverview";
+import { ContributorOverview } from "@/screens/ContributorOverview";
+import { AdminOverview } from "@/screens/AdminOverview";
+import { Files } from "@/screens/Files";
+import { AgencyInsights } from "@/screens/AgencyInsights";
+import { ContributorAnalytics } from "@/screens/ContributorAnalytics";
+import { Earnings } from "@/screens/Earnings";
+import { Browse } from "@/screens/Browse";
+import { TranslationQA } from "@/screens/TranslationQA";
 
 export default function App() {
   return (
@@ -46,6 +59,17 @@ export default function App() {
             <Route path="/operations/admin" element={<AdminOversight />} />
             <Route path="/operations/admin/agencies" element={<AgencyVerification />} />
             <Route path="/operations/research" element={<ResearchHub />} />
+            {/* Navigation-parity pass (today) */}
+            <Route path="/profile/:role" element={<Profile />} />
+            <Route path="/agency/overview" element={<AgencyOverview />} />
+            <Route path="/agency/insights" element={<AgencyInsights />} />
+            <Route path="/contribute/overview" element={<ContributorOverview />} />
+            <Route path="/contribute/browse" element={<Browse />} />
+            <Route path="/contribute/analytics" element={<ContributorAnalytics />} />
+            <Route path="/files/:role" element={<Files />} />
+            <Route path="/earnings/:role" element={<Earnings />} />
+            <Route path="/operations/admin/overview" element={<AdminOverview />} />
+            <Route path="/operations/admin/translation-qa" element={<TranslationQA />} />
             <Route path="/wrap-up" element={<WrapUp />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
