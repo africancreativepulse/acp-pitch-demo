@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, Flag } from "lucide-react";
 import { AcpLogo } from "@/components/AcpLogo";
+import { Button } from "@/components/Button";
 import { useCanGoBack } from "@/state/NavHistory";
 
 /**
@@ -52,10 +54,32 @@ import { useCanGoBack } from "@/state/NavHistory";
  * has to guess how to bring the tour to a deliberate stop. Suppressed only
  * on Splash (the tour hasn't started) and on the Wrap Up screen itself
  * (already there).
+ *
+ * Visual-parity fix (real bug found + fixed): Sign In used to live inline
+ * in Splash's own page body, below the two "Enter as" buttons -- a plain
+ * underlined text link, not a button. That didn't match the real app's
+ * own homepage at all: there, Sign In lives in the persistent Navbar
+ * (top-right, ghost-variant button, beside Book a Demo), not the page
+ * body. showSignIn (default false, so every other ~20 screens using this
+ * header are untouched) moves it into the real position -- this header's
+ * own right-side slot -- styled with this demo's own Button component,
+ * which is a byte-for-byte port of the real app's ghost variant, so the
+ * style matches for free, not just the position. Self-contained here
+ * (trigger + reveal panel both live in this one component) rather than
+ * lifting state up into Splash, since nothing else needs to know about it.
  */
-export function DemoHeader({ showBack = true, showWrapUp = true }: { showBack?: boolean; showWrapUp?: boolean }) {
+export function DemoHeader({
+  showBack = true,
+  showWrapUp = true,
+  showSignIn = false,
+}: {
+  showBack?: boolean;
+  showWrapUp?: boolean;
+  showSignIn?: boolean;
+}) {
   const navigate = useNavigate();
   const canGoBack = useCanGoBack();
+  const [signInOpen, setSignInOpen] = useState(false);
 
   const handleBack = () => {
     if (canGoBack) navigate(-1);
@@ -63,7 +87,7 @@ export function DemoHeader({ showBack = true, showWrapUp = true }: { showBack?: 
   };
 
   return (
-    <header className="flex h-[68px] w-full shrink-0 items-center justify-between border-b border-line px-6">
+    <header className="relative flex h-[68px] w-full shrink-0 items-center justify-between border-b border-line px-6">
       <div className="flex items-center gap-5">
         {showBack && (
           <button
@@ -79,12 +103,40 @@ export function DemoHeader({ showBack = true, showWrapUp = true }: { showBack?: 
           <AcpLogo markClassName="h-9 w-9" textClassName="hidden sm:inline text-base" />
         </Link>
       </div>
-      {showWrapUp && (
-        <Link to="/wrap-up" className="flex items-center gap-1.5 text-[13px] text-muted transition-colors hover:text-paper">
-          <Flag className="h-3.5 w-3.5" />
-          <span className="hidden sm:inline">Wrap Up</span>
-        </Link>
-      )}
+
+      <div className="flex items-center gap-5">
+        {showSignIn && (
+          <div className="relative">
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => setSignInOpen((v) => !v)}
+              className="!px-[18px] !py-[9px]"
+            >
+              Sign In
+            </Button>
+            {signInOpen && (
+              <div className="absolute end-0 top-[calc(100%+8px)] z-10 w-[220px] rounded-sm border border-line bg-ink p-4 shadow-xl">
+                <div className="mb-2.5 text-[11px] uppercase tracking-[0.1em] text-muted">Sign in as</div>
+                <div className="flex flex-col gap-2 text-[13px]">
+                  <Link to="/agency" className="text-visual hover:underline">
+                    Agency
+                  </Link>
+                  <Link to="/contribute" className="text-sound hover:underline">
+                    Contributor
+                  </Link>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+        {showWrapUp && (
+          <Link to="/wrap-up" className="flex items-center gap-1.5 text-[13px] text-muted transition-colors hover:text-paper">
+            <Flag className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">Wrap Up</span>
+          </Link>
+        )}
+      </div>
     </header>
   );
 }

@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Link } from "react-router-dom";
 import { DemoHeader } from "@/components/DemoHeader";
 import { DotGrid } from "@/components/DotGrid";
@@ -37,19 +36,13 @@ import { CULTURAL_LAYERS } from "@/data/demo";
  * strings, the most logical home for it per the brief's own suggestion.
  */
 export function Splash() {
-  // Sign In (returning-visitor path) -- same real gap just found and
-  // fixed on the live app's actual homepage, mirrored here. Deliberately
-  // secondary to the two "Enter as" buttons: those are onboarding entry
-  // points (new visitor, picks a role, goes through setup); this is a
-  // shortcut past onboarding for a visitor who's "already set up" --
-  // which this demo has no real backend to persist anyway (see this
-  // screen's own footer: "No login required"). Tap-only reveal, no
-  // credential fields, matching this whole demo's zero-typing rule.
-  const [showSignIn, setShowSignIn] = useState(false);
-
   return (
     <div className="relative flex min-h-screen flex-col bg-ink">
-      <DemoHeader showBack={false} showWrapUp={false} />
+      {/* Sign In (returning-visitor path) -- same real gap just found and
+          fixed on the live app's actual homepage, mirrored here, now in
+          the real matching position too (header, not page body -- see
+          DemoHeader's own showSignIn comment for the visual-parity fix). */}
+      <DemoHeader showBack={false} showWrapUp={false} showSignIn />
 
       <div className="relative flex flex-1 flex-col items-center overflow-hidden px-6 py-16">
         <DotGrid />
@@ -85,7 +78,7 @@ export function Splash() {
               actually said.
             </p>
 
-            <div className="mb-4 flex flex-col gap-3.5 sm:flex-row sm:flex-wrap">
+            <div className="mb-9 flex flex-col gap-3.5 sm:flex-row sm:flex-wrap">
               <Link
                 to="/onboarding/agency"
                 className="inline-flex items-center justify-center gap-2 rounded-sm border bg-ink px-7 py-3.5 font-display text-[13px] font-semibold uppercase tracking-[0.06em] text-visual transition-colors hover:bg-visual hover:text-ink"
@@ -100,29 +93,6 @@ export function Splash() {
               >
                 Enter as a Contributor
               </Link>
-            </div>
-
-            <div className="mb-9 min-h-[20px]">
-              {!showSignIn ? (
-                <button
-                  type="button"
-                  onClick={() => setShowSignIn(true)}
-                  className="text-[12.5px] text-muted underline-offset-4 transition-colors hover:text-paper hover:underline"
-                >
-                  Already set up? Sign In
-                </button>
-              ) : (
-                <div className="flex flex-wrap items-center gap-3 text-[12.5px] text-muted">
-                  <span>Sign in as</span>
-                  <Link to="/agency" className="text-visual underline-offset-4 hover:underline">
-                    Agency
-                  </Link>
-                  <span className="text-line">·</span>
-                  <Link to="/contribute" className="text-sound underline-offset-4 hover:underline">
-                    Contributor
-                  </Link>
-                </div>
-              )}
             </div>
 
             <div className="flex flex-wrap gap-8 border-t border-line pt-7">
