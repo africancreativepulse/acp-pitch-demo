@@ -167,10 +167,13 @@ export interface Campaign {
   decay: number | null;
   soulGap: SoulGap | null;
   evidence: Record<CeiKey, EvidenceItem[]>;
-  /** Which of CAMPAIGN_CATEGORIES this campaign is tagged under -- the
-      real basis contributor expert badges match against. Optional since
-      draft campaigns created live in Campaign Builder may not set one. */
-  category?: string;
+  /** Real sub_category ids (taxonomy.ts) this campaign is tagged under --
+      the real basis contributor expert badges match against. 1..n, matching
+      the real app's own campaign_categories join table (Taxonomy expansion
+      Stage 1's approved multi-tag cardinality change, replacing a single
+      nullable category column). Optional/empty since draft campaigns
+      created live in Campaign Builder may not tag one. */
+  categories?: string[];
   /** Set only for a campaign admin created directly, no agency in
       between -- see AgencyCommand.tsx's admin-view filtering. */
   adminDirect?: boolean;
@@ -205,7 +208,7 @@ const sondela: Campaign = {
   methodology: "Digital + Field Hybrid",
   verifiedResponses: 340,
   status: "collecting",
-  category: "finance_business",
+  categories: ["finance_and_wealth.personal_finance"],
   cei: sondelaCei,
   cdi: 7.2,
   decay: 4.6,
@@ -329,7 +332,7 @@ export interface SecondaryCampaign {
   decay: number;
   soulGap: { magnitude: SoulGap["magnitude"]; headline: string };
   reportNote?: string;
-  category?: string;
+  categories?: string[];
   /** Set only for a campaign admin created directly, no agency in
       between -- see AgencyCommand.tsx's admin-view filtering. */
   adminDirect?: boolean;
@@ -342,7 +345,7 @@ export const KASI_BREW: SecondaryCampaign = {
   methodology: "Digital Only",
   verifiedResponses: 210,
   status: "completed",
-  category: "food_culinary",
+  categories: ["food_and_culinary.beverages"],
   cei: { visual: 7.2, sound: 8.4, language: 6.5, ritual: 5.9, pulse: 7.0, taste: 8.0 },
   cdi: 6.1,
   decay: 2.8,
@@ -362,7 +365,7 @@ export const THOLULWAZI_DATA: SecondaryCampaign = {
   methodology: "Field Only",
   verifiedResponses: 128,
   status: "collecting",
-  category: "tech_gadgets",
+  categories: ["technology_and_digital.smartphones"],
   cei: { visual: 5.5, sound: 6.0, language: 7.8, ritual: 6.2, pulse: 8.3, taste: 5.1 },
   cdi: 5.4,
   decay: 6.2,
@@ -386,7 +389,7 @@ export const MZANSI_WELLNESS: SecondaryCampaign = {
   methodology: "Digital + Field Hybrid",
   verifiedResponses: 64,
   status: "collecting",
-  category: "beauty_wellness",
+  categories: ["fashion_and_beauty.beauty"],
   adminDirect: true,
   cei: { visual: 6.4, sound: 6.9, language: 6.1, ritual: 5.8, pulse: 7.3, taste: 6.6 },
   cdi: 6.4,
@@ -401,35 +404,50 @@ export const MZANSI_WELLNESS: SecondaryCampaign = {
 export const SONDELA = sondela;
 
 // ---------------------------------------------------------------------------
-// Expert badges / campaign categories -- the real basis contributor
-// self-selected expertise is matched against, so a campaign only reaches
-// people genuinely suited to it. 10 categories, matching the real app's
-// own fixed vocabulary (not exhaustive of every real category, but not
-// invented either -- these are the actual real ones).
+// Expert badges / campaign categories -- see data/taxonomy.ts for the real
+// 29-field/220-leaf structure (curated here) contributor self-selected
+// expertise and campaign tags both draw from, replacing the old flat
+// 10-value vocabulary this section used to hold directly.
 // ---------------------------------------------------------------------------
 
-export interface CampaignCategory {
-  value: string;
-  label: string;
+export interface BadgeReviewItem {
+  id: string;
+  contributorName: string;
+  subCategoryId: string;
+  socialHandle?: string;
+  experienceNote?: string;
 }
 
-export const CAMPAIGN_CATEGORIES: CampaignCategory[] = [
-  { value: "fashion_style", label: "Fashion & Style" },
-  { value: "finance_business", label: "Finance & Business" },
-  { value: "food_culinary", label: "Food & Culinary" },
-  { value: "music_audio", label: "Music & Audio" },
-  { value: "beauty_wellness", label: "Beauty & Wellness" },
-  { value: "tech_gadgets", label: "Tech & Gadgets" },
-  { value: "sports_fitness", label: "Sports & Fitness" },
-  { value: "entertainment_pop_culture", label: "Entertainment & Pop Culture" },
-  { value: "parenting_family", label: "Parenting & Family" },
-  { value: "travel_lifestyle", label: "Travel & Lifestyle" },
+// Illustrative pending submissions from OTHER contributors -- same
+// established pattern as AGENCY_VERIFICATION_QUEUE and REVIEW_QUEUE
+// (SupervisorReview's back-check queue): named rows beyond this demo's one
+// live Guest Contributor session, so Admin's own Badge Verification queue
+// has real content to review even before anyone touches Onboarding. The
+// Guest Contributor's own live badges (from DemoState, picked at Onboarding
+// or defaulted) are layered on top of this list at render time in
+// BadgeVerification.tsx, not duplicated here.
+export const BADGE_REVIEW_QUEUE: BadgeReviewItem[] = [
+  {
+    id: "badge-1",
+    contributorName: "Lindiwe K.",
+    subCategoryId: "food_and_culinary.food_culture",
+    socialHandle: "@lindiwe_eats",
+    experienceNote: "Run a supper-club series across Soweto and Alex — 6 years documenting township food culture.",
+  },
+  {
+    id: "badge-2",
+    contributorName: "Sipho N.",
+    subCategoryId: "technology_and_digital.smartphones",
+    experienceNote: "Sell refurbished phones at Bree Street taxi rank — deal with device trust concerns daily.",
+  },
+  {
+    id: "badge-3",
+    contributorName: "Amahle P.",
+    subCategoryId: "fashion_and_beauty.hair",
+    socialHandle: "@amahle_locs",
+    experienceNote: "Natural hair stylist, 4 years in Gugulethu.",
+  },
 ];
-
-export function categoryLabel(value?: string): string | null {
-  if (!value) return null;
-  return CAMPAIGN_CATEGORIES.find((c) => c.value === value)?.label ?? null;
-}
 
 // ---------------------------------------------------------------------------
 // Cultural Layers -- the real lenses the platform tracks (real app's own

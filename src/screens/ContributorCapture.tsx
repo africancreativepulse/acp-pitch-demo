@@ -8,6 +8,7 @@ import { AcpMark } from "@/components/AcpMark";
 import { ExpertBadge } from "@/components/ExpertBadge";
 import { cn } from "@/lib/cn";
 import { CONTRIBUTOR_TASK, REWARD_OPTIONS, SONDELA } from "@/data/demo";
+import { majorFieldOf } from "@/data/taxonomy";
 import { useDemoState } from "@/state/DemoState";
 
 type TaskState = "pending" | "active" | "done";
@@ -36,8 +37,13 @@ export function ContributorCapture() {
   const { contributorBadges } = useDemoState();
   // Part C, item 11 payoff -- Onboarding's Expertise step wasn't just
   // decorative; this is the real match it feeds, made visible: Sondela
-  // Cover's own category only reaches contributors who picked it.
-  const matchedCategory = SONDELA.category && contributorBadges.includes(SONDELA.category) ? SONDELA.category : null;
+  // Cover's own tags only reach contributors with an APPROVED badge in the
+  // same major field -- same real gate as taxonomy.ts's own
+  // contributorMatchesCampaign(), applied inline here since this screen
+  // only ever needs a single matched badge to display, not a boolean.
+  const sondelaFields = new Set((SONDELA.categories ?? []).map((id) => majorFieldOf(id)?.slug));
+  const matchedBadge = contributorBadges.find((b) => b.status === "approved" && sondelaFields.has(majorFieldOf(b.subCategoryId)?.slug));
+  const matchedCategory = matchedBadge?.subCategoryId ?? null;
   const [activeTask, setActiveTask] = useState<TaskKey | null>(null);
   const [voiceState, setVoiceState] = useState<TaskState>("pending");
   const [photoState, setPhotoState] = useState<TaskState>("pending");

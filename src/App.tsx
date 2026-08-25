@@ -27,6 +27,8 @@ import { ContributorAnalytics } from "@/screens/ContributorAnalytics";
 import { Earnings } from "@/screens/Earnings";
 import { Browse } from "@/screens/Browse";
 import { TranslationQA } from "@/screens/TranslationQA";
+// Taxonomy expansion sync (Part 2)
+import { BadgeVerification } from "@/screens/BadgeVerification";
 
 export default function App() {
   return (
@@ -70,6 +72,7 @@ export default function App() {
             <Route path="/earnings/:role" element={<Earnings />} />
             <Route path="/operations/admin/overview" element={<AdminOverview />} />
             <Route path="/operations/admin/translation-qa" element={<TranslationQA />} />
+            <Route path="/operations/admin/badges" element={<BadgeVerification />} />
             <Route path="/wrap-up" element={<WrapUp />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

@@ -7,10 +7,11 @@ import { ScorePill } from "@/components/ScorePill";
 import { StatGrid, StatCard } from "@/components/StatCard";
 import { InfoHint } from "@/components/InfoHint";
 import {
-  SONDELA, KASI_BREW, THOLULWAZI_DATA, MZANSI_WELLNESS, cdiBand, decayBand, BAND_HEX, categoryLabel,
+  SONDELA, KASI_BREW, THOLULWAZI_DATA, MZANSI_WELLNESS, cdiBand, decayBand, BAND_HEX,
   CEI_DEFINITION, CDI_DEFINITION,
   type CeiKey, type SecondaryCampaign,
 } from "@/data/demo";
+import { subCategoryLabel } from "@/data/taxonomy";
 import { useDemoState } from "@/state/DemoState";
 
 const ACCENT = "var(--visual)";
@@ -21,7 +22,7 @@ interface Row {
   id: string;
   client: string;
   cities: string[];
-  category?: string;
+  categories?: string[];
   adminDirect?: boolean;
   verifiedResponses: number;
   cei: Partial<Record<CeiKey, number>> | null;
@@ -73,7 +74,7 @@ export function AgencyCommand() {
       id: SONDELA.id,
       client: SONDELA.client,
       cities: SONDELA.cities,
-      category: SONDELA.category,
+      categories: SONDELA.categories,
       verifiedResponses: SONDELA.verifiedResponses,
       cei: SONDELA.cei,
       cdi: SONDELA.cdi,
@@ -84,7 +85,7 @@ export function AgencyCommand() {
       id: KASI_BREW.id,
       client: KASI_BREW.client,
       cities: KASI_BREW.cities,
-      category: KASI_BREW.category,
+      categories: KASI_BREW.categories,
       verifiedResponses: KASI_BREW.verifiedResponses,
       cei: KASI_BREW.cei,
       cdi: KASI_BREW.cdi,
@@ -95,7 +96,7 @@ export function AgencyCommand() {
       id: THOLULWAZI_DATA.id,
       client: THOLULWAZI_DATA.client,
       cities: THOLULWAZI_DATA.cities,
-      category: THOLULWAZI_DATA.category,
+      categories: THOLULWAZI_DATA.categories,
       verifiedResponses: THOLULWAZI_DATA.verifiedResponses,
       cei: THOLULWAZI_DATA.cei,
       cdi: THOLULWAZI_DATA.cdi,
@@ -106,7 +107,7 @@ export function AgencyCommand() {
       id: c.id,
       client: c.client,
       cities: c.cities,
-      category: c.category,
+      categories: c.categories,
       adminDirect: c.adminDirect,
       verifiedResponses: 0,
       cei: null,
@@ -134,7 +135,7 @@ export function AgencyCommand() {
             id: MZANSI_WELLNESS.id,
             client: MZANSI_WELLNESS.client,
             cities: MZANSI_WELLNESS.cities,
-            category: MZANSI_WELLNESS.category,
+            categories: MZANSI_WELLNESS.categories,
             adminDirect: true,
             verifiedResponses: MZANSI_WELLNESS.verifiedResponses,
             cei: MZANSI_WELLNESS.cei,
@@ -227,7 +228,9 @@ export function AgencyCommand() {
                     </div>
                     <div className="mt-0.5 truncate text-[11.5px] text-muted">
                       {row.cities.join(" · ")}
-                      {categoryLabel(row.category) && <span className="text-muted/60"> · {categoryLabel(row.category)}</span>}
+                      {row.categories && row.categories.length > 0 && (
+                        <span className="text-muted/60"> · {row.categories.map((id) => subCategoryLabel(id)).filter(Boolean).join(", ")}</span>
+                      )}
                     </div>
                   </div>
                   {cei != null ? (

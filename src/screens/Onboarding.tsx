@@ -4,10 +4,11 @@ import { CheckCircle2, Upload, Sparkles } from "lucide-react";
 import { Button } from "@/components/Button";
 import { DemoHeader } from "@/components/DemoHeader";
 import { ExpertBadge } from "@/components/ExpertBadge";
+import { CategoryPicker } from "@/components/CategoryPicker";
 import { cn } from "@/lib/cn";
 import {
   COUNTRIES, COMING_SOON_COUNTRIES, CITIES_BY_COUNTRY, ONBOARDING_LANGUAGES,
-  CAMPAIGN_CATEGORIES, CEI_DEFINITION, CDI_DEFINITION, type Country,
+  CEI_DEFINITION, CDI_DEFINITION, type Country,
 } from "@/data/demo";
 import { useDemoState } from "@/state/DemoState";
 
@@ -35,7 +36,12 @@ export function Onboarding() {
   const [city, setCity] = useState(CITIES_BY_COUNTRY["South Africa"][0]);
   const [language, setLanguage] = useState("English");
   const [docUploaded, setDocUploaded] = useState(false);
-  const [badges, setBadges] = useState<string[]>(["finance_business"]);
+  // Starts empty -- picking is genuinely optional (real app: "Skip" shows
+  // until at least one is picked), and every badge picked here starts
+  // "pending" on finish, matching the real app's own contributor_badges
+  // default -- a badge doesn't affect campaign matching until an admin
+  // approves it in Badge Verification.
+  const [badges, setBadges] = useState<string[]>([]);
 
   if (role !== "agency" && role !== "contributor") {
     return <Navigate to="/" replace />;
@@ -51,11 +57,10 @@ export function Onboarding() {
     setCity(CITIES_BY_COUNTRY[c][0]);
   };
 
-  const toggleBadge = (value: string) =>
-    setBadges((prev) => (prev.includes(value) ? prev.filter((b) => b !== value) : [...prev, value]));
-
   const finish = () => {
-    if (typedRole === "contributor") setContributorBadges(badges);
+    if (typedRole === "contributor") {
+      setContributorBadges(badges.map((subCategoryId) => ({ subCategoryId, status: "pending" as const })));
+    }
     navigate(destination);
   };
 
@@ -206,37 +211,27 @@ export function Onboarding() {
               <h1 className="mb-4 font-display text-3xl font-bold text-paper">What do you know well?</h1>
               <p className="mb-8 text-muted">
                 Pick a few expert categories — campaigns only reach contributors genuinely matched
-                to them, not everyone at once.
+                to them, not everyone at once. Real 29-field structure, same as the live platform.
               </p>
 
-              <div className="mb-6 flex flex-wrap gap-2">
-                {CAMPAIGN_CATEGORIES.map((c) => {
-                  const active = badges.includes(c.value);
-                  return (
-                    <button
-                      key={c.value}
-                      type="button"
-                      onClick={() => toggleBadge(c.value)}
-                      className={cn(
-                        "rounded-none border px-3 py-2 text-sm transition-colors",
-                        active ? "text-ink" : "border-line bg-transparent text-muted hover:border-[var(--badge-accent)] hover:text-paper"
-                      )}
-                      style={active ? { backgroundColor: accent, borderColor: accent } : { ["--badge-accent" as string]: accent }}
-                    >
-                      {c.label}
-                    </button>
-                  );
-                })}
+              {/* Taxonomy expansion sync (Part 2) -- CategoryPicker replaces
+                  the old flat 10-item chip grid, which genuinely doesn't
+                  scale to a real 29-field structure. "multi" mode: no cap,
+                  no nudge, matching this step's existing "optional, pick as
+                  many as fit" framing exactly. */}
+              <div className="mb-6">
+                <CategoryPicker mode="multi" selected={badges} onChange={setBadges} accent={accent} />
               </div>
 
               {/* Part C item 8 -- the picker above selects; this is the
                   real payoff shown immediately, in the same badge visual
                   ContributorCapture pays it off with a step later, not
-                  just a checkmark on a chip. */}
+                  just a checkmark on a chip. Every badge here starts
+                  "pending" until Admin approves it -- see finish(). */}
               {badges.length > 0 && (
                 <div className="mb-8 flex flex-wrap gap-x-6 gap-y-3 rounded-lg border border-line p-4">
                   {badges.map((b) => (
-                    <ExpertBadge key={b} category={b} color={accent} size="sm" />
+                    <ExpertBadge key={b} category={b} color={accent} size="sm" status="pending" />
                   ))}
                 </div>
               )}

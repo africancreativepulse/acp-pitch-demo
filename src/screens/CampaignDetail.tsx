@@ -22,10 +22,10 @@ import {
   cdiBand,
   decayBand,
   quadrantRead,
-  categoryLabel,
   type CeiKey,
   type EvidenceItem,
 } from "@/data/demo";
+import { subCategoryLabel } from "@/data/taxonomy";
 
 const ACCENT = "var(--visual)";
 type SwitcherKey = CeiKey | "soulgap";
@@ -124,6 +124,11 @@ export function CampaignDetail() {
   }));
   const ceiOverall = CEI_ORDER.reduce((sum, k) => sum + cei[k], 0) / CEI_ORDER.length;
   const quadrant = quadrantRead(cdi, decay);
+  // First real tag's label -- Sondela's own categories array can carry more
+  // than one (the real app's own multi-tag cardinality), but this header
+  // chip and the push-notification toast both only ever had room for one
+  // named badge, same as before this sync.
+  const sondelaCategoryLabel = SONDELA.categories?.[0] ? subCategoryLabel(SONDELA.categories[0]) : null;
 
   const goToEvidence = (dim: SwitcherKey) => {
     setActiveDimension(dim);
@@ -143,9 +148,9 @@ export function CampaignDetail() {
               >
                 collecting
               </span>
-              {categoryLabel(SONDELA.category) && (
+              {sondelaCategoryLabel && (
                 <span className="rounded-full border border-line px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.06em] text-muted">
-                  {categoryLabel(SONDELA.category)}
+                  {sondelaCategoryLabel}
                 </span>
               )}
               {urgent && (
@@ -194,7 +199,7 @@ export function CampaignDetail() {
               New urgent campaign: <strong>Sondela Cover</strong> needs your voice.
             </p>
             <p className="mt-1 text-[11.5px] text-muted">
-              Sent to contributors with a matching {categoryLabel(SONDELA.category)} badge — real
+              Sent to contributors with a matching {sondelaCategoryLabel} badge — real
               device push, illustrative recipient count.
             </p>
           </div>

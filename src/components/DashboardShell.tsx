@@ -2,7 +2,7 @@ import { useState, type ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard, FileText, Users, Shield, MapPin, Menu, X, LogOut, ShieldCheck,
-  User, FolderOpen, BarChart3, TrendingUp, Languages,
+  User, FolderOpen, BarChart3, TrendingUp, Languages, Award,
 } from "lucide-react";
 import { DemoHeader } from "@/components/DemoHeader";
 import { NotificationBell } from "@/components/NotificationBell";
@@ -129,15 +129,15 @@ const NAV: Record<ShellRole, { label: string; icon: typeof LayoutDashboard; path
     { label: "Profile", icon: User, path: "/profile/supervisor" },
     { label: "Operations", icon: MapPin, path: "/operations" },
   ],
-  // Badge Verification (real path /dashboard/admin/badges) is the one
-  // item deliberately NOT added here yet -- approved staging: it gets its
-  // real content (the pending-badge review queue) built directly in Part
-  // 2 alongside the taxonomy sync, rather than a placeholder screen now
-  // that Part 2 would then have to rebuild. Tracked, not forgotten.
+  // Badge Verification (real path /dashboard/admin/badges) -- deferred
+  // from Part 1's navigation-parity pass, now built with its real content
+  // (the pending-badge review queue) as part of Part 2's taxonomy sync,
+  // per that pass's own header comment.
   admin: [
     { label: "Overview", icon: LayoutDashboard, path: "/operations/admin/overview" },
     { label: "Fieldwork Admin", icon: Shield, path: "/operations/admin" },
     { label: "Agency Verification", icon: ShieldCheck, path: "/operations/admin/agencies" },
+    { label: "Badge Verification", icon: Award, path: "/operations/admin/badges" },
     { label: "Campaigns", icon: FileText, path: "/agency?admin=1" },
     { label: "Translation QA", icon: Languages, path: "/operations/admin/translation-qa" },
     { label: "Profile", icon: User, path: "/profile/admin" },

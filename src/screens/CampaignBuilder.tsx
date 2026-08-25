@@ -2,8 +2,10 @@ import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { DashboardShell } from "@/components/DashboardShell";
 import { Button } from "@/components/Button";
+import { CategoryPicker } from "@/components/CategoryPicker";
 import { cn } from "@/lib/cn";
-import { TASK_TYPES, CAMPAIGN_CATEGORIES, type BuilderTask, type TaskTypeKey } from "@/data/demo";
+import { TASK_TYPES, type BuilderTask, type TaskTypeKey } from "@/data/demo";
+import { subCategoryLabel } from "@/data/taxonomy";
 import { useDemoState } from "@/state/DemoState";
 
 const STEPS = ["Details", "Tasks", "Review"];
@@ -69,7 +71,7 @@ export function CampaignBuilder() {
 
   const [client, setClient] = useState(CLIENT_PRESETS[0]);
   const [objective, setObjective] = useState(OBJECTIVE_PRESETS[0]);
-  const [category, setCategory] = useState(CAMPAIGN_CATEGORIES[0].value);
+  const [categories, setCategories] = useState<string[]>([]);
   const [cities, setCities] = useState<string[]>([CITY_OPTIONS[0]]);
   const [ageBand, setAgeBand] = useState(AGE_BANDS[1]);
   const [methodology, setMethodology] = useState(METHODOLOGIES[2]);
@@ -88,7 +90,7 @@ export function CampaignBuilder() {
   const totalPoints = tasks.reduce((sum, t) => sum + t.points, 0);
 
   const launch = () => {
-    addCampaign({ client, objective, category, cities, ageBand, methodology, sampleSize, tasks, adminDirect: isAdmin });
+    addCampaign({ client, objective, categories, cities, ageBand, methodology, sampleSize, tasks, adminDirect: isAdmin });
     navigate(isAdmin ? "/agency?admin=1" : "/agency");
   };
 
@@ -141,14 +143,14 @@ export function CampaignBuilder() {
               </ChipRow>
             </Field>
 
+            {/* Taxonomy expansion sync (Part 2) -- CategoryPicker
+                ("campaign" mode: multi-tag, soft nudge past 3) replaces the
+                old single-select category chip row, matching the real
+                app's own campaign_categories join table -- a campaign can
+                genuinely span multiple real leaves out of the real
+                29-field structure, not one flat value out of 10. */}
             <Field label="Category — determines which contributor badges this reaches">
-              <ChipRow>
-                {CAMPAIGN_CATEGORIES.map((c) => (
-                  <Chip key={c.value} active={category === c.value} accent={ACCENT} onClick={() => setCategory(c.value)}>
-                    {c.label}
-                  </Chip>
-                ))}
-              </ChipRow>
+              <CategoryPicker mode="campaign" selected={categories} onChange={setCategories} accent={ACCENT} />
             </Field>
 
             <Field label="Target Cities * (never country-level)">
@@ -261,7 +263,9 @@ export function CampaignBuilder() {
               <h3 className="mb-2 font-display text-xl font-bold text-paper">{client}</h3>
               <p className="text-sm text-muted">{objective}</p>
               <div className="mt-4 flex flex-wrap gap-6 text-sm">
-                <span className="text-muted">{CAMPAIGN_CATEGORIES.find((c) => c.value === category)?.label}</span>
+                {categories.length > 0 && (
+                  <span className="text-muted">{categories.map((id) => subCategoryLabel(id)).filter(Boolean).join(", ")}</span>
+                )}
                 <span className="text-muted">{cities.length} {cities.length === 1 ? "city" : "cities"}</span>
                 <span className="text-muted">{ageBand}</span>
                 <span className="text-muted">{methodology}</span>
