@@ -5,6 +5,7 @@ import { Button } from "@/components/Button";
 import { DemoHeader } from "@/components/DemoHeader";
 import { ExpertBadge } from "@/components/ExpertBadge";
 import { CategoryPicker } from "@/components/CategoryPicker";
+import { BadgeEvidencePreview } from "@/components/BadgeEvidencePreview";
 import { cn } from "@/lib/cn";
 import {
   COUNTRIES, COMING_SOON_COUNTRIES, CITIES_BY_COUNTRY, ONBOARDING_LANGUAGES,
@@ -235,6 +236,13 @@ export function Onboarding() {
                   ))}
                 </div>
               )}
+
+              {/* Real gap found + fixed: contributor_badges' own
+                  social_handle/experience_note fields had no
+                  representation at all after tonight's taxonomy rebuild.
+                  Own separate block, same separation the real app's
+                  BadgeEvidence.tsx keeps from CategoryPicker. */}
+              <BadgeEvidencePreview badgeIds={badges} />
 
               <div className="flex gap-3">
                 <Button variant="ghost" color={accent} onClick={() => setStep(2)} className="!rounded-none">← Back</Button>
