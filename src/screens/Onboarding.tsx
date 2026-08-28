@@ -15,6 +15,27 @@ import { useDemoState } from "@/state/DemoState";
 
 type Role = "agency" | "contributor";
 
+// Real gap closed: the real app's unified contributor_identity collects
+// Name/Surname/Address/Postal Code/Phone Number/general social handles
+// alongside Country/City/Language -- this demo's Onboarding never had a
+// tap-only way to represent any of the former. Small sets of illustrative,
+// already-written values (never a free-text input, per this whole demo's
+// zero-typing rule) -- tapping one is the real interaction; there's no
+// value in inventing a bigger list than a City-sized one already proves
+// the pattern.
+const FIRST_NAME_OPTIONS = ["Amara", "Kwame", "Thandiwe", "Fatima"];
+const SURNAME_OPTIONS = ["Mensah", "Dlamini", "Okafor", "Hassan"];
+const ADDRESS_OPTIONS = ["12 Nguvu Street", "45 Freedom Avenue", "8 Baobab Close"];
+const POSTAL_CODE_OPTIONS = ["2196", "0001", "8001"];
+const PHONE_OPTIONS = ["+27 82 555 0142", "+254 700 555 0123", "+234 803 555 0199"];
+// Same five platforms as BadgeEvidencePreview's own HANDLE_FIELDS, for
+// visual/naming consistency -- but this is general identity, not evidence
+// for one badge claim (see ContributorIdentity's own header comment in
+// DemoState.tsx). Tapping toggles "I have one of these", not a typed
+// handle string -- there's no real string this demo could honestly show
+// was typed, so the boolean tap is the unit of data collected.
+const HANDLE_PLATFORMS = ["Instagram", "Facebook", "TikTok", "X (Twitter)", "Other"];
+
 /**
  * Ported structural pattern from the real app's own
  * components/onboarding/OnboardingWizard.tsx -- segmented progress bar,
@@ -27,6 +48,21 @@ type Role = "agency" | "contributor";
  * matching runs on). Free-text city/document/contact fields in the real
  * wizard are the one thing NOT carried over -- kept tap-only throughout,
  * per this whole demo's zero-typing rule.
+ *
+ * Unified contributor verification, identity fields (concept sync):
+ * agency's own step sequence (Country/City/Language/Verify/Ready, steps
+ * 0-4) is UNCHANGED -- copied verbatim, not touched, per the explicit
+ * "agency's Onboarding stays untouched" instruction this session. Only
+ * the contributor path's step 0 changes: Country/City/Language now render
+ * merged into one combined "Your details" step alongside the new identity
+ * fields, matching the real app's own Details step field order (Name,
+ * Surname, Country, City, Address, Postal Code, Phone Number, Social
+ * Presence, Language). This shortens contributor's own step count (0-2:
+ * details/expertise/ready) without touching agency's five steps at all --
+ * `step` is the same number for both roles but means something different
+ * per role, so every block below is gated on BOTH step index and
+ * typedRole, and doneStep/backFromReady are computed per role rather than
+ * hardcoded.
  */
 export function Onboarding() {
   const { role } = useParams<{ role: string }>();
@@ -43,6 +79,21 @@ export function Onboarding() {
   // default -- a badge doesn't affect campaign matching until an admin
   // approves it in Badge Verification.
   const [badges, setBadges] = useState<string[]>([]);
+
+  // Contributor-only identity fields (concept sync). Deliberately start
+  // EMPTY, not pre-filled -- unlike country/city/language (which have
+  // always had a sensible default and never actually block Continue),
+  // these mirror the real app's own genuinely-required fields, so
+  // Continue is genuinely disabled here until each one gets a real tap --
+  // see the Details step's own Continue button below.
+  const [firstName, setFirstName] = useState("");
+  const [surname, setSurname] = useState("");
+  const [address, setAddress] = useState("");
+  const [postalCode, setPostalCode] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [handles, setHandles] = useState<string[]>([]);
+  const toggleHandle = (platform: string) =>
+    setHandles((prev) => (prev.includes(platform) ? prev.filter((p) => p !== platform) : [...prev, platform]));
 
   if (role !== "agency" && role !== "contributor") {
     return <Navigate to="/" replace />;
@@ -68,14 +119,18 @@ export function Onboarding() {
   const finish = () => {
     if (typedRole === "contributor") {
       submitContributorApplication(
-        { country, city, language },
+        { firstName, surname, country, city, address, postalCode, phoneNumber, handles, language },
         badges.map((subCategoryId) => ({ subCategoryId, status: "pending" as const }))
       );
     }
     navigate(destination);
   };
 
-  const steps = ["country", "city", "language", "verify", "ready"];
+  // Agency's own 5-step sequence, unchanged. Contributor's shortens to 3
+  // now that Country/City/Language merge into one Details step.
+  const steps = typedRole === "agency" ? ["country", "city", "language", "verify", "ready"] : ["details", "expertise", "ready"];
+  const doneStep = typedRole === "agency" ? 4 : 2;
+  const backFromReady = typedRole === "agency" ? 3 : 1;
 
   return (
     <div className="flex min-h-screen flex-col bg-ink">
@@ -89,7 +144,9 @@ export function Onboarding() {
             ))}
           </div>
 
-          {step === 0 && (
+          {/* ===================== Agency path -- unchanged ===================== */}
+
+          {step === 0 && typedRole === "agency" && (
             <div>
               <StepEyebrow accent={accent}>Setting up as {roleLabel}</StepEyebrow>
               <h1 className="mb-4 font-display text-3xl font-bold text-paper">Where are you based?</h1>
@@ -123,7 +180,7 @@ export function Onboarding() {
             </div>
           )}
 
-          {step === 1 && (
+          {step === 1 && typedRole === "agency" && (
             <div>
               <StepEyebrow accent={accent}>Setting up as {roleLabel}</StepEyebrow>
               <h1 className="mb-4 font-display text-3xl font-bold text-paper">Which city?</h1>
@@ -144,7 +201,7 @@ export function Onboarding() {
             </div>
           )}
 
-          {step === 2 && (
+          {step === 2 && typedRole === "agency" && (
             <div>
               <StepEyebrow accent={accent}>Setting up as {roleLabel}</StepEyebrow>
               <h1 className="mb-4 font-display text-3xl font-bold text-paper">Preferred language?</h1>
@@ -216,7 +273,118 @@ export function Onboarding() {
             </div>
           )}
 
-          {step === 3 && typedRole === "contributor" && (
+          {/* ===================== Contributor path ===================== */}
+
+          {step === 0 && typedRole === "contributor" && (
+            <div>
+              <StepEyebrow accent={accent}>Setting up as {roleLabel}</StepEyebrow>
+              <h1 className="mb-4 font-display text-3xl font-bold text-paper">Your details</h1>
+              <p className="mb-8 text-muted">
+                Personal identity and location — reviewed alongside your expert badges as one
+                submission, not separately. Real fields, same as the live platform; tap to fill
+                each one in.
+              </p>
+
+              <div className="mb-8 space-y-6">
+                <div>
+                  <div className="mb-2 text-[11px] font-medium uppercase tracking-[0.1em] text-muted">First Name</div>
+                  <div className="flex flex-wrap gap-2">
+                    {FIRST_NAME_OPTIONS.map((n) => (
+                      <Chip key={n} active={firstName === n} accent={accent} onClick={() => setFirstName(n)}>{n}</Chip>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <div className="mb-2 text-[11px] font-medium uppercase tracking-[0.1em] text-muted">Surname</div>
+                  <div className="flex flex-wrap gap-2">
+                    {SURNAME_OPTIONS.map((n) => (
+                      <Chip key={n} active={surname === n} accent={accent} onClick={() => setSurname(n)}>{n}</Chip>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <div className="mb-2 text-[11px] font-medium uppercase tracking-[0.1em] text-muted">Country</div>
+                  <div className="grid grid-cols-2 gap-px bg-line sm:grid-cols-3">
+                    {COUNTRIES.map((c) => (
+                      <GridCell key={c} active={country === c} accent={accent} onClick={() => selectCountry(c)}>{c}</GridCell>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <div className="mb-2 text-[11px] font-medium uppercase tracking-[0.1em] text-muted">City</div>
+                  <div className="grid grid-cols-2 gap-px bg-line sm:grid-cols-3">
+                    {CITIES_BY_COUNTRY[country].map((c) => (
+                      <GridCell key={c} active={city === c} accent={accent} onClick={() => setCity(c)}>{c}</GridCell>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <div className="mb-2 text-[11px] font-medium uppercase tracking-[0.1em] text-muted">Address</div>
+                  <div className="flex flex-wrap gap-2">
+                    {ADDRESS_OPTIONS.map((a) => (
+                      <Chip key={a} active={address === a} accent={accent} onClick={() => setAddress(a)}>{a}</Chip>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-6">
+                  <div>
+                    <div className="mb-2 text-[11px] font-medium uppercase tracking-[0.1em] text-muted">Postal Code</div>
+                    <div className="flex flex-wrap gap-2">
+                      {POSTAL_CODE_OPTIONS.map((p) => (
+                        <Chip key={p} active={postalCode === p} accent={accent} onClick={() => setPostalCode(p)}>{p}</Chip>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="mb-2 text-[11px] font-medium uppercase tracking-[0.1em] text-muted">Phone Number</div>
+                    <div className="flex flex-wrap gap-2">
+                      {PHONE_OPTIONS.map((p) => (
+                        <Chip key={p} active={phoneNumber === p} accent={accent} onClick={() => setPhoneNumber(p)}>{p}</Chip>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <div className="mb-2 text-[11px] font-medium uppercase tracking-[0.1em] text-muted">
+                    Your Social Presence <span className="normal-case tracking-normal text-muted/70">(at least one required)</span>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {HANDLE_PLATFORMS.map((p) => (
+                      <Chip key={p} active={handles.includes(p)} accent={accent} onClick={() => toggleHandle(p)}>{p}</Chip>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <div className="mb-2 text-[11px] font-medium uppercase tracking-[0.1em] text-muted">Preferred Language</div>
+                  <div className="flex flex-wrap gap-2">
+                    {ONBOARDING_LANGUAGES.map((l) => (
+                      <Chip key={l} active={language === l} accent={accent} onClick={() => setLanguage(l)}>{l}</Chip>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex gap-3">
+                <Button
+                  color={accent}
+                  onClick={() => setStep(1)}
+                  className="!rounded-none !px-8"
+                  disabled={!firstName || !surname || !address || !postalCode || !phoneNumber || handles.length === 0}
+                >
+                  Continue →
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {step === 1 && typedRole === "contributor" && (
             <div>
               <StepEyebrow accent={accent}>Setting up as {roleLabel}</StepEyebrow>
               <h1 className="mb-4 font-display text-3xl font-bold text-paper">What do you know well?</h1>
@@ -255,13 +423,15 @@ export function Onboarding() {
               <BadgeEvidencePreview badgeIds={badges} />
 
               <div className="flex gap-3">
-                <Button variant="ghost" color={accent} onClick={() => setStep(2)} className="!rounded-none">← Back</Button>
-                <Button color={accent} onClick={() => setStep(4)} className="!rounded-none !px-8">
+                <Button variant="ghost" color={accent} onClick={() => setStep(0)} className="!rounded-none">← Back</Button>
+                <Button color={accent} onClick={() => setStep(2)} className="!rounded-none !px-8">
                   Continue →
                 </Button>
               </div>
             </div>
           )}
+
+          {/* ===================== Shared -- Ready ===================== */}
 
           {/* Item 3 -- a genuinely unfamiliar investor was landing straight
               on a data-dense screen (CEI/CDI scores, a campaigns table)
@@ -273,7 +443,7 @@ export function Onboarding() {
               tutorial modal blocking the dashboard itself; one extra,
               skippable-feeling step already inside the wizard's own
               rhythm. */}
-          {step === 4 && (
+          {step === doneStep && (
             <div>
               <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-full" style={{ backgroundColor: `color-mix(in srgb, ${accent} 16%, transparent)` }}>
                 <Sparkles className="h-6 w-6" style={{ color: accent }} />
@@ -309,7 +479,7 @@ export function Onboarding() {
               )}
 
               <div className="flex gap-3">
-                <Button variant="ghost" color={accent} onClick={() => setStep(3)} className="!rounded-none">← Back</Button>
+                <Button variant="ghost" color={accent} onClick={() => setStep(backFromReady)} className="!rounded-none">← Back</Button>
                 <Button color={accent} onClick={finish} className="!rounded-none !px-8">
                   {typedRole === "agency" ? "Enter Agency Command →" : "Enter Contributor Capture →"}
                 </Button>
@@ -318,7 +488,11 @@ export function Onboarding() {
           )}
 
           <p className="mt-10 text-center text-[12px] text-muted">
-            {country} · {step >= 1 ? city : "…"} · {step >= 2 ? language : "…"}
+            {typedRole === "agency" ? (
+              <>{country} · {step >= 1 ? city : "…"} · {step >= 2 ? language : "…"}</>
+            ) : (
+              <>{country} · {city} · {language}</>
+            )}
           </p>
         </div>
       </div>
@@ -353,6 +527,25 @@ function GridCell({ active, accent, onClick, children }: { active: boolean; acce
       onClick={onClick}
       className={cn("bg-ink px-4 py-3 text-start text-sm transition-colors", active ? "font-medium" : "text-muted hover:text-paper")}
       style={active ? { color: accent, boxShadow: `inset 0 0 0 1px ${accent}` } : undefined}
+    >
+      {children}
+    </button>
+  );
+}
+
+// Same visual language as the existing Language picker chip (rounded-none
+// border, filled when active) -- extracted since the new identity fields
+// on the contributor Details step reuse it five more times.
+function Chip({ active, accent, onClick, children }: { active: boolean; accent: string; onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "rounded-none border px-3 py-2 text-sm transition-colors",
+        active ? "text-ink" : "border-line bg-transparent text-muted hover:border-[var(--chip-accent)] hover:text-paper"
+      )}
+      style={active ? { backgroundColor: accent, borderColor: accent } : { ["--chip-accent" as string]: accent }}
     >
       {children}
     </button>

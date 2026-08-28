@@ -49,14 +49,26 @@ export interface ContributorBadgeEntry {
 // resubmitContributorVerification below, never independently.
 export type ContributorVerificationStatus = "pending" | "approved" | "rejected";
 
-// The real app's Country/City/Phone/Address/Postal/general-handles bundle,
-// scoped down to what this demo's own zero-typing Onboarding actually
-// collects (Country/City/Language) -- the concept being represented is
-// "personal identity reviewed alongside badges," not a literal field-for-
-// field port of a form this demo was never going to simulate typing into.
+// Real gap closed: this used to be scoped down to just Country/City/
+// Language (this demo's own zero-typing Onboarding didn't yet collect the
+// rest). Now field-for-field matches what the real app's own unified
+// contributor_identity actually holds -- Name/Surname/Address/Postal Code/
+// Phone Number/general social handles -- collected the same tap-only way
+// as everything else here (see Onboarding.tsx's own FIRST_NAME_OPTIONS
+// etc.): a real tap among a small set of illustrative pre-written values,
+// never a free-text input. `handles` holds the platform LABELS toggled on
+// (e.g. ["Instagram", "X (Twitter)"]), not typed handle strings -- there's
+// no real string to type, so the tap itself ("I have an Instagram") is
+// the honest unit of data this demo can actually collect.
 export interface ContributorIdentity {
+  firstName: string;
+  surname: string;
   country: string;
   city: string;
+  address: string;
+  postalCode: string;
+  phoneNumber: string;
+  handles: string[];
   language: string;
 }
 
@@ -80,9 +92,10 @@ interface DemoState {
   contributorBadges: ContributorBadgeEntry[];
   setContributorBadges: (badges: ContributorBadgeEntry[]) => void;
   setBadgeStatus: (subCategoryId: string, status: BadgeStatus) => void;
-  // Country/City/Language actually picked at Onboarding -- previously
-  // local-only state that vanished on navigation, now persisted so the
-  // Guest Contributor's own card in ContributorVerification's queue is
+  // The full identity bundle actually picked at Onboarding -- previously
+  // only Country/City/Language, and even those were local-only state that
+  // vanished on navigation. Now persisted in full so the Guest
+  // Contributor's own card in ContributorVerification's queue is
   // genuinely live-wired, same as their badges already are. Null until
   // Onboarding's contributor flow actually runs once.
   contributorIdentity: ContributorIdentity | null;

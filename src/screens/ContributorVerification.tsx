@@ -15,6 +15,19 @@ const STATUS_META: Record<ContributorVerificationStatus, { label: string; color:
   rejected: { label: "rejected", color: "var(--pulse)" },
 };
 
+// The live session's own ContributorIdentity.handles only ever holds
+// platform LABELS ("Instagram") -- a real tap toggles "I have one of
+// these", never a typed handle string (see Onboarding.tsx's own
+// HANDLE_PLATFORMS comment for why). This is what turns that into the
+// same kind of display string illustrative rows already carry directly.
+const HANDLE_DISPLAY: Record<string, string> = {
+  "Instagram": "Instagram: @guest.contributor",
+  "Facebook": "Facebook: facebook.com/guest.contributor",
+  "TikTok": "TikTok: @guest.contributor",
+  "X (Twitter)": "X (Twitter): @guest_contributor",
+  "Other": "Other: linkedin.com/in/guest-contributor",
+};
+
 /**
  * Unified contributor verification (concept sync with tonight's real-app
  * change) -- replaces BadgeVerification.tsx. The real app's own
@@ -36,11 +49,21 @@ export function ContributorVerification() {
   const { contributorIdentity, contributorBadges, contributorVerificationStatus, decideContributorVerification } =
     useDemoState();
 
+  // Real gap closed: this card used to show only Country/City/Language --
+  // now shows the full identity bundle the real app's own unified
+  // contributor_identity holds, matching AdminOverview's own card shape.
+  // Live row's display name is the actual tapped First Name/Surname once
+  // a real submission exists, falling back to the generic session label
+  // beforehand (mirrors contributorBadges' own pre-seeded-badge fallback).
   const liveRow = {
     id: "live.guest-contributor",
-    contributorName: "Guest Contributor (this session)",
+    contributorName: contributorIdentity ? `${contributorIdentity.firstName} ${contributorIdentity.surname} (this session)` : "Guest Contributor (this session)",
     country: contributorIdentity?.country ?? null,
     city: contributorIdentity?.city ?? null,
+    address: contributorIdentity?.address ?? null,
+    postalCode: contributorIdentity?.postalCode ?? null,
+    phoneNumber: contributorIdentity?.phoneNumber ?? null,
+    handles: (contributorIdentity?.handles ?? []).map((p) => HANDLE_DISPLAY[p] ?? p),
     language: contributorIdentity?.language ?? null,
     badges: contributorBadges.map((b): BadgeEvidenceEntry => ({ subCategoryId: b.subCategoryId })),
     status: contributorVerificationStatus,
@@ -51,6 +74,10 @@ export function ContributorVerification() {
     contributorName: c.contributorName,
     country: c.country as string | null,
     city: c.city as string | null,
+    address: c.address as string | null,
+    postalCode: c.postalCode as string | null,
+    phoneNumber: c.phoneNumber as string | null,
+    handles: c.handles,
     language: c.language as string | null,
     badges: c.badges,
     status: "pending" as ContributorVerificationStatus,
@@ -108,8 +135,13 @@ export function ContributorVerification() {
                 <div className="mb-3 flex items-start justify-between gap-4">
                   <div className="min-w-0 flex-1">
                     <span className="font-medium text-paper">{r.contributorName}</span>
-                    <div className="mt-0.5 text-xs text-muted">
+                    <div className="mt-0.5 text-xs text-muted">{r.address || "No address"}</div>
+                    <div className="text-xs text-muted">{r.postalCode || "No postal code"} · {r.phoneNumber || "No phone"}</div>
+                    <div className="text-xs text-muted">
                       {r.country ? `${r.country} · ${r.city} · ${r.language}` : "Location not yet provided"}
+                    </div>
+                    <div className="text-xs text-muted">
+                      {r.handles.length > 0 ? r.handles.join(" · ") : "No social handles submitted."}
                     </div>
                   </div>
                   <div className="flex flex-shrink-0 items-center gap-2">

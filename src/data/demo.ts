@@ -425,11 +425,24 @@ export interface BadgeEvidenceEntry {
 // action now uses. Lindiwe K. deliberately carries two badges, not one --
 // with every illustrative row holding exactly one, the "bundled, not
 // per-badge" point wouldn't actually be visible in the queue.
+// Real gap closed: identity used to be scoped down to just Country/City/
+// Language. Now field-for-field matches what the real app's own unified
+// contributor_identity holds -- Address/Postal Code/Phone Number/general
+// social handles, alongside the badges already here. `handles` holds
+// pre-formatted display strings ("Instagram: @lindiwe.eats") directly --
+// unlike the live session's own ContributorIdentity.handles (a plain list
+// of platform labels a real tap toggles on, with no typed value to show),
+// illustrative rows are hand-authored static content with nothing
+// stopping them from being fully realistic.
 export interface ContributorVerificationEntry {
   id: string;
   contributorName: string;
   country: string;
   city: string;
+  address: string;
+  postalCode: string;
+  phoneNumber: string;
+  handles: string[];
   language: string;
   badges: BadgeEvidenceEntry[];
 }
@@ -448,6 +461,10 @@ export const CONTRIBUTOR_VERIFICATION_QUEUE: ContributorVerificationEntry[] = [
     contributorName: "Lindiwe K.",
     country: "South Africa",
     city: "Johannesburg",
+    address: "34 Vilakazi Street",
+    postalCode: "1804",
+    phoneNumber: "+27 82 445 9013",
+    handles: ["Instagram: @lindiwe.eats", "TikTok: @lindiwe.eats"],
     language: "English",
     badges: [
       {
@@ -466,6 +483,10 @@ export const CONTRIBUTOR_VERIFICATION_QUEUE: ContributorVerificationEntry[] = [
     contributorName: "Sipho N.",
     country: "South Africa",
     city: "Cape Town",
+    address: "19 Bree Street",
+    postalCode: "8001",
+    phoneNumber: "+27 71 220 5567",
+    handles: ["X (Twitter): @sipho_tech"],
     language: "isiZulu",
     badges: [
       {
@@ -479,6 +500,10 @@ export const CONTRIBUTOR_VERIFICATION_QUEUE: ContributorVerificationEntry[] = [
     contributorName: "Amahle P.",
     country: "South Africa",
     city: "Cape Town",
+    address: "6 Ntlangano Way",
+    postalCode: "7750",
+    phoneNumber: "+27 84 902 1145",
+    handles: ["Instagram: @amahle_locs", "Facebook: facebook.com/amahlelocs"],
     language: "English",
     badges: [
       {
