@@ -79,14 +79,16 @@ export const ROLE_IDENTITY: Record<ShellRole, { initial: string; name: string; l
 // app's own agencyNav/contributorNav/fieldAgentNav/supervisorNav/adminNav/
 // headOfResearchNav in DashboardLayout.tsx) now has a genuine, reachable
 // screen -- see each new screen's own header comment for what real content
-// backs it. "Operations"/"Fieldwork" hub-link items that have no real-app
-// equivalent are kept (they're this demo's own real navigational spine
-// into the Operations Layer, not a stand-in for a missing real item).
+// backs it. "Operations"/"Operations Layer" hub-link items that have no
+// real-app equivalent are kept (they're this demo's own real navigational
+// spine into the Operations Layer, not a stand-in for a missing real
+// item) -- agency's own copy renamed from "Fieldwork" so the nav label
+// matches OperationsHub.tsx's own page title exactly.
 const NAV: Record<ShellRole, { label: string; icon: typeof LayoutDashboard; path: string }[]> = {
   agency: [
     { label: "Overview", icon: LayoutDashboard, path: "/agency/overview" },
     { label: "Campaigns", icon: FileText, path: "/agency" },
-    { label: "Fieldwork", icon: Users, path: "/operations" },
+    { label: "Operations Layer", icon: Users, path: "/operations" },
     { label: "Insights", icon: BarChart3, path: "/agency/insights" },
     { label: "Files", icon: FolderOpen, path: "/files/agency" },
     { label: "Profile", icon: User, path: "/profile/agency" },
