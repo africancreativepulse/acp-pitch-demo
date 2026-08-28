@@ -129,15 +129,16 @@ const NAV: Record<ShellRole, { label: string; icon: typeof LayoutDashboard; path
     { label: "Profile", icon: User, path: "/profile/supervisor" },
     { label: "Operations", icon: MapPin, path: "/operations" },
   ],
-  // Badge Verification (real path /dashboard/admin/badges) -- deferred
-  // from Part 1's navigation-parity pass, now built with its real content
-  // (the pending-badge review queue) as part of Part 2's taxonomy sync,
-  // per that pass's own header comment.
+  // Contributor Verification (real path /dashboard/admin/contributors) --
+  // renamed from Badge Verification for the unified contributor
+  // verification concept sync, matching the real app's own rename: a
+  // contributor's signup is now one reviewed submission (identity +
+  // badges together), not badges reviewed on their own.
   admin: [
     { label: "Overview", icon: LayoutDashboard, path: "/operations/admin/overview" },
     { label: "Fieldwork Admin", icon: Shield, path: "/operations/admin" },
     { label: "Agency Verification", icon: ShieldCheck, path: "/operations/admin/agencies" },
-    { label: "Badge Verification", icon: Award, path: "/operations/admin/badges" },
+    { label: "Contributor Verification", icon: Award, path: "/operations/admin/contributors" },
     { label: "Campaigns", icon: FileText, path: "/agency?admin=1" },
     { label: "Translation QA", icon: Languages, path: "/operations/admin/translation-qa" },
     { label: "Profile", icon: User, path: "/profile/admin" },

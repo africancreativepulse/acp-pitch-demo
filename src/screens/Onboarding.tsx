@@ -31,7 +31,7 @@ type Role = "agency" | "contributor";
 export function Onboarding() {
   const { role } = useParams<{ role: string }>();
   const navigate = useNavigate();
-  const { setContributorBadges } = useDemoState();
+  const { submitContributorApplication } = useDemoState();
   const [step, setStep] = useState(0);
   const [country, setCountry] = useState<Country>("South Africa");
   const [city, setCity] = useState(CITIES_BY_COUNTRY["South Africa"][0]);
@@ -58,9 +58,19 @@ export function Onboarding() {
     setCity(CITIES_BY_COUNTRY[c][0]);
   };
 
+  // Unified contributor verification (concept sync): identity + every
+  // picked badge submitted together as one bundle, gate flipped to
+  // "pending" -- ContributorGate.tsx (wrapping every /contribute* route)
+  // is what actually blocks the dashboard from here; navigate() below
+  // still points at the real destination, same as before, since the gate
+  // intercepts it rather than finish() needing to know about review state
+  // itself.
   const finish = () => {
     if (typedRole === "contributor") {
-      setContributorBadges(badges.map((subCategoryId) => ({ subCategoryId, status: "pending" as const })));
+      submitContributorApplication(
+        { country, city, language },
+        badges.map((subCategoryId) => ({ subCategoryId, status: "pending" as const }))
+      );
     }
     navigate(destination);
   };

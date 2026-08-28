@@ -410,42 +410,83 @@ export const SONDELA = sondela;
 // 10-value vocabulary this section used to hold directly.
 // ---------------------------------------------------------------------------
 
-export interface BadgeReviewItem {
-  id: string;
-  contributorName: string;
+export interface BadgeEvidenceEntry {
   subCategoryId: string;
   socialHandle?: string;
   experienceNote?: string;
 }
 
+// Unified contributor verification (concept sync with tonight's real-app
+// change): one entry per CONTRIBUTOR, not per badge -- identity plus every
+// badge they picked, reviewed and approved/rejected together as a single
+// submission. Replaces the old BadgeReviewItem/BADGE_REVIEW_QUEUE shape
+// (one row per badge, reviewed independently), same reasoning the real
+// app's own contributor_identity + bundled contributor_badges review
+// action now uses. Lindiwe K. deliberately carries two badges, not one --
+// with every illustrative row holding exactly one, the "bundled, not
+// per-badge" point wouldn't actually be visible in the queue.
+export interface ContributorVerificationEntry {
+  id: string;
+  contributorName: string;
+  country: string;
+  city: string;
+  language: string;
+  badges: BadgeEvidenceEntry[];
+}
+
 // Illustrative pending submissions from OTHER contributors -- same
 // established pattern as AGENCY_VERIFICATION_QUEUE and REVIEW_QUEUE
 // (SupervisorReview's back-check queue): named rows beyond this demo's one
-// live Guest Contributor session, so Admin's own Badge Verification queue
-// has real content to review even before anyone touches Onboarding. The
-// Guest Contributor's own live badges (from DemoState, picked at Onboarding
-// or defaulted) are layered on top of this list at render time in
-// BadgeVerification.tsx, not duplicated here.
-export const BADGE_REVIEW_QUEUE: BadgeReviewItem[] = [
+// live Guest Contributor session, so Admin's own Contributor Verification
+// queue has real content to review even before anyone touches Onboarding.
+// The Guest Contributor's own live identity + badges (from DemoState, set
+// at Onboarding) are layered on top of this list at render time in
+// ContributorVerification.tsx, not duplicated here.
+export const CONTRIBUTOR_VERIFICATION_QUEUE: ContributorVerificationEntry[] = [
   {
-    id: "badge-1",
+    id: "contributor-1",
     contributorName: "Lindiwe K.",
-    subCategoryId: "food_and_culinary.food_culture",
-    socialHandle: "@lindiwe_eats",
-    experienceNote: "Run a supper-club series across Soweto and Alex — 6 years documenting township food culture.",
+    country: "South Africa",
+    city: "Johannesburg",
+    language: "English",
+    badges: [
+      {
+        subCategoryId: "food_and_culinary.food_culture",
+        socialHandle: "@lindiwe_eats",
+        experienceNote: "Run a supper-club series across Soweto and Alex — 6 years documenting township food culture.",
+      },
+      {
+        subCategoryId: "travel_and_tourism.cultural_tourism",
+        experienceNote: "Host weekend food-and-culture walking tours for visitors to Soweto.",
+      },
+    ],
   },
   {
-    id: "badge-2",
+    id: "contributor-2",
     contributorName: "Sipho N.",
-    subCategoryId: "technology_and_digital.smartphones",
-    experienceNote: "Sell refurbished phones at Bree Street taxi rank — deal with device trust concerns daily.",
+    country: "South Africa",
+    city: "Cape Town",
+    language: "isiZulu",
+    badges: [
+      {
+        subCategoryId: "technology_and_digital.smartphones",
+        experienceNote: "Sell refurbished phones at Bree Street taxi rank — deal with device trust concerns daily.",
+      },
+    ],
   },
   {
-    id: "badge-3",
+    id: "contributor-3",
     contributorName: "Amahle P.",
-    subCategoryId: "fashion_and_beauty.hair",
-    socialHandle: "@amahle_locs",
-    experienceNote: "Natural hair stylist, 4 years in Gugulethu.",
+    country: "South Africa",
+    city: "Cape Town",
+    language: "English",
+    badges: [
+      {
+        subCategoryId: "fashion_and_beauty.hair",
+        socialHandle: "@amahle_locs",
+        experienceNote: "Natural hair stylist, 4 years in Gugulethu.",
+      },
+    ],
   },
 ];
 

@@ -27,8 +27,10 @@ import { ContributorAnalytics } from "@/screens/ContributorAnalytics";
 import { Earnings } from "@/screens/Earnings";
 import { Browse } from "@/screens/Browse";
 import { TranslationQA } from "@/screens/TranslationQA";
-// Taxonomy expansion sync (Part 2)
-import { BadgeVerification } from "@/screens/BadgeVerification";
+// Unified contributor verification (concept sync) -- replaces the old
+// per-badge BadgeVerification screen.
+import { ContributorVerification } from "@/screens/ContributorVerification";
+import { ContributorGate } from "@/components/ContributorGate";
 
 export default function App() {
   return (
@@ -54,7 +56,7 @@ export default function App() {
                 The old /evidence/:dimension route is gone; SignalRing's tap
                 now sets that state directly instead of navigating. */}
             <Route path="/agency/campaign/:id" element={<CampaignDetail />} />
-            <Route path="/contribute" element={<ContributorCapture />} />
+            <Route path="/contribute" element={<ContributorGate><ContributorCapture /></ContributorGate>} />
             <Route path="/operations" element={<OperationsHub />} />
             <Route path="/operations/field" element={<FieldCapture />} />
             <Route path="/operations/review" element={<SupervisorReview />} />
@@ -62,17 +64,24 @@ export default function App() {
             <Route path="/operations/admin/agencies" element={<AgencyVerification />} />
             <Route path="/operations/research" element={<ResearchHub />} />
             {/* Navigation-parity pass (today) */}
-            <Route path="/profile/:role" element={<Profile />} />
+            {/* ContributorGate: wraps every contributor route so a pending/
+                rejected contributor can't reach any of them, not just the
+                one entry point -- matches the real app's own full-block
+                ProtectedRoute. /profile/:role and /files/:role are shared
+                across roles (agency/admin/field workers use them too); the
+                gate itself only actually blocks when the route's own :role
+                param is "contributor" -- see ContributorGate.tsx. */}
+            <Route path="/profile/:role" element={<ContributorGate><Profile /></ContributorGate>} />
             <Route path="/agency/overview" element={<AgencyOverview />} />
             <Route path="/agency/insights" element={<AgencyInsights />} />
-            <Route path="/contribute/overview" element={<ContributorOverview />} />
-            <Route path="/contribute/browse" element={<Browse />} />
-            <Route path="/contribute/analytics" element={<ContributorAnalytics />} />
-            <Route path="/files/:role" element={<Files />} />
+            <Route path="/contribute/overview" element={<ContributorGate><ContributorOverview /></ContributorGate>} />
+            <Route path="/contribute/browse" element={<ContributorGate><Browse /></ContributorGate>} />
+            <Route path="/contribute/analytics" element={<ContributorGate><ContributorAnalytics /></ContributorGate>} />
+            <Route path="/files/:role" element={<ContributorGate><Files /></ContributorGate>} />
             <Route path="/earnings/:role" element={<Earnings />} />
             <Route path="/operations/admin/overview" element={<AdminOverview />} />
             <Route path="/operations/admin/translation-qa" element={<TranslationQA />} />
-            <Route path="/operations/admin/badges" element={<BadgeVerification />} />
+            <Route path="/operations/admin/contributors" element={<ContributorVerification />} />
             <Route path="/wrap-up" element={<WrapUp />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

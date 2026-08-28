@@ -39,6 +39,27 @@ export interface ContributorBadgeEntry {
   status: BadgeStatus;
 }
 
+// Unified contributor verification (concept sync with tonight's real-app
+// change): a contributor's signup is now ONE reviewed submission --
+// identity plus whatever badges they picked -- not badges reviewed on
+// their own. This is the account-level gate ContributorGate.tsx checks;
+// contributorBadges above still tracks each badge's own status too (the
+// real app keeps that granularity for campaign-matching), but the two are
+// now driven together by decideContributorVerification/
+// resubmitContributorVerification below, never independently.
+export type ContributorVerificationStatus = "pending" | "approved" | "rejected";
+
+// The real app's Country/City/Phone/Address/Postal/general-handles bundle,
+// scoped down to what this demo's own zero-typing Onboarding actually
+// collects (Country/City/Language) -- the concept being represented is
+// "personal identity reviewed alongside badges," not a literal field-for-
+// field port of a form this demo was never going to simulate typing into.
+export interface ContributorIdentity {
+  country: string;
+  city: string;
+  language: string;
+}
+
 interface DemoState {
   draftCampaigns: DraftCampaign[];
   addCampaign: (c: Omit<DraftCampaign, "id" | "createdAt">) => void;
@@ -49,15 +70,44 @@ interface DemoState {
   setReviewStatus: (id: string, status: ReviewStatus) => void;
   // Set during Onboarding's Expertise step (contributor persona only) --
   // read back by Browse/Contributor Capture to show the real "this task
-  // matched your badge" payoff, and by Admin's Badge Verification queue.
-  // Defaults to one already-APPROVED badge (matching Sondela Cover's own
-  // real tag) so the match is visible even if a presenter skips
-  // Onboarding entirely -- any badge picked live at Onboarding starts
-  // "pending" instead, same as a real fresh signup, and won't match
-  // anything until approved in Badge Verification.
+  // matched your badge" payoff, and by Admin's Contributor Verification
+  // queue. Defaults to one already-APPROVED badge (matching Sondela
+  // Cover's own real tag) so the match is visible even if a presenter
+  // skips Onboarding entirely -- any badge picked live at Onboarding
+  // starts "pending" instead, same as a real fresh signup, and won't
+  // match anything (or unlock the contributor's own dashboard -- see
+  // contributorVerificationStatus below) until an admin approves it.
   contributorBadges: ContributorBadgeEntry[];
   setContributorBadges: (badges: ContributorBadgeEntry[]) => void;
   setBadgeStatus: (subCategoryId: string, status: BadgeStatus) => void;
+  // Country/City/Language actually picked at Onboarding -- previously
+  // local-only state that vanished on navigation, now persisted so the
+  // Guest Contributor's own card in ContributorVerification's queue is
+  // genuinely live-wired, same as their badges already are. Null until
+  // Onboarding's contributor flow actually runs once.
+  contributorIdentity: ContributorIdentity | null;
+  // Defaults "approved" -- matching that DemoHeader's "Sign In as
+  // Contributor" shortcut represents an already-existing, already-
+  // verified contributor, not a fresh signup; only Onboarding's own
+  // finish() (via submitContributorApplication) ever sets this to
+  // "pending". ContributorGate.tsx is what actually enforces the block.
+  contributorVerificationStatus: ContributorVerificationStatus;
+  // The one real submission action: identity + every picked badge, set
+  // together, gate flipped to "pending" -- mirrors the real app's own
+  // handleFinish() writing to contributor_identity and contributor_badges
+  // in the same signup action.
+  submitContributorApplication: (identity: ContributorIdentity, badges: ContributorBadgeEntry[]) => void;
+  // The one real admin action: approves/rejects the WHOLE bundle, not a
+  // badge at a time -- cascades to every one of this contributor's badge
+  // rows too, matching the real unified ContributorVerification queue's
+  // own single approve/reject per contributor.
+  decideContributorVerification: (status: "approved" | "rejected") => void;
+  // Tap-only stand-in for "the contributor edited something and it auto-
+  // resubmitted" (the real app's own protect_contributor_identity_review_
+  // fields trigger behavior) -- no free-text editing to simulate, so this
+  // is the honest tap-only representation: flips the gate back to
+  // pending and un-rejects any badge that was cascaded to "rejected".
+  resubmitContributorVerification: () => void;
 }
 
 const Ctx = createContext<DemoState | null>(null);
@@ -70,6 +120,9 @@ export function DemoStateProvider({ children }: { children: ReactNode }) {
   const [contributorBadges, setContributorBadges] = useState<ContributorBadgeEntry[]>([
     { subCategoryId: "finance_and_wealth.personal_finance", status: "approved" },
   ]);
+  const [contributorIdentity, setContributorIdentity] = useState<ContributorIdentity | null>(null);
+  const [contributorVerificationStatus, setContributorVerificationStatus] =
+    useState<ContributorVerificationStatus>("approved");
 
   const value = useMemo<DemoState>(
     () => ({
@@ -85,8 +138,23 @@ export function DemoStateProvider({ children }: { children: ReactNode }) {
       setContributorBadges,
       setBadgeStatus: (subCategoryId, status) =>
         setContributorBadges((prev) => prev.map((b) => (b.subCategoryId === subCategoryId ? { ...b, status } : b))),
+      contributorIdentity,
+      contributorVerificationStatus,
+      submitContributorApplication: (identity, badges) => {
+        setContributorIdentity(identity);
+        setContributorBadges(badges);
+        setContributorVerificationStatus("pending");
+      },
+      decideContributorVerification: (status) => {
+        setContributorVerificationStatus(status);
+        setContributorBadges((prev) => prev.map((b) => ({ ...b, status })));
+      },
+      resubmitContributorVerification: () => {
+        setContributorVerificationStatus("pending");
+        setContributorBadges((prev) => prev.map((b) => (b.status === "rejected" ? { ...b, status: "pending" } : b)));
+      },
     }),
-    [draftCampaigns, reviewStatus, contributorBadges]
+    [draftCampaigns, reviewStatus, contributorBadges, contributorIdentity, contributorVerificationStatus]
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
