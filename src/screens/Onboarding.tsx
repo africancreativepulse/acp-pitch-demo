@@ -35,6 +35,20 @@ const PHONE_OPTIONS = ["+27 82 555 0142", "+254 700 555 0123", "+234 803 555 019
 // handle string -- there's no real string this demo could honestly show
 // was typed, so the boolean tap is the unit of data collected.
 const HANDLE_PLATFORMS = ["Instagram", "Facebook", "TikTok", "X (Twitter)", "Other"];
+// Real gap found in live verification: a bare toggle with no handle value
+// proves nothing -- the whole point of asking for a social handle is the
+// handle. Same illustrative-placeholder pattern BadgeEvidencePreview.tsx
+// already proved correct for per-badge evidence tonight (same five
+// platforms, same exact placeholder wording) -- once a platform is tapped
+// here, its own placeholder appears underneath, genuinely representing
+// "here's where a real handle would show," not just "this is checked."
+const HANDLE_PLACEHOLDERS: Record<string, string> = {
+  "Instagram": "@yourhandle",
+  "Facebook": "facebook.com/yourpage",
+  "TikTok": "@yourhandle",
+  "X (Twitter)": "@yourhandle",
+  "Other": "Any other platform",
+};
 
 /**
  * Ported structural pattern from the real app's own
@@ -63,6 +77,19 @@ const HANDLE_PLATFORMS = ["Instagram", "Facebook", "TikTok", "X (Twitter)", "Oth
  * per role, so every block below is gated on BOTH step index and
  * typedRole, and doneStep/backFromReady are computed per role rather than
  * hardcoded.
+ *
+ * Real-app step-order restructure sync (contributor-only, separate from
+ * the case-study evidence redesign): the live wizard's own Welcome+Details
+ * steps merged into one "Identity" step, dropping its contributor flow
+ * from 5 steps to 4 (Identity/Bio/Expertise/Done). No rebuild needed here
+ * -- this demo's own "Your details" step already IS that merge (built
+ * during the identity-fields sync above, before the real app made the
+ * same change), field-for-field in the same order the real app's new
+ * Identity step now holds. The one remaining gap against the real app's
+ * 4-step order is Bio, which this demo has never modeled at any point,
+ * old or new real-app order -- it's genuinely optional free text with no
+ * defensible tap-only representation, a deliberate omission, not
+ * something this restructure touches.
  */
 export function Onboarding() {
   const { role } = useParams<{ role: string }>();
@@ -359,6 +386,19 @@ export function Onboarding() {
                       <Chip key={p} active={handles.includes(p)} accent={accent} onClick={() => toggleHandle(p)}>{p}</Chip>
                     ))}
                   </div>
+                  {handles.length > 0 && (
+                    <div className="mt-2 space-y-1.5">
+                      {HANDLE_PLATFORMS.filter((p) => handles.includes(p)).map((p) => (
+                        <div
+                          key={p}
+                          aria-hidden="true"
+                          className="flex h-9 w-full max-w-xs cursor-default items-center rounded border border-line bg-transparent px-3 text-[12.5px] text-muted/50"
+                        >
+                          {p} — {HANDLE_PLACEHOLDERS[p]}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 <div>

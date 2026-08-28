@@ -1,4 +1,4 @@
-import { CheckCircle2, XCircle, ShieldCheck } from "lucide-react";
+import { CheckCircle2, XCircle, ShieldCheck, FileText } from "lucide-react";
 import { DashboardShell } from "@/components/DashboardShell";
 import { IconButton } from "@/components/IconButton";
 import { Badge } from "@/components/Badge";
@@ -165,18 +165,38 @@ export function ContributorVerification() {
                 </div>
 
                 {r.badges.length > 0 ? (
-                  <div className="space-y-1.5 border-t border-[rgba(255,201,60,0.2)] pt-3">
+                  <div className="space-y-3 border-t border-[rgba(255,201,60,0.2)] pt-3">
                     <div className="font-mono text-[10px] uppercase tracking-[0.15em] text-muted">
                       Proof of Expertise ({r.badges.length})
                     </div>
-                    {r.badges.map((b) => (
-                      <div key={b.subCategoryId} className="text-xs text-muted">
-                        <span className="font-medium text-paper">{subCategoryLabel(b.subCategoryId)}</span>
-                        {b.socialHandle && <> — Social: {b.socialHandle}</>}
-                        {b.experienceNote && <div className="mt-0.5 max-w-lg">{b.experienceNote}</div>}
-                        {!b.socialHandle && !b.experienceNote && <span className="text-muted/70"> — No proof of expertise submitted.</span>}
-                      </div>
-                    ))}
+                    {r.badges.map((b) => {
+                      const hasEvidence = b.clientWebsite || b.clientInstagram || b.caseStudyFileName || b.caption;
+                      return (
+                        <div key={b.subCategoryId} className="text-xs text-muted">
+                          <span className="font-medium text-paper">{subCategoryLabel(b.subCategoryId)}</span>
+                          {hasEvidence ? (
+                            <div className="mt-1 space-y-1">
+                              <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                                {b.clientWebsite && (
+                                  <span className="text-sound" title="Illustrative row — not a real link">{b.clientWebsite}</span>
+                                )}
+                                {b.clientInstagram && (
+                                  <span className="text-sound" title="Illustrative row — not a real link">{b.clientInstagram}</span>
+                                )}
+                                {b.caseStudyFileName && (
+                                  <span className="inline-flex items-center gap-1 text-muted">
+                                    <FileText className="h-3 w-3" /> {b.caseStudyFileName}
+                                  </span>
+                                )}
+                              </div>
+                              {b.caption && <div className="max-w-lg">{b.caption}</div>}
+                            </div>
+                          ) : (
+                            <span className="text-muted/70"> — No case study submitted.</span>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 ) : (
                   <div className="border-t border-[rgba(255,201,60,0.2)] pt-3 text-xs text-muted/70">

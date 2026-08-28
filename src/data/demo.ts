@@ -410,10 +410,20 @@ export const SONDELA = sondela;
 // 10-value vocabulary this section used to hold directly.
 // ---------------------------------------------------------------------------
 
+// Real correction (badge_case_study_evidence, live app): the old "any one
+// handle + a written note" model is gone, replaced by genuine, checkable
+// proof of a real client relationship. caseStudyFileName is illustrative-
+// only -- a filename-like string these hand-authored rows can carry
+// (matching the "illustrative rows can be fully realistic" precedent this
+// file already established for handles/experienceNote before this
+// change), never a real uploaded file; ContributorVerification.tsx never
+// links it anywhere, just displays it as plain text.
 export interface BadgeEvidenceEntry {
   subCategoryId: string;
-  socialHandle?: string;
-  experienceNote?: string;
+  clientWebsite?: string;
+  clientInstagram?: string;
+  caseStudyFileName?: string;
+  caption?: string;
 }
 
 // Unified contributor verification (concept sync with tonight's real-app
@@ -469,12 +479,17 @@ export const CONTRIBUTOR_VERIFICATION_QUEUE: ContributorVerificationEntry[] = [
     badges: [
       {
         subCategoryId: "food_and_culinary.food_culture",
-        socialHandle: "@lindiwe_eats",
-        experienceNote: "Run a supper-club series across Soweto and Alex — 6 years documenting township food culture.",
+        clientWebsite: "sowetosupperclub.co.za",
+        clientInstagram: "@sowetosupperclub",
+        caseStudyFileName: "soweto-supper-club-2024.pdf",
+        caption: "Six-month supper-club series across Soweto and Alex — booking rates, repeat-guest data, and press coverage.",
       },
       {
         subCategoryId: "travel_and_tourism.cultural_tourism",
-        experienceNote: "Host weekend food-and-culture walking tours for visitors to Soweto.",
+        clientWebsite: "capeheritagetours.co.za",
+        clientInstagram: "@capeheritagetours",
+        caseStudyFileName: "soweto-walking-tours-case-study.pdf",
+        caption: "Weekend food-and-culture walking tours for Cape Heritage Tours — visitor feedback and route engagement.",
       },
     ],
   },
@@ -491,7 +506,10 @@ export const CONTRIBUTOR_VERIFICATION_QUEUE: ContributorVerificationEntry[] = [
     badges: [
       {
         subCategoryId: "technology_and_digital.smartphones",
-        experienceNote: "Sell refurbished phones at Bree Street taxi rank — deal with device trust concerns daily.",
+        clientWebsite: "breephones.co.za",
+        clientInstagram: "@breephones",
+        caseStudyFileName: "bree-street-refurb-case-study.pdf",
+        caption: "Refurbished-phone stall at Bree Street taxi rank — how device trust concerns get handled in-person, daily foot traffic.",
       },
     ],
   },
@@ -508,8 +526,10 @@ export const CONTRIBUTOR_VERIFICATION_QUEUE: ContributorVerificationEntry[] = [
     badges: [
       {
         subCategoryId: "fashion_and_beauty.hair",
-        socialHandle: "@amahle_locs",
-        experienceNote: "Natural hair stylist, 4 years in Gugulethu.",
+        clientWebsite: "amahlelocsstudio.co.za",
+        clientInstagram: "@amahle_locs",
+        caseStudyFileName: "gugulethu-locs-studio-case-study.pdf",
+        caption: "Four years as a natural hair stylist in Gugulethu — before/after client galleries and booking growth.",
       },
     ],
   },
