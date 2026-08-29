@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useParams, useNavigate, Navigate } from "react-router-dom";
-import { CheckCircle2, Upload, Sparkles } from "lucide-react";
+import { Check, CheckCircle2, Upload, Sparkles } from "lucide-react";
 import { Button } from "@/components/Button";
 import { DemoHeader } from "@/components/DemoHeader";
 import { ExpertBadge } from "@/components/ExpertBadge";
@@ -121,6 +121,16 @@ export function Onboarding() {
   const [handles, setHandles] = useState<string[]>([]);
   const toggleHandle = (platform: string) =>
     setHandles((prev) => (prev.includes(platform) ? prev.filter((p) => p !== platform) : [...prev, platform]));
+
+  // Real-app sync: the live platform's Privacy Policy consent checkbox,
+  // unchecked by default -- purely illustrative here, same as everything
+  // else in this demo with no real backend to persist against. Never
+  // read by finish() or DemoState, and never gates either Continue button
+  // below -- the live app's own enforcement flag currently defaults to
+  // off (not blocking real signups either), so this matches that exact
+  // current behavior rather than inventing a "flag" concept this demo has
+  // no config surface for.
+  const [privacyConsent, setPrivacyConsent] = useState(false);
 
   if (role !== "agency" && role !== "contributor") {
     return <Navigate to="/" replace />;
@@ -290,6 +300,8 @@ export function Onboarding() {
                   Admin's own Agency Verification queue instead of resolving instantly.
                 </p>
               )}
+
+              <PrivacyConsentToggle checked={privacyConsent} onToggle={() => setPrivacyConsent((v) => !v)} accent={accent} />
 
               <div className="flex gap-3">
                 <Button variant="ghost" color={accent} onClick={() => setStep(2)} className="!rounded-none">← Back</Button>
@@ -462,6 +474,8 @@ export function Onboarding() {
                   BadgeEvidence.tsx keeps from CategoryPicker. */}
               <BadgeEvidencePreview badgeIds={badges} />
 
+              <PrivacyConsentToggle checked={privacyConsent} onToggle={() => setPrivacyConsent((v) => !v)} accent={accent} />
+
               <div className="flex gap-3">
                 <Button variant="ghost" color={accent} onClick={() => setStep(0)} className="!rounded-none">← Back</Button>
                 <Button color={accent} onClick={() => setStep(2)} className="!rounded-none !px-8">
@@ -547,6 +561,43 @@ function ScorePreview({ label, color, text }: { label: string; color: string; te
         {label}
       </div>
       <p className="text-[13px] leading-relaxed text-muted">{text}</p>
+    </div>
+  );
+}
+
+// Real-app sync: a genuine checkbox + label, not a Chip pill -- the live
+// wizard's own consent control is a real checkbox, and this is the one
+// place in this demo standing in for one, so it gets its own small square
+// toggle (checkmark on active) rather than borrowing the pill idiom every
+// other tap-to-select control here uses for picking among options. Shared
+// by both Verify (agency) and Expertise (contributor) -- same illustrative
+// state, same non-blocking behavior, per privacyConsent's own comment above.
+function PrivacyConsentToggle({ checked, onToggle, accent }: { checked: boolean; onToggle: () => void; accent: string }) {
+  return (
+    <div className="mb-8 flex items-start gap-2.5">
+      <button
+        type="button"
+        onClick={onToggle}
+        aria-pressed={checked}
+        aria-label="I agree to the Privacy Policy"
+        className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-sm border transition-colors"
+        style={checked ? { backgroundColor: accent, borderColor: accent } : { borderColor: "var(--line)" }}
+      >
+        {checked && <Check className="h-3 w-3 text-ink" strokeWidth={3} />}
+      </button>
+      <p className="cursor-pointer text-[13px] leading-snug text-muted" onClick={onToggle}>
+        I agree to the{" "}
+        <a
+          href="/privacy-policy"
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={(e) => e.stopPropagation()}
+          className="underline decoration-line underline-offset-2 hover:text-paper"
+        >
+          Privacy Policy
+        </a>
+        .
+      </p>
     </div>
   );
 }
