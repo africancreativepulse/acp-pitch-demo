@@ -10,10 +10,13 @@ import { CULTURAL_LAYERS } from "@/data/demo";
  * REFERENCE CORRECTION: this screen was previously built against Auth.tsx
  * / BrandsSplash.tsx (the "/for-agencies" fork splash) -- both real, but
  * neither is the real homepage. Confirmed by reading the real
- * pages/Index.tsx, which renders (in order) Navbar → Hero →
+ * pages/Index.tsx, which at the time rendered (in order) Navbar → Hero →
  * WaveformRibbon → Features → CEISection → CDISection → CulturalLayers →
- * LiveNetwork → Testimonials → Participate → Pricing → CTA → Footer, and
- * its Hero.tsx specifically: DotGrid background (not DataNodes -- that's
+ * LiveNetwork → Testimonials → Participate → Pricing → CTA → Footer
+ * (CulturalLayers later retired as its own section, merged into
+ * CEISection's own cards -- see this file's Cultural Dimensions section
+ * further down for how that parity move landed here), and its Hero.tsx
+ * specifically: DotGrid background (not DataNodes -- that's
  * BrandsSplash/ContributorSplash-only), the six-spoke SignalRing hero
  * visual (not DecodeText's character-scramble -- also fork-splash/Auth-
  * only), Pulse orange as the accent (not Visual blue -- Pulse is the
@@ -31,9 +34,12 @@ import { CULTURAL_LAYERS } from "@/data/demo";
  * and button copy stay this project's own, since nothing in the brief
  * asked for a literal route/label match, only the real hero identity.
  *
- * Part D item 9's Cultural Layers content sits below the hero -- also
- * copied verbatim from the real landing/CulturalLayers.tsx + its i18n
- * strings, the most logical home for it per the brief's own suggestion.
+ * Part D item 9's Cultural Layers content sits below the hero -- originally
+ * its own standalone section, copied verbatim from the real landing/
+ * CulturalLayers.tsx + its i18n strings. Later merged with the CEI
+ * dimensions (real-app parity, see CULTURAL_LAYERS' own comment in
+ * demo.ts) rather than removed -- still the same real content, same
+ * position on the page.
  */
 export function Splash() {
   return (
@@ -122,26 +128,42 @@ export function Splash() {
         </div>
       </div>
 
-      {/* Part D item 9 -- real content, verbatim from the real app's own
-          landing/CulturalLayers.tsx + i18n strings. */}
+      {/* Real-app parity: was "Five Cultural Layers" as its own section,
+          verbatim from the real app's own (now-retired) landing/
+          CulturalLayers.tsx. Merged with the CEI dimensions instead, same
+          Neil/Garth decision as the live app -- see CULTURAL_LAYERS' own
+          header comment in demo.ts for exactly what changed and why this
+          demo's own merge runs the opposite direction (score added to the
+          existing layer cards, not layer content added to CEI cards --
+          this page has no per-dimension CEI card section, only the single
+          aggregate SignalRing above, to merge into). */}
       <div className="relative border-t border-line bg-panel/40 px-6 py-16">
         <div className="mx-auto max-w-5xl">
           <div className="mb-4 flex items-center gap-3">
             <div className="h-px w-12 bg-pulse" />
             <span className="font-mono text-xs font-semibold uppercase tracking-[0.3em] text-pulse">Cultural Intelligence</span>
           </div>
-          <h2 className="mb-2 font-display text-2xl font-bold leading-tight text-paper sm:text-3xl">Five Cultural Layers</h2>
-          <p className="mb-10 max-w-lg text-[15px] text-muted">Complete intelligence through five interconnected lenses.</p>
+          <h2 className="mb-2 font-display text-2xl font-bold leading-tight text-paper sm:text-3xl">Six Cultural Dimensions</h2>
+          <p className="mb-10 max-w-lg text-[15px] text-muted">Complete intelligence through six interconnected lenses.</p>
 
-          <div className="grid grid-cols-1 gap-px overflow-hidden rounded-lg bg-line sm:grid-cols-2 lg:grid-cols-5">
+          <div className="grid grid-cols-1 gap-px overflow-hidden rounded-lg bg-line sm:grid-cols-2 lg:grid-cols-3">
             {CULTURAL_LAYERS.map((layer) => (
               <div key={layer.key} className="flex h-full flex-col bg-ink p-[26px_22px] transition-colors duration-300 hover:bg-panel">
-                <div className="mb-5 h-[3px] w-[34px] rounded-sm" style={{ backgroundColor: layer.color }} />
+                <div className="mb-3 flex items-center justify-between">
+                  <div className="h-[3px] w-[34px] rounded-sm" style={{ backgroundColor: layer.color }} />
+                  <span className="font-mono text-xs font-semibold" style={{ color: layer.color }}>{layer.pct}</span>
+                </div>
                 <h3 className="mb-2 font-display text-base font-bold text-paper">{layer.label}</h3>
-                <p className="mb-5 min-h-[48px] flex-1 text-[12.5px] leading-relaxed text-muted">{layer.description}</p>
-                <span className="font-mono text-[11px] font-semibold" style={{ color: layer.color }}>
-                  {layer.example}
-                </span>
+                {layer.description ? (
+                  <>
+                    <p className="mb-5 min-h-[48px] flex-1 text-[12.5px] leading-relaxed text-muted">{layer.description}</p>
+                    <span className="font-mono text-[11px] font-semibold" style={{ color: layer.color }}>
+                      {layer.example}
+                    </span>
+                  </>
+                ) : (
+                  <p className="mb-5 flex-1 text-[12.5px] italic leading-relaxed text-muted">{layer.placeholder}</p>
+                )}
               </div>
             ))}
           </div>

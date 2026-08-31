@@ -536,32 +536,63 @@ export const CONTRIBUTOR_VERIFICATION_QUEUE: ContributorVerificationEntry[] = [
 ];
 
 // ---------------------------------------------------------------------------
-// Cultural Layers -- the real lenses the platform tracks (real app's own
-// landing/CulturalLayers.tsx), not to be confused with the six CEI
-// dimensions above: this is five, Pulse deliberately excluded there too
-// (it's the real-time-engagement axis, not a "layer" of cultural content).
-// Copy, colors, and the named example signals (Amapiano, Kitenge
-// Futurism, Pidgin-English, Jollof) are verbatim from the real app's own
-// i18n/translations.ts (layer.*/layer.*.desc, English) and CulturalLayers.tsx's
-// own LAYERS array -- including its real, deliberate color choices (the
-// Visual layer card uses Soul Gap's purple, not Visual's own blue; that's
-// carried over unchanged from the real component, not a typo here).
+// Cultural Layers -- real-app parity (Neil/Garth decision, same night as
+// the Authentic Engine cut): the live app's own standalone CulturalLayers.tsx
+// section no longer exists on its own -- its content merged into
+// CEISection's own six dimension cards instead of repeating the same
+// dimensions as a second section. This demo's Splash screen has no
+// per-dimension scored-card section to merge into the way the real
+// CEISection did (its own CEI representation here is the single aggregate
+// SignalRing hexagon in the Hero above, not six separate cards) -- so this
+// array now carries the merge the other direction instead, with an
+// identical net result: each of these five gets its real score attached
+// (pct, reused verbatim from SignalRing.tsx's own DEFAULT_SIGNAL_DIMENSIONS
+// -- the exact same illustrative sample numbers the Hero's own ring already
+// plots directly above this section, not a new dataset), plus a sixth
+// Pulse entry that has neither description nor example (same reason the
+// real app's own LAYERS array never had one: Pulse isn't a "layer" of
+// cultural content) -- placeholder covers it honestly instead.
+//
+// Copy and the named example signals (Amapiano, Kitenge Futurism,
+// Pidgin-English, Jollof) are verbatim from the real app's own
+// i18n/translations.ts (layer.*/layer.*.desc, English) and
+// CulturalLayers.tsx's own LAYERS array (now dead code there, not deleted
+// -- see that file's own comment). Colors are NOT carried over from that
+// same array, though -- checked directly and confirmed this is a real,
+// separate quirk: CulturalLayers.tsx colors each card against a color
+// that doesn't match its own same-named CEI dimension (Visual = Soul
+// Gap's purple, Ritual = Visual's blue), documented there as deliberate,
+// inherited from an even older pre-Phase-2 version. That quirk belongs
+// to CulturalLayers.tsx specifically, not to SignalRing.tsx (checked
+// that too, both the real app's and this demo's own copy -- both map
+// every dimension correctly, no mismatch anywhere). Since this array's
+// own pct values are sourced from SignalRing's correctly-colored sample
+// and rendered on the same page directly below that same ring, reusing
+// CulturalLayers.tsx's mismatched colors here would create a new,
+// visible inconsistency this page never had before (Visual blue in the
+// Hero, Visual purple in the card below it) -- colors below use each
+// dimension's own real token (var(--visual), var(--ritual)) instead.
+// Order matches the real app's own CEI_ORDER (pulse first), not this
+// array's old sound-first order.
 // ---------------------------------------------------------------------------
 
 export interface CulturalLayer {
   key: string;
   label: string;
-  description: string;
-  example: string;
+  pct: number; // 0-100, see file-header comment -- reused from SignalRing's own sample, not new data.
+  description?: string;
+  example?: string;
+  placeholder?: string; // Pulse only
   color: string;
 }
 
 export const CULTURAL_LAYERS: CulturalLayer[] = [
-  { key: "sound", label: "Sound", description: "Streaming, radio, playlists → Artist & genre predictions", example: "Amapiano · Streaming & radio trend detection", color: "var(--sound)" },
-  { key: "visual", label: "Visual", description: "Fashion, design, NFTs → Aesthetic trends", example: "Kitenge Futurism", color: "var(--soulgap)" },
-  { key: "language", label: "Language", description: "Slang, creoles, memes → Vernacular shifts", example: "Pidgin-English · Slang & code-switching shifts", color: "var(--language)" },
-  { key: "ritual", label: "Ritual", description: "Events, challenges, traditions → Cultural moments", example: "Event & challenge tracking", color: "var(--visual)" },
-  { key: "taste", label: "Taste", description: "Cuisine, street food, spice culture → Flavor & culinary export", example: "Jollof · Food & lifestyle signals", color: "var(--taste)" },
+  { key: "pulse", label: "Pulse", pct: 85, placeholder: "Data sources being finalized", color: "var(--pulse)" },
+  { key: "taste", label: "Taste", pct: 72, description: "Cuisine, street food, spice culture → Flavor & culinary export", example: "Jollof · Food & lifestyle signals", color: "var(--taste)" },
+  { key: "sound", label: "Sound", pct: 90, description: "Streaming, radio, playlists → Artist & genre predictions", example: "Amapiano · Streaming & radio trend detection", color: "var(--sound)" },
+  { key: "visual", label: "Visual", pct: 78, description: "Fashion, design, NFTs → Aesthetic trends", example: "Kitenge Futurism", color: "var(--visual)" },
+  { key: "language", label: "Language", pct: 65, description: "Slang, creoles, memes → Vernacular shifts", example: "Pidgin-English · Slang & code-switching shifts", color: "var(--language)" },
+  { key: "ritual", label: "Ritual", pct: 82, description: "Events, challenges, traditions → Cultural moments", example: "Event & challenge tracking", color: "var(--ritual)" },
 ];
 
 // ---------------------------------------------------------------------------
