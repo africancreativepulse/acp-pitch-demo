@@ -88,7 +88,19 @@ export function Splash() {
           nowhere real to go back to, and the tour hasn't started yet). */}
       <Navbar showBack={false} showWrapUp={false} />
 
-      <div className="relative flex-1 overflow-hidden py-16">
+      {/* Real-app parity: real Hero.tsx uses pb-16 pt-[150px] md:pb-24 --
+          150px of top clearance because its OWN fixed navbar overlays the
+          page (content needs deliberate room reserved to not sit behind
+          it). This demo's Navbar is sticky, not fixed (see Navbar.tsx's
+          own header comment for why), so its 68px height already pushes
+          Hero down in normal document flow -- meaning py-16 (64px) alone
+          left this demo's Hero content sitting ~18px higher than the real
+          site's at the same viewport (68 sticky-flow + 64 own padding =
+          132px total clearance, vs real's fixed 150px). pt-[82px]
+          (150 - 68px real nav height) closes that gap exactly; pb-16
+          md:pb-24 copied verbatim since bottom spacing has no such
+          fixed/sticky asymmetry to correct for. */}
+      <div className="relative flex-1 overflow-hidden pb-16 pt-[82px] md:pb-24">
         <DotGrid />
         <div
           className="pointer-events-none absolute -top-[120px] end-[6%] z-0 h-[420px] w-[420px] animate-ds-drift-1 rounded-full blur-[90px]"
