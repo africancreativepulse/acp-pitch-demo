@@ -6,6 +6,16 @@ import { Button } from "@/components/Button";
 import { useCanGoBack } from "@/state/NavHistory";
 
 /**
+ * RETIRED -- real-app parity, Change 2 (Neil's explicit direction): every
+ * screen that rendered this now renders the full real marketing
+ * Navbar.tsx instead (see that file's own header comment for the full
+ * reasoning: sticky not fixed, dropped #pricing, Book a Demo -> /wrap-up,
+ * Sign In reuses this component's own dropdown mechanic verbatim, Back/
+ * Wrap Up carried forward). No remaining call site imports this file --
+ * genuinely dead code today, kept rather than removed in case a
+ * minimal-header treatment is wanted again later. Treat any future edit
+ * here as touching dead code, not a live component.
+ *
  * Ported structural pattern from the real app's design-system/components/
  * MinimalHeader.tsx -- h-[68px] border-b bar, the real AcpLogo at its
  * real marketing/dashboard size (h-9 w-9). Every one of this demo's own

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useParams, useNavigate, Navigate } from "react-router-dom";
 import { Check, CheckCircle2, Upload, Sparkles } from "lucide-react";
 import { Button } from "@/components/Button";
-import { DemoHeader } from "@/components/DemoHeader";
+import { Navbar } from "@/components/Navbar";
 import { ExpertBadge } from "@/components/ExpertBadge";
 import { CategoryPicker } from "@/components/CategoryPicker";
 import { BadgeEvidencePreview } from "@/components/BadgeEvidencePreview";
@@ -171,7 +171,8 @@ export function Onboarding() {
 
   return (
     <div className="flex min-h-screen flex-col bg-ink">
-      <DemoHeader />
+      {/* Real-app parity, Change 2 -- see Navbar.tsx's own header comment. */}
+      <Navbar />
 
       <div className="flex flex-1 items-center justify-center px-4 py-10">
         <div className="w-full max-w-lg">

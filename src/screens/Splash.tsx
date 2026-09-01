@@ -1,9 +1,10 @@
 import { Link } from "react-router-dom";
-import { DemoHeader } from "@/components/DemoHeader";
+import { Navbar } from "@/components/Navbar";
 import { DotGrid } from "@/components/DotGrid";
 import { GlitchText } from "@/components/GlitchText";
 import { SignalRing } from "@/components/SignalRing";
 import { CountUp } from "@/components/CountUp";
+import { DepthGauge } from "@/components/DepthGauge";
 import { CULTURAL_LAYERS } from "@/data/demo";
 
 /**
@@ -40,15 +41,45 @@ import { CULTURAL_LAYERS } from "@/data/demo";
  * dimensions (real-app parity, see CULTURAL_LAYERS' own comment in
  * demo.ts) rather than removed -- still the same real content, same
  * position on the page.
+ *
+ * Real-app parity, Change 1 (Neil's explicit direction): this screen used
+ * to be just Hero + Cultural Dimensions, with the role-choice CTAs
+ * ("Enter as...") sitting directly in the Hero, immediately visible --
+ * no scroll required. Now the full real homepage story plays out first
+ * (Hero -> Features -> CEI -> CDI), and the role choice is the deliberate
+ * closing moment after it, not the first thing a visitor sees. This is a
+ * genuine divergence from how the real Hero.tsx itself behaves (its own
+ * "Brands & Agencies" / "Contributors" CTAs are ALSO immediately visible,
+ * un-deferred) -- a new demo-specific pacing decision, not literal
+ * real-app mirroring, confirmed explicitly before building.
+ *
+ * Features and CDI are new here -- neither existed anywhere in this demo
+ * before. Features is a straight port of the real landing/Features.tsx's
+ * own 2-up CEI/CDI teaser row (real English copy, "Learn more ↓" anchors
+ * pointing down to the fuller sections below -- #pricing dropped, since
+ * no Pricing section exists in this demo's own scope). CDI is a straight
+ * port of the real landing/CDISection.tsx (same "Lagos Cyberpunk: 7.8/10"
+ * illustrative sample, same real copy) -- the DepthGauge component itself
+ * was already fully ported and in use elsewhere (CampaignDetail.tsx), so
+ * this is composition, not new component work. LiveNetwork/Testimonials/
+ * Participate/Pricing/CTA are deliberately excluded from this port
+ * (Testimonials is flag-gated off on the real live site over a real
+ * fabricated-quotes risk; Participate IS the real app's own role-choice
+ * mechanism, which would duplicate this page's own closing moment;
+ * the rest are secondary conversion elements, not part of the
+ * Hero/Features/CEI/CDI methodology story Neil named explicitly) --
+ * confirmed scope, not a silent cut.
  */
 export function Splash() {
   return (
     <div className="relative flex min-h-screen flex-col bg-ink">
-      {/* Sign In (returning-visitor path) -- same real gap just found and
-          fixed on the live app's actual homepage, mirrored here, now in
-          the real matching position too (header, not page body -- see
-          DemoHeader's own showSignIn comment for the visual-parity fix). */}
-      <DemoHeader showBack={false} showWrapUp={false} showSignIn />
+      {/* Real-app parity, Change 2: the real marketing Navbar itself now
+          lives here too, not just DemoHeader's own borrowed Sign In
+          affordance -- see Navbar.tsx's own header comment. Sign In is
+          unconditional on Navbar now (no prop needed); Back/Wrap Up still
+          suppressed here, same reasoning as before (fresh load has
+          nowhere real to go back to, and the tour hasn't started yet). */}
+      <Navbar showBack={false} showWrapUp={false} />
 
       <div className="relative flex flex-1 flex-col items-center overflow-hidden px-6 py-16">
         <DotGrid />
@@ -84,23 +115,10 @@ export function Splash() {
               actually said.
             </p>
 
-            <div className="mb-9 flex flex-col gap-3.5 sm:flex-row sm:flex-wrap">
-              <Link
-                to="/onboarding/agency"
-                className="inline-flex items-center justify-center gap-2 rounded-sm border bg-ink px-7 py-3.5 font-display text-[13px] font-semibold uppercase tracking-[0.06em] text-visual transition-colors hover:bg-visual hover:text-ink"
-                style={{ borderColor: "var(--visual)" }}
-              >
-                Enter as a Brand / Agency
-              </Link>
-              <Link
-                to="/onboarding/contributor"
-                className="inline-flex items-center justify-center gap-2 rounded-sm border bg-ink px-7 py-3.5 font-display text-[13px] font-semibold uppercase tracking-[0.06em] text-sound transition-colors hover:bg-sound hover:text-ink"
-                style={{ borderColor: "var(--sound)" }}
-              >
-                Enter as a Contributor
-              </Link>
-            </div>
-
+            {/* Real-app parity, Change 1: the role-choice CTAs that used to
+                sit right here now live at the end of the page, after the
+                full Hero -> Features -> CEI -> CDI story -- see this
+                file's own header comment. */}
             <div className="flex flex-wrap gap-8 border-t border-line pt-7">
               <div>
                 <CountUp target={6} className="block font-mono text-[26px] font-semibold text-paper" />
@@ -128,6 +146,77 @@ export function Splash() {
         </div>
       </div>
 
+      {/* Real-app parity, Change 1: straight port of the real landing/
+          Features.tsx -- real English copy (features.badge/title1/title2/
+          intro/cei.teaser/cdi.teaser), 2-up CEI/CDI teaser row pointing
+          down to the fuller sections below. #pricing dropped from the
+          real component's own 4-link nav pattern doesn't apply here (this
+          is the page-body teaser row, not the navbar), but the same
+          "no Pricing section in this demo's scope" reasoning is why there's
+          no third teaser card for it either. */}
+      <section id="features" className="relative border-t border-line px-6 py-16">
+        <div className="mx-auto max-w-5xl">
+          <div className="mb-10 max-w-2xl">
+            <div className="mb-4 flex items-center gap-3">
+              <div className="h-px w-12 bg-pulse" />
+              <span className="font-mono text-xs font-semibold uppercase tracking-[0.3em] text-pulse">Platform</span>
+            </div>
+            <h2 className="font-display text-2xl font-bold leading-tight text-paper sm:text-3xl">
+              Actionable Insights. <span className="text-pulse">Not Just Data.</span>
+            </h2>
+            <p className="mt-4 max-w-xl text-[15px] leading-relaxed text-muted">
+              We combine AI-powered analysis with authentic human perspectives to deliver
+              intelligence you can act on.
+            </p>
+          </div>
+
+          <div className="grid gap-px overflow-hidden rounded-lg bg-line sm:grid-cols-2">
+            <div className="flex flex-col bg-ink p-8">
+              <div className="mb-4 flex items-center justify-between">
+                <h3 className="font-display text-lg font-semibold text-paper">Cultural Engagement Index (CEI)</h3>
+                <span
+                  className="rounded-sm px-2 py-1 font-mono text-[10px] font-medium uppercase tracking-[0.2em]"
+                  style={{ backgroundColor: "color-mix(in srgb, var(--pulse) 14%, transparent)", color: "var(--pulse)" }}
+                >
+                  0–100
+                </span>
+              </div>
+              <p className="mb-6 flex-1 text-[13.5px] leading-relaxed text-muted">
+                Measures cultural velocity and market readiness on a scale of 0-100.
+              </p>
+              <a
+                href="#cei"
+                className="border-t border-line pt-4 font-mono text-xs uppercase tracking-[0.1em] text-pulse transition-colors hover:text-paper"
+              >
+                Learn more ↓
+              </a>
+            </div>
+
+            <div className="flex flex-col bg-ink p-8">
+              <div className="mb-4 flex items-center justify-between">
+                <h3 className="font-display text-lg font-semibold text-paper">Cultural Depth Index (CDI)</h3>
+                <span
+                  className="rounded-sm px-2 py-1 font-mono text-[10px] font-medium uppercase tracking-[0.2em]"
+                  style={{ backgroundColor: "color-mix(in srgb, var(--soulgap) 14%, transparent)", color: "var(--soulgap)" }}
+                >
+                  0–10
+                </span>
+              </div>
+              <p className="mb-6 flex-1 text-[13.5px] leading-relaxed text-muted">
+                Authenticity metric that measures cultural alignment and flags backlash risk on a
+                scale of 0-10.
+              </p>
+              <a
+                href="#cdi"
+                className="border-t border-line pt-4 font-mono text-xs uppercase tracking-[0.1em] text-soulgap transition-colors hover:text-paper"
+              >
+                Learn more ↓
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Real-app parity: was "Five Cultural Layers" as its own section,
           verbatim from the real app's own (now-retired) landing/
           CulturalLayers.tsx. Merged with the CEI dimensions instead, same
@@ -136,8 +225,9 @@ export function Splash() {
           demo's own merge runs the opposite direction (score added to the
           existing layer cards, not layer content added to CEI cards --
           this page has no per-dimension CEI card section, only the single
-          aggregate SignalRing above, to merge into). */}
-      <div className="relative border-t border-line bg-panel/40 px-6 py-16">
+          aggregate SignalRing above, to merge into). id="cei" added for
+          Change 1's Features/Navbar anchor links to actually land here. */}
+      <section id="cei" className="relative border-t border-line bg-panel/40 px-6 py-16">
         <div className="mx-auto max-w-5xl">
           <div className="mb-4 flex items-center gap-3">
             <div className="h-px w-12 bg-pulse" />
@@ -168,7 +258,71 @@ export function Splash() {
             ))}
           </div>
         </div>
-      </div>
+      </section>
+
+      {/* Real-app parity, Change 1: straight port of the real landing/
+          CDISection.tsx -- real copy (cdi.title, features.cdi.gaugeLive,
+          features.cdi.stat, cdi.illustrativeSample), the same "Lagos
+          Cyberpunk: 7.8/10" illustrative sample used everywhere else on
+          this page. DepthGauge itself needed zero new work -- already
+          fully ported, already in use elsewhere (CampaignDetail.tsx) --
+          this is composition, not new component work. Its own default
+          bandLabels (DEFAULT_CDI_BAND_LABELS) are already the real
+          English copy, so no override needed here. */}
+      <section id="cdi" className="relative border-t border-line px-6 py-16">
+        <div className="mx-auto max-w-2xl text-center">
+          <div className="mb-4 flex items-center justify-center gap-3">
+            <div className="h-px w-12 bg-soulgap" />
+            <span className="font-mono text-xs font-semibold uppercase tracking-[0.3em] text-soulgap">Framework</span>
+            <div className="h-px w-12 bg-soulgap" />
+          </div>
+          <h2 className="font-display text-2xl font-bold leading-tight text-paper sm:text-3xl">Cultural Depth Index</h2>
+
+          <div className="mx-auto mt-10 max-w-lg">
+            <div className="mb-8 flex items-center justify-center gap-1.5 font-mono text-[13px] uppercase tracking-[0.18em] text-muted">
+              <i className="h-1.5 w-1.5 rounded-full bg-sound animate-ds-node-pulse" />
+              Authenticity Check
+            </div>
+
+            <DepthGauge score={7.8} />
+
+            <div className="mt-1 text-center font-mono text-xs uppercase tracking-[0.1em] text-muted">
+              Lagos Cyberpunk: 7.8/10 <span className="mx-1 text-line">·</span> Illustrative sample, not a
+              live result
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Real-app parity, Change 1: the role-choice CTAs that used to sit
+          directly in the Hero now live here instead -- the deliberate
+          closing moment after the full real homepage story, not the
+          first thing a visitor sees. Same buttons, same routes, same
+          styling as before -- only the position changed. */}
+      <section className="relative border-t border-line bg-panel/40 px-6 py-16 text-center">
+        <div className="mx-auto max-w-lg">
+          <h2 className="mb-3 font-display text-2xl font-bold text-paper">Ready to see it in action?</h2>
+          <p className="mb-8 text-[15px] text-muted">
+            Pick a path — everything from here on is the real thing, not a script.
+          </p>
+          <div className="flex flex-col gap-3.5 sm:flex-row sm:justify-center">
+            <Link
+              to="/onboarding/agency"
+              className="inline-flex items-center justify-center gap-2 rounded-sm border bg-ink px-7 py-3.5 font-display text-[13px] font-semibold uppercase tracking-[0.06em] text-visual transition-colors hover:bg-visual hover:text-ink"
+              style={{ borderColor: "var(--visual)" }}
+            >
+              Enter as a Brand / Agency
+            </Link>
+            <Link
+              to="/onboarding/contributor"
+              className="inline-flex items-center justify-center gap-2 rounded-sm border bg-ink px-7 py-3.5 font-display text-[13px] font-semibold uppercase tracking-[0.06em] text-sound transition-colors hover:bg-sound hover:text-ink"
+              style={{ borderColor: "var(--sound)" }}
+            >
+              Enter as a Contributor
+            </Link>
+          </div>
+        </div>
+      </section>
 
       <div className="flex flex-col items-center gap-3 px-6 py-10 text-center">
         <Link to="/operations" className="text-[13px] text-muted hover:text-paper hover:underline">

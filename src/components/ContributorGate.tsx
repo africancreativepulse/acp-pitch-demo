@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Clock, XCircle } from "lucide-react";
-import { DemoHeader } from "@/components/DemoHeader";
+import { Navbar } from "@/components/Navbar";
 import { Button } from "@/components/Button";
 import { useDemoState } from "@/state/DemoState";
 
@@ -41,7 +41,11 @@ export function ContributorGate({ children }: { children: ReactNode }) {
 
   return (
     <div className="flex min-h-screen flex-col bg-ink">
-      <DemoHeader />
+      {/* Real-app parity, Change 2 -- see Navbar.tsx's own header comment.
+          Still deliberately NOT DashboardShell (see this file's own
+          header comment on why), but the top bar itself follows the same
+          everywhere-swap as every other screen. */}
+      <Navbar />
       <div className="flex flex-1 items-center justify-center px-6 py-16">
         <div className="w-full max-w-md text-center">
           <div

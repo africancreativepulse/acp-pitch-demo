@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { RotateCcw } from "lucide-react";
-import { DemoHeader } from "@/components/DemoHeader";
+import { Navbar } from "@/components/Navbar";
 import { GlitchText } from "@/components/GlitchText";
 
 // Mirrors DashboardShell's own ROLE_ACCENT map exactly -- the six real
@@ -19,8 +19,12 @@ const JOURNEY = [
 
 /**
  * Item 5 -- a deliberate ending, not just wherever the last tap happened
- * to land. Reachable from the "Wrap Up" link DemoHeader now carries on
- * every screen. Content is a real recap, not filler: the same headline
+ * to land. Reachable from the "Wrap Up" link Navbar now carries on every
+ * screen (real-app parity, Change 2 -- see Navbar.tsx's own header
+ * comment; DemoHeader carried this same link before the swap). Also now
+ * doubles as Book a Demo's own real target, since a "book a demo" CTA
+ * inside a live demo would otherwise be circular. Content is a real
+ * recap, not filler: the same headline
  * Splash opened with (closing the loop), then the six real surfaces this
  * tour actually covers -- doubling as both closure and a way back into
  * any one of them, for an investor who wants to keep exploring rather
@@ -36,7 +40,7 @@ const JOURNEY = [
 export function WrapUp() {
   return (
     <div className="flex min-h-screen flex-col bg-ink">
-      <DemoHeader showWrapUp={false} />
+      <Navbar showWrapUp={false} />
 
       <main className="mx-auto w-full max-w-3xl flex-1 px-6 py-16">
         <div className="mb-2 label-caps !text-pulse">End of Demo</div>

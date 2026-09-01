@@ -121,6 +121,16 @@ interface DemoState {
   // is the honest tap-only representation: flips the gate back to
   // pending and un-rejects any badge that was cascaded to "rejected".
   resubmitContributorVerification: () => void;
+  // Real-app parity: the live Navbar's own LanguageSwitcher persists the
+  // chosen language app-wide via I18nProvider's context, not per-component
+  // local state -- selecting a language on one screen still shows it
+  // selected after navigating elsewhere. Mirrored here the same way,
+  // through this same app-wide DemoState rather than giving
+  // LanguageSwitcher.tsx its own separate context (this demo already has
+  // exactly one shared state provider; no reason to add a second).
+  // Defaults "en" (English), matching the real I18nProvider's own default.
+  uiLanguage: string;
+  setUiLanguage: (code: string) => void;
 }
 
 const Ctx = createContext<DemoState | null>(null);
@@ -136,6 +146,7 @@ export function DemoStateProvider({ children }: { children: ReactNode }) {
   const [contributorIdentity, setContributorIdentity] = useState<ContributorIdentity | null>(null);
   const [contributorVerificationStatus, setContributorVerificationStatus] =
     useState<ContributorVerificationStatus>("approved");
+  const [uiLanguage, setUiLanguage] = useState("en");
 
   const value = useMemo<DemoState>(
     () => ({
@@ -166,8 +177,10 @@ export function DemoStateProvider({ children }: { children: ReactNode }) {
         setContributorVerificationStatus("pending");
         setContributorBadges((prev) => prev.map((b) => (b.status === "rejected" ? { ...b, status: "pending" } : b)));
       },
+      uiLanguage,
+      setUiLanguage,
     }),
-    [draftCampaigns, reviewStatus, contributorBadges, contributorIdentity, contributorVerificationStatus]
+    [draftCampaigns, reviewStatus, contributorBadges, contributorIdentity, contributorVerificationStatus, uiLanguage]
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

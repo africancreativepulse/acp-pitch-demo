@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { DemoHeader } from "@/components/DemoHeader";
+import { Navbar } from "@/components/Navbar";
 
 // Real correction: this used to be a bare navigation menu -- four links
 // with a one-line description each, no honest account of how anyone
@@ -55,7 +55,8 @@ const CARDS = [
 export function OperationsHub() {
   return (
     <div className="min-h-screen bg-ink">
-      <DemoHeader />
+      {/* Real-app parity, Change 2 -- see Navbar.tsx's own header comment. */}
+      <Navbar />
 
       <main className="mx-auto max-w-3xl px-6 py-14">
         <div className="mb-2 label-caps">The Operations Layer</div>

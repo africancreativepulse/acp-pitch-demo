@@ -4,7 +4,7 @@ import {
   LayoutDashboard, FileText, Users, Shield, MapPin, Menu, X, LogOut, ShieldCheck,
   User, FolderOpen, BarChart3, TrendingUp, Languages, Award,
 } from "lucide-react";
-import { DemoHeader } from "@/components/DemoHeader";
+import { Navbar } from "@/components/Navbar";
 import { NotificationBell } from "@/components/NotificationBell";
 
 /**
@@ -216,12 +216,14 @@ export function DashboardShell({ role, children }: { role: ShellRole; children: 
 
   return (
     <div className="relative flex min-h-screen flex-col bg-ink text-paper">
-      {/* Item 5 -- the same consistent logo+back header now sits above
-          every dashboard/operations screen, matching the real app's own
-          MinimalHeader-above-DashboardLayout structure exactly. Back now
-          resolves via real navigation history, not a fixed prop -- see
-          DemoHeader's own header comment. */}
-      <DemoHeader />
+      {/* Real-app parity, Change 2: the real marketing Navbar now sits
+          above every dashboard/operations screen too (Neil-confirmed,
+          a deliberate divergence from the real app's own dashboards,
+          which use sidebar-only nav) -- replacing DemoHeader here. See
+          Navbar.tsx's own header comment for the full reasoning and the
+          real inconsistencies it resolves (Book a Demo, Sign In, dropped
+          #pricing, sticky vs. fixed). */}
+      <Navbar />
       <div className="relative flex flex-1">
         {/* Desktop sidebar -- same w-60/border-e/bg-panel proportions as the
             real app's own <aside>. */}
@@ -259,7 +261,8 @@ export function DashboardShell({ role, children }: { role: ShellRole; children: 
           {mobileOpen && (
             <>
               <div className="fixed inset-0 z-40 bg-ink/80 backdrop-blur-sm md:hidden" onClick={() => setMobileOpen(false)} />
-              {/* top-[124px] = DemoHeader's own h-[68px] + this mobile
+              {/* top-[124px] = Navbar's own h-[68px] (same height DemoHeader
+                  was, math unchanged by the Change 2 swap) + this mobile
                   header's h-14 (56px), now stacked above it -- matches the
                   real app's own identical fix in DashboardLayout.tsx once
                   it grew a MinimalHeader above its mobile header too. */}
