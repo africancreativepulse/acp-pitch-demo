@@ -15,13 +15,26 @@ import { CEI_POSITIONING_REALITY } from "@/data/demo";
 // GRID_DOTS, copied verbatim (positions, colors, link pairs) -- an
 // abstract signal-network diagram, not a literal map, per that
 // component's own header comment.
+//
+// City labels: the real component only shows these once a live
+// get_live_network_cities() RPC clears a real "3+ cities, 2+ countries"
+// threshold -- there's no Supabase connection here to call, so rather
+// than leave every node permanently unlabeled (technically that IS the
+// real component's own honest fallback state, but it undersells what
+// this section is actually showing off), these 6 are hardcoded from this
+// demo's own already-established country/city data (CITIES_BY_COUNTRY --
+// same four countries the Footer below already names: Nigeria, Kenya,
+// South Africa, Ghana), alphabetically ordered the same way the real
+// component orders whatever real cities it gets back. Static, not a live
+// query result -- same "illustrative, not measured" honesty this demo
+// already applies everywhere else.
 const NETWORK_NODES = [
-  { id: "n1", x: 210, y: 190, color: "var(--pulse)" },
-  { id: "n2", x: 140, y: 230, color: "var(--language)" },
-  { id: "n3", x: 580, y: 220, color: "var(--sound)" },
-  { id: "n4", x: 470, y: 400, color: "var(--visual)" },
-  { id: "n5", x: 600, y: 150, color: "var(--soulgap)" },
-  { id: "n6", x: 420, y: 70, color: "var(--ritual)" },
+  { id: "n1", x: 210, y: 190, color: "var(--pulse)", city: "Abuja" },
+  { id: "n2", x: 140, y: 230, color: "var(--language)", city: "Accra" },
+  { id: "n3", x: 580, y: 220, color: "var(--sound)", city: "Cape Town" },
+  { id: "n4", x: 470, y: 400, color: "var(--visual)", city: "Johannesburg" },
+  { id: "n5", x: 600, y: 150, color: "var(--soulgap)", city: "Lagos" },
+  { id: "n6", x: 420, y: 70, color: "var(--ritual)", city: "Nairobi" },
 ] as const;
 
 const NETWORK_LINKS: [number, number][] = [
@@ -412,15 +425,15 @@ export function Splash() {
           -- real copy (network.badge/title1/title2/subtitle), same
           six-node abstract network diagram (not a literal map), same
           grid-dot background, same real node positions/colors/link
-          pairs. One real, disclosed gap: the real component labels up to
-          6 nodes with real city names, but only once a live
-          get_live_network_cities() RPC clears a genuine "3+ cities, 2+
-          countries" threshold -- there's no Supabase connection here to
-          call, so nodes render permanently unlabeled, which is also the
-          real component's own honest default/fallback state (its own
-          header comment confirms this is what it renders whenever that
-          gate isn't cleared -- not a demo-only simplification of
-          something that always shows labels). */}
+          pairs. City labels: the real component only shows these once a
+          live get_live_network_cities() RPC clears a genuine "3+ cities,
+          2+ countries" threshold -- no Supabase connection exists here to
+          call that, so NETWORK_NODES' own city field is hardcoded static
+          data instead (see that constant's own header comment for
+          exactly where the 6 names come from and why), always shown
+          rather than gated -- an intentional demo-specific choice to show
+          what the section is actually for, not a literal reproduction of
+          the real component's own conditional-on-live-data behavior. */}
       <section className="py-24 sm:py-32">
         <div className="container px-6">
           <div className="mb-14 max-w-xl">
@@ -472,6 +485,17 @@ export function Splash() {
                 <g key={n.id}>
                   <circle cx={n.x} cy={n.y} r={4} fill="none" style={{ stroke: n.color, strokeWidth: 1.4 }} />
                   <circle cx={n.x} cy={n.y} r={5} className="animate-ds-node-pulse" style={{ fill: n.color }} />
+                  <text
+                    x={n.x}
+                    y={n.y - 12}
+                    textAnchor="middle"
+                    fill={n.color}
+                    fontSize={11}
+                    fontFamily="var(--font-mono)"
+                    letterSpacing={0.5}
+                  >
+                    {n.city}
+                  </text>
                 </g>
               ))}
             </svg>
