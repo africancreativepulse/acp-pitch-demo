@@ -45,14 +45,17 @@ import { CULTURAL_LAYERS } from "@/data/demo";
  *
  * Real-app parity, Change 1 (Neil's explicit direction): this screen used
  * to be just Hero + Cultural Dimensions, with the role-choice CTAs
- * ("Enter as...") sitting directly in the Hero, immediately visible --
- * no scroll required. Now the full real homepage story plays out first
- * (Hero -> Features -> CEI -> CDI), and the role choice is the deliberate
- * closing moment after it, not the first thing a visitor sees. This is a
- * genuine divergence from how the real Hero.tsx itself behaves (its own
- * "Brands & Agencies" / "Contributors" CTAs are ALSO immediately visible,
- * un-deferred) -- a new demo-specific pacing decision, not literal
- * real-app mirroring, confirmed explicitly before building.
+ * ("Enter as...") sitting directly in the Hero. Now the full real homepage
+ * story plays out below it too (Hero -> WaveformRibbon -> Features -> CEI
+ * -> WaveformRibbon -> CDI). An intermediate pass had moved the CTAs out
+ * of the Hero into their own closing section after that story, reasoning
+ * it as a deliberate demo-specific pacing choice -- reverted on direct
+ * instruction to match the real Hero.tsx exactly instead: its own CTAs
+ * are immediately visible, un-deferred, so this demo's now are too. The
+ * closing section that used to hold them is gone; the CTAs live only in
+ * the Hero now, matching real Index.tsx's own page structure (no second,
+ * redundant role-choice moment at the bottom the way the real page
+ * doesn't have one either).
  *
  * Features and CDI are new here -- neither existed anywhere in this demo
  * before. Features is a straight port of the real landing/Features.tsx's
@@ -62,14 +65,17 @@ import { CULTURAL_LAYERS } from "@/data/demo";
  * port of the real landing/CDISection.tsx (same "Lagos Cyberpunk: 7.8/10"
  * illustrative sample, same real copy) -- the DepthGauge component itself
  * was already fully ported and in use elsewhere (CampaignDetail.tsx), so
- * this is composition, not new component work. LiveNetwork/Testimonials/
- * Participate/Pricing/CTA are deliberately excluded from this port
- * (Testimonials is flag-gated off on the real live site over a real
- * fabricated-quotes risk; Participate IS the real app's own role-choice
- * mechanism, which would duplicate this page's own closing moment;
- * the rest are secondary conversion elements, not part of the
- * Hero/Features/CEI/CDI methodology story Neil named explicitly) --
- * confirmed scope, not a silent cut.
+ * this is composition, not new component work. Both WaveformRibbon calls
+ * in this file mirror real Index.tsx's own two calls within this demo's
+ * ported scope exactly (size="tall" after Hero, default size after CDI --
+ * its third call, after Participate, isn't in scope since Participate
+ * itself is excluded). LiveNetwork/Testimonials/Participate/Pricing/CTA
+ * are deliberately excluded from this port (Testimonials is flag-gated
+ * off on the real live site over a real fabricated-quotes risk;
+ * Participate IS the real app's own role-choice mechanism, which would
+ * duplicate the Hero's own CTAs above; the rest are secondary conversion
+ * elements, not part of the Hero/Features/CEI/CDI methodology story Neil
+ * named explicitly) -- confirmed scope, not a silent cut.
  */
 export function Splash() {
   return (
@@ -120,10 +126,33 @@ export function Splash() {
               actually said.
             </p>
 
-            {/* Real-app parity, Change 1: the role-choice CTAs that used to
-                sit right here now live at the end of the page, after the
-                full Hero -> Features -> CEI -> CDI story -- see this
-                file's own header comment. */}
+            {/* Real-app parity, per direct instruction: matches the real
+                Hero.tsx exactly -- these sit right here, immediately
+                visible, same as the real homepage. An earlier pass moved
+                them to a standalone closing section after the full
+                Hero -> Features -> CEI -> CDI story; reverted, since the
+                real Hero.tsx's own CTAs are ALSO immediately visible,
+                un-deferred (see this file's own header comment, which
+                used to flag the deferred version as "a genuine
+                divergence... a new demo-specific pacing decision" -- that
+                decision is reversed now, this is literal parity instead). */}
+            <div className="mb-11 flex flex-col gap-3.5 sm:flex-row sm:flex-wrap">
+              <Link
+                to="/onboarding/agency"
+                className="inline-flex items-center justify-center gap-2 rounded-sm border bg-ink px-7 py-3.5 font-display text-[13px] font-semibold uppercase tracking-[0.06em] text-visual transition-colors hover:bg-visual hover:text-ink"
+                style={{ borderColor: "var(--visual)" }}
+              >
+                Enter as a Brand / Agency
+              </Link>
+              <Link
+                to="/onboarding/contributor"
+                className="inline-flex items-center justify-center gap-2 rounded-sm border bg-ink px-7 py-3.5 font-display text-[13px] font-semibold uppercase tracking-[0.06em] text-sound transition-colors hover:bg-sound hover:text-ink"
+                style={{ borderColor: "var(--sound)" }}
+              >
+                Enter as a Contributor
+              </Link>
+            </div>
+
             <div className="flex flex-wrap gap-8 border-t border-line pt-7">
               <div>
                 <CountUp target={6} className="block font-mono text-[26px] font-semibold text-paper" />
@@ -152,11 +181,13 @@ export function Splash() {
       </div>
 
       {/* Real-app parity: the glowing waveform divider real Index.tsx
-          renders directly under Hero, before Features -- named in this
-          file's own header comment as part of the real page's section
-          order but never actually built until now. Straight port, see
-          WaveformRibbon.tsx's own header comment. */}
-      <WaveformRibbon />
+          renders directly under Hero, before Features -- size="tall",
+          matching real Index.tsx's own <WaveformRibbon size="tall" />
+          call at this exact position (its other two calls, at default
+          "thin" size, sit after CDISection and after Participate --
+          the CDISection one is in this demo's own scope too, see below;
+          the Participate one isn't, Participate itself is excluded). */}
+      <WaveformRibbon size="tall" />
 
       {/* Real-app parity, Change 1: straight port of the real landing/
           Features.tsx -- real English copy (features.badge/title1/title2/
@@ -309,35 +340,12 @@ export function Splash() {
         </div>
       </section>
 
-      {/* Real-app parity, Change 1: the role-choice CTAs that used to sit
-          directly in the Hero now live here instead -- the deliberate
-          closing moment after the full real homepage story, not the
-          first thing a visitor sees. Same buttons, same routes, same
-          styling as before -- only the position changed. */}
-      <section className="relative border-t border-line bg-panel/40 px-6 py-16 text-center">
-        <div className="mx-auto max-w-lg">
-          <h2 className="mb-3 font-display text-2xl font-bold text-paper">Ready to see it in action?</h2>
-          <p className="mb-8 text-[15px] text-muted">
-            Pick a path — everything from here on is the real thing, not a script.
-          </p>
-          <div className="flex flex-col gap-3.5 sm:flex-row sm:justify-center">
-            <Link
-              to="/onboarding/agency"
-              className="inline-flex items-center justify-center gap-2 rounded-sm border bg-ink px-7 py-3.5 font-display text-[13px] font-semibold uppercase tracking-[0.06em] text-visual transition-colors hover:bg-visual hover:text-ink"
-              style={{ borderColor: "var(--visual)" }}
-            >
-              Enter as a Brand / Agency
-            </Link>
-            <Link
-              to="/onboarding/contributor"
-              className="inline-flex items-center justify-center gap-2 rounded-sm border bg-ink px-7 py-3.5 font-display text-[13px] font-semibold uppercase tracking-[0.06em] text-sound transition-colors hover:bg-sound hover:text-ink"
-              style={{ borderColor: "var(--sound)" }}
-            >
-              Enter as a Contributor
-            </Link>
-          </div>
-        </div>
-      </section>
+      {/* Real-app parity: real Index.tsx's second <WaveformRibbon />
+          (default "thin" size) sits directly after CDISection, before
+          LiveNetwork -- LiveNetwork itself is excluded from this demo's
+          scope, but the divider position right after CDI is still real
+          and still in scope, so it stays. */}
+      <WaveformRibbon />
 
       <div className="flex flex-col items-center gap-3 px-6 py-10 text-center">
         <Link to="/operations" className="text-[13px] text-muted hover:text-paper hover:underline">
