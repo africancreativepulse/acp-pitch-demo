@@ -11,6 +11,28 @@ import type { Config } from "tailwindcss";
 export default {
   content: ["./index.html", "./src/**/*.{ts,tsx}"],
   theme: {
+    // Real-app parity: found while comparing the deployed demo's Hero
+    // against the live site -- every real landing section (Navbar,
+    // Hero, Features, CEISection, CDISection, CulturalLayers) wraps its
+    // content in Tailwind's own `container` utility, configured exactly
+    // this way in acp-handoff's own tailwind.config.ts. This demo had no
+    // `container` config at all -- Navbar.tsx and Splash.tsx instead used
+    // ad-hoc `mx-auto max-w-5xl/6xl` wrappers, which center content into
+    // a narrower column with much wider side margins than the real
+    // site's own container produces at typical desktop widths (real
+    // `container` is edge-to-edge (100% width, just 2rem padding) below
+    // the 1536px 2xl breakpoint, only capping to 1400px above it -- a
+    // fixed max-w-5xl/6xl is centered and narrower at EVERY viewport,
+    // which is why the demo's Hero/nav content sat visibly further
+    // inset than the real site's at the exact same window size). Copied
+    // verbatim rather than approximated.
+    container: {
+      center: true,
+      padding: "2rem",
+      screens: {
+        "2xl": "1400px",
+      },
+    },
     extend: {
       colors: {
         ink: "var(--ink)",

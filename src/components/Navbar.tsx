@@ -110,7 +110,7 @@ export function Navbar({
 
   return (
     <nav className="sticky top-0 z-50 border-b border-line bg-ink/72 backdrop-blur-xl">
-      <div className="mx-auto flex h-[68px] max-w-6xl items-center justify-between px-6">
+      <div className="container flex h-[68px] items-center justify-between px-6">
         <div className="flex items-center gap-5">
           {showBack && (
             <button

@@ -82,7 +82,7 @@ export function Splash() {
           nowhere real to go back to, and the tour hasn't started yet). */}
       <Navbar showBack={false} showWrapUp={false} />
 
-      <div className="relative flex flex-1 flex-col items-center overflow-hidden px-6 py-16">
+      <div className="relative flex-1 overflow-hidden py-16">
         <DotGrid />
         <div
           className="pointer-events-none absolute -top-[120px] end-[6%] z-0 h-[420px] w-[420px] animate-ds-drift-1 rounded-full blur-[90px]"
@@ -95,7 +95,11 @@ export function Splash() {
           aria-hidden="true"
         />
 
-        <div className="relative z-[1] mx-auto grid w-full max-w-6xl grid-cols-1 items-center gap-14 py-8 md:grid-cols-[1.05fr_0.95fr]">
+        {/* Real-app parity: `container px-6`, matching the real Hero.tsx's
+            own wrapper exactly (see tailwind.config.ts's own container
+            comment for why this replaced the old mx-auto max-w-6xl
+            approximation). */}
+        <div className="container relative z-[1] grid grid-cols-1 items-center gap-14 px-6 md:grid-cols-[1.05fr_0.95fr]">
           <div>
             <div className="mb-[22px] flex items-center gap-[10px]">
               <div className="h-0.5 w-[34px] bg-pulse" />
@@ -162,8 +166,8 @@ export function Splash() {
           is the page-body teaser row, not the navbar), but the same
           "no Pricing section in this demo's scope" reasoning is why there's
           no third teaser card for it either. */}
-      <section id="features" className="relative border-t border-line px-6 py-16">
-        <div className="mx-auto max-w-5xl">
+      <section id="features" className="relative border-t border-line py-16">
+        <div className="container relative z-[1] px-6">
           <div className="mb-10 max-w-2xl">
             <div className="mb-4 flex items-center gap-3">
               <div className="h-px w-12 bg-pulse" />
@@ -235,8 +239,8 @@ export function Splash() {
           this page has no per-dimension CEI card section, only the single
           aggregate SignalRing above, to merge into). id="cei" added for
           Change 1's Features/Navbar anchor links to actually land here. */}
-      <section id="cei" className="relative border-t border-line bg-panel/40 px-6 py-16">
-        <div className="mx-auto max-w-5xl">
+      <section id="cei" className="relative border-t border-line bg-panel/40 py-16">
+        <div className="container relative z-[1] px-6 sm:px-16">
           <div className="mb-4 flex items-center gap-3">
             <div className="h-px w-12 bg-pulse" />
             <span className="font-mono text-xs font-semibold uppercase tracking-[0.3em] text-pulse">Cultural Intelligence</span>
@@ -277,7 +281,9 @@ export function Splash() {
           this is composition, not new component work. Its own default
           bandLabels (DEFAULT_CDI_BAND_LABELS) are already the real
           English copy, so no override needed here. */}
-      <section id="cdi" className="relative border-t border-line px-6 py-16">
+      <section id="cdi" className="relative border-t border-line py-16">
+        <DotGrid />
+        <div className="container relative z-[1] px-6 sm:px-16">
         <div className="mx-auto max-w-2xl text-center">
           <div className="mb-4 flex items-center justify-center gap-3">
             <div className="h-px w-12 bg-soulgap" />
@@ -299,6 +305,7 @@ export function Splash() {
               live result
             </div>
           </div>
+        </div>
         </div>
       </section>
 
