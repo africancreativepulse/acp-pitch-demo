@@ -31,10 +31,18 @@ import { CULTURAL_LAYERS } from "@/data/demo";
  * someone actually said." (hero.subheadline) -- all copied verbatim from
  * the real app's i18n/translations.ts, English locale.
  *
- * This demo's own routing (CTAs → /onboarding/:role, not /for-agencies or
- * /for-contributors -- those fork-splash pages don't exist in this demo)
- * and button copy stay this project's own, since nothing in the brief
- * asked for a literal route/label match, only the real hero identity.
+ * This demo's own routing stays project-specific (CTAs → /onboarding/:role,
+ * not /for-agencies or /for-contributors -- those fork-splash pages don't
+ * exist in this demo). Button COPY, though, is now literal real-app
+ * parity, not invented text: "Brands & Agencies →" / "Contributors →",
+ * copied verbatim from the real i18n keys (participate.brands/
+ * participate.contributors, English locale), arrow included (real
+ * Hero.tsx's own DirArrow -- a plain "→" here, since this demo has no
+ * RTL/i18n system for DirArrow's own mirroring to matter). An earlier
+ * pass used invented labels ("Enter as a Brand / Agency", "Enter as a
+ * Contributor") reasoning that nothing required a literal match --
+ * reverted on direct instruction that the info itself, not just the
+ * layout, needs to mirror the real site.
  *
  * Part D item 9's Cultural Layers content sits below the hero -- originally
  * its own standalone section, copied verbatim from the real landing/
@@ -151,17 +159,17 @@ export function Splash() {
             <div className="mb-11 flex flex-col gap-3.5 sm:flex-row sm:flex-wrap">
               <Link
                 to="/onboarding/agency"
-                className="inline-flex items-center justify-center gap-2 rounded-sm border bg-ink px-7 py-3.5 font-display text-[13px] font-semibold uppercase tracking-[0.06em] text-visual transition-colors hover:bg-visual hover:text-ink"
+                className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-sm border bg-ink px-[22px] py-3 font-display text-[12.5px] font-semibold uppercase tracking-[0.06em] text-visual transition-colors hover:bg-visual hover:text-ink"
                 style={{ borderColor: "var(--visual)" }}
               >
-                Enter as a Brand / Agency
+                Brands &amp; Agencies <span aria-hidden="true">→</span>
               </Link>
               <Link
                 to="/onboarding/contributor"
-                className="inline-flex items-center justify-center gap-2 rounded-sm border bg-ink px-7 py-3.5 font-display text-[13px] font-semibold uppercase tracking-[0.06em] text-sound transition-colors hover:bg-sound hover:text-ink"
+                className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-sm border bg-ink px-[22px] py-3 font-display text-[12.5px] font-semibold uppercase tracking-[0.06em] text-sound transition-colors hover:bg-sound hover:text-ink"
                 style={{ borderColor: "var(--sound)" }}
               >
-                Enter as a Contributor
+                Contributors <span aria-hidden="true">→</span>
               </Link>
             </div>
 
