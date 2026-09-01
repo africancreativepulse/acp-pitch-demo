@@ -8,7 +8,49 @@ import { CountUp } from "@/components/CountUp";
 import { DepthGauge } from "@/components/DepthGauge";
 import { WaveformRibbon } from "@/components/WaveformRibbon";
 import { PositioningRealityBars } from "@/components/PositioningRealityBars";
+import { AcpLogo } from "@/components/AcpLogo";
 import { CEI_POSITIONING_REALITY } from "@/data/demo";
+
+// Real-app parity: real landing/LiveNetwork.tsx's own NODES/LINKS/
+// GRID_DOTS, copied verbatim (positions, colors, link pairs) -- an
+// abstract signal-network diagram, not a literal map, per that
+// component's own header comment.
+const NETWORK_NODES = [
+  { id: "n1", x: 210, y: 190, color: "var(--pulse)" },
+  { id: "n2", x: 140, y: 230, color: "var(--language)" },
+  { id: "n3", x: 580, y: 220, color: "var(--sound)" },
+  { id: "n4", x: 470, y: 400, color: "var(--visual)" },
+  { id: "n5", x: 600, y: 150, color: "var(--soulgap)" },
+  { id: "n6", x: 420, y: 70, color: "var(--ritual)" },
+] as const;
+
+const NETWORK_LINKS: [number, number][] = [
+  [0, 1],
+  [0, 2],
+  [0, 4],
+  [2, 3],
+  [2, 4],
+  [4, 5],
+  [0, 5],
+  [2, 5],
+];
+
+const NETWORK_GRID_DOTS = (() => {
+  const dots: { x: number; y: number }[] = [];
+  for (let gx = 40; gx < 900; gx += 44) {
+    for (let gy = 30; gy < 470; gy += 44) {
+      dots.push({ x: gx, y: gy });
+    }
+  }
+  return dots;
+})();
+
+// Real-app parity: real landing/Footer.tsx's own FooterSoonTag, verbatim.
+const FooterSoonTag = () => (
+  <span className="rounded-full border border-line px-1.5 py-px font-mono text-[9px] uppercase tracking-[0.1em] text-muted">
+    Soon
+  </span>
+);
 
 /**
  * REFERENCE CORRECTION: this screen was previously built against Auth.tsx
@@ -230,15 +272,15 @@ export function Splash() {
           no third teaser card for it either. */}
       <section id="features" className="relative border-t border-line py-16">
         <div className="container relative z-[1] px-6">
-          <div className="mb-10 max-w-2xl">
+          <div className="mb-14 max-w-2xl">
             <div className="mb-4 flex items-center gap-3">
               <div className="h-px w-12 bg-pulse" />
               <span className="font-mono text-xs font-semibold uppercase tracking-[0.3em] text-pulse">Platform</span>
             </div>
-            <h2 className="font-display text-2xl font-bold leading-tight text-paper sm:text-3xl">
+            <h2 className="font-display text-3xl font-bold leading-tight text-paper sm:text-4xl md:text-5xl">
               Actionable Insights. <span className="text-pulse">Not Just Data.</span>
             </h2>
-            <p className="mt-4 max-w-xl text-[15px] leading-relaxed text-muted">
+            <p className="mt-4 max-w-xl text-lg leading-relaxed text-muted">
               We combine AI-powered analysis with authentic human perspectives to deliver
               intelligence you can act on.
             </p>
@@ -303,7 +345,7 @@ export function Splash() {
           features.cei.stat caption line, and PositioningRealityBars doing
           the actual comparison work -- straight port, see that
           component's own header comment. */}
-      <section id="cei" className="relative bg-panel/40 py-16 sm:py-24">
+      <section id="cei" className="relative bg-panel py-16 sm:py-24">
         <DotGrid />
         <div className="container relative z-[1] px-6 sm:px-16">
           <div className="mb-3 max-w-2xl">
@@ -311,7 +353,7 @@ export function Splash() {
               <div className="h-px w-12 bg-pulse" />
               <span className="font-mono text-xs font-semibold uppercase tracking-[0.3em] text-pulse">Framework</span>
             </div>
-            <h2 className="font-display text-2xl font-bold leading-tight text-paper sm:text-3xl">Cultural Engagement Index</h2>
+            <h2 className="font-display text-4xl font-bold leading-tight text-paper sm:text-5xl">Cultural Engagement Index</h2>
           </div>
 
           <div className="mb-10 font-mono text-xs uppercase tracking-[0.1em] text-muted">
@@ -333,19 +375,20 @@ export function Splash() {
           this is composition, not new component work. Its own default
           bandLabels (DEFAULT_CDI_BAND_LABELS) are already the real
           English copy, so no override needed here. */}
-      <section id="cdi" className="relative border-t border-line py-16">
+      <section id="cdi" className="relative bg-ink py-16 sm:py-24">
         <DotGrid />
         <div className="container relative z-[1] px-6 sm:px-16">
-        <div className="mx-auto max-w-2xl text-center">
-          <div className="mb-4 flex items-center justify-center gap-3">
-            <div className="h-px w-12 bg-soulgap" />
-            <span className="font-mono text-xs font-semibold uppercase tracking-[0.3em] text-soulgap">Framework</span>
-            <div className="h-px w-12 bg-soulgap" />
+          <div className="mx-auto mb-10 max-w-2xl text-center">
+            <div className="mb-4 flex items-center justify-center gap-3">
+              <div className="h-px w-12 bg-soulgap" />
+              <span className="font-mono text-xs font-semibold uppercase tracking-[0.3em] text-soulgap">Framework</span>
+              <div className="h-px w-12 bg-soulgap" />
+            </div>
+            <h2 className="font-display text-4xl font-bold leading-tight text-paper sm:text-5xl">Cultural Depth Index</h2>
           </div>
-          <h2 className="font-display text-2xl font-bold leading-tight text-paper sm:text-3xl">Cultural Depth Index</h2>
 
-          <div className="mx-auto mt-10 max-w-lg">
-            <div className="mb-8 flex items-center justify-center gap-1.5 font-mono text-[13px] uppercase tracking-[0.18em] text-muted">
+          <div className="mx-auto w-full max-w-[620px] text-center">
+            <div className="mb-10 flex items-center justify-center gap-1.5 font-mono text-[13px] uppercase tracking-[0.18em] text-muted">
               <i className="h-1.5 w-1.5 rounded-full bg-sound animate-ds-node-pulse" />
               Authenticity Check
             </div>
@@ -358,22 +401,218 @@ export function Splash() {
             </div>
           </div>
         </div>
-        </div>
       </section>
 
       {/* Real-app parity: real Index.tsx's second <WaveformRibbon />
           (default "thin" size) sits directly after CDISection, before
-          LiveNetwork -- LiveNetwork itself is excluded from this demo's
-          scope, but the divider position right after CDI is still real
-          and still in scope, so it stays. */}
+          LiveNetwork -- straight port, see WaveformRibbon.tsx. */}
       <WaveformRibbon />
 
-      <div className="flex flex-col items-center gap-3 px-6 py-10 text-center">
-        <Link to="/operations" className="text-[13px] text-muted hover:text-paper hover:underline">
-          See how the data gets collected & verified →
-        </Link>
-        <p className="label-caps !text-[10px]">Pitch prototype · No login required</p>
-      </div>
+      {/* Real-app parity: straight port of the real landing/LiveNetwork.tsx
+          -- real copy (network.badge/title1/title2/subtitle), same
+          six-node abstract network diagram (not a literal map), same
+          grid-dot background, same real node positions/colors/link
+          pairs. One real, disclosed gap: the real component labels up to
+          6 nodes with real city names, but only once a live
+          get_live_network_cities() RPC clears a genuine "3+ cities, 2+
+          countries" threshold -- there's no Supabase connection here to
+          call, so nodes render permanently unlabeled, which is also the
+          real component's own honest default/fallback state (its own
+          header comment confirms this is what it renders whenever that
+          gate isn't cleared -- not a demo-only simplification of
+          something that always shows labels). */}
+      <section className="py-24 sm:py-32">
+        <div className="container px-6">
+          <div className="mb-14 max-w-xl">
+            <div className="mb-6 flex items-center gap-3">
+              <div className="h-px w-12 bg-pulse" />
+              <span className="inline-flex items-center gap-[6px] font-mono text-xs uppercase tracking-[0.3em] text-pulse">
+                <i className="h-1.5 w-1.5 rounded-full bg-sound animate-ds-node-pulse" />
+                Live across the continent
+              </span>
+            </div>
+            <h2 className="font-display text-3xl font-bold leading-tight text-paper sm:text-4xl md:text-5xl">
+              One signal. <span className="text-pulse">Every city.</span>
+            </h2>
+            <p className="mt-4 max-w-lg text-lg leading-relaxed text-muted">Culture moves city by city, not country by country.</p>
+          </div>
+
+          <div className="relative mx-auto aspect-[16/9] w-full max-w-[900px]">
+            <svg viewBox="0 0 900 500" className="h-full w-full" aria-hidden="true">
+              <defs>
+                <radialGradient id="netGlow" cx="50%" cy="50%" r="50%">
+                  <stop offset="0%" stopColor="var(--pulse)" stopOpacity="0.1" />
+                  <stop offset="100%" stopColor="var(--pulse)" stopOpacity="0" />
+                </radialGradient>
+              </defs>
+              <circle cx={450} cy={250} r={260} fill="url(#netGlow)" />
+
+              {NETWORK_GRID_DOTS.map((d) => (
+                <circle key={`${d.x}-${d.y}`} cx={d.x} cy={d.y} r={1} fill="rgba(246,241,233,0.06)" />
+              ))}
+
+              {NETWORK_LINKS.map(([a, b]) => {
+                const n1 = NETWORK_NODES[a];
+                const n2 = NETWORK_NODES[b];
+                return (
+                  <line
+                    key={`${a}-${b}`}
+                    x1={n1.x}
+                    y1={n1.y}
+                    x2={n2.x}
+                    y2={n2.y}
+                    style={{ stroke: n1.color, strokeOpacity: 0.35 }}
+                    strokeWidth={1}
+                    strokeDasharray="4 5"
+                  />
+                );
+              })}
+
+              {NETWORK_NODES.map((n) => (
+                <g key={n.id}>
+                  <circle cx={n.x} cy={n.y} r={4} fill="none" style={{ stroke: n.color, strokeWidth: 1.4 }} />
+                  <circle cx={n.x} cy={n.y} r={5} className="animate-ds-node-pulse" style={{ fill: n.color }} />
+                </g>
+              ))}
+            </svg>
+          </div>
+        </div>
+      </section>
+
+      {/* Real-app parity: straight port of the real landing/CTA.tsx --
+          real copy (cta.title1/title2/description), the same closing
+          two-way fork Hero opens with (top-of-page + bottom-of-page echo
+          of the same fork, per that component's own header comment) --
+          same routes/labels as Hero's own buttons above. */}
+      <section className="relative overflow-hidden py-[130px] text-center">
+        <DotGrid />
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute end-[30%] top-[20%] h-[420px] w-[420px] rounded-full blur-[90px]"
+          style={{ background: "radial-gradient(circle, rgba(255,90,41,0.22), transparent 70%)" }}
+        />
+        <div className="container relative z-[1] px-6">
+          <div className="mx-auto max-w-5xl">
+            <h2 className="mb-6 font-display text-[clamp(2.4rem,6vw,4.6rem)] font-bold leading-[1] text-paper">
+              The continent is
+              <br />
+              <GlitchText className="text-pulse">speaking.</GlitchText>
+            </h2>
+            <p className="mx-auto mb-10 max-w-md text-[15.5px] text-muted">
+              Are you listening? Join as an agency or contributor and tap into Africa&rsquo;s most
+              authentic cultural intelligence.
+            </p>
+            <div className="flex flex-wrap justify-center gap-3.5">
+              <Link
+                to="/onboarding/agency"
+                className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-sm border bg-ink px-[22px] py-3 font-display text-[12.5px] font-semibold uppercase tracking-[0.06em] text-visual transition-colors hover:bg-visual hover:text-ink"
+                style={{ borderColor: "var(--visual)" }}
+              >
+                Brands &amp; Agencies <span aria-hidden="true">→</span>
+              </Link>
+              <Link
+                to="/onboarding/contributor"
+                className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-sm border bg-ink px-[22px] py-3 font-display text-[12.5px] font-semibold uppercase tracking-[0.06em] text-sound transition-colors hover:bg-sound hover:text-ink"
+                style={{ borderColor: "var(--sound)" }}
+              >
+                Contributors <span aria-hidden="true">→</span>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Real-app parity: straight port of the real landing/Footer.tsx --
+          real section labels/copy (footer.platform/resources/legal, the
+          docs/case studies/blog/privacy/terms/data-policy "Soon" tags for
+          real destinations that genuinely don't exist yet on the real
+          site either, not a demo-only cut). Two routing adaptations: For
+          Agencies/For Contributors point at /onboarding/:role (the real
+          /for-agencies//for-contributors fork-splash pages don't exist in
+          this demo, same reasoning as Hero's own CTAs), CEI Framework
+          keeps its real #cei anchor since that section exists here too. */}
+      <footer className="border-t border-line py-16">
+        <div className="container px-6">
+          <div className="mb-14 grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
+            <div>
+              <div className="mb-4">
+                <AcpLogo markClassName="h-10 w-10" textClassName="text-sm font-black" />
+              </div>
+              <p className="text-sm leading-relaxed text-muted">Africa&rsquo;s cultural intelligence platform.</p>
+            </div>
+            <div>
+              <h4 className="mb-4 font-mono text-[11px] font-medium uppercase tracking-[0.2em] text-paper">Platform</h4>
+              <ul className="space-y-3 text-sm text-muted">
+                <li>
+                  <Link to="/onboarding/agency" className="transition-colors hover:text-visual">
+                    For Agencies
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/onboarding/contributor" className="transition-colors hover:text-visual">
+                    For Contributors
+                  </Link>
+                </li>
+                <li>
+                  <a href="#cei" className="transition-colors hover:text-soulgap">
+                    CEI Framework
+                  </a>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="mb-4 font-mono text-[11px] font-medium uppercase tracking-[0.2em] text-paper">Resources</h4>
+              <ul className="space-y-3 text-sm text-muted">
+                <li className="flex items-center gap-2 opacity-50">
+                  <span>Documentation</span>
+                  <FooterSoonTag />
+                </li>
+                <li className="flex items-center gap-2 opacity-50">
+                  <span>Case Studies</span>
+                  <FooterSoonTag />
+                </li>
+                <li className="flex items-center gap-2 opacity-50">
+                  <span>Blog</span>
+                  <FooterSoonTag />
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="mb-4 font-mono text-[11px] font-medium uppercase tracking-[0.2em] text-paper">Legal</h4>
+              <ul className="space-y-3 text-sm text-muted">
+                <li className="flex items-center gap-2 opacity-50">
+                  <span>Privacy (POPIA)</span>
+                  <FooterSoonTag />
+                </li>
+                <li className="flex items-center gap-2 opacity-50">
+                  <span>Terms</span>
+                  <FooterSoonTag />
+                </li>
+                <li className="flex items-center gap-2 opacity-50">
+                  <span>Data Policy</span>
+                  <FooterSoonTag />
+                </li>
+              </ul>
+            </div>
+          </div>
+          <div className="flex flex-col items-center justify-between gap-3 border-t border-line pt-7 sm:flex-row">
+            <span className="text-xs text-muted">© {new Date().getFullYear()} AFRICAN CREATIVE PULSE</span>
+            <span className="font-mono text-xs tracking-wide text-muted">Nigeria · Kenya · South Africa · Ghana</span>
+          </div>
+
+          {/* Demo-only addendum, kept from this project's own earlier
+              closing element -- real Footer.tsx has no equivalent, but
+              this demo's own tour benefits from a direct pointer into the
+              operations/field-collection story and an explicit
+              "prototype" disclosure the real site doesn't need. */}
+          <div className="mt-10 flex flex-col items-center gap-3 border-t border-line pt-7 text-center">
+            <Link to="/operations" className="text-[13px] text-muted hover:text-paper hover:underline">
+              See how the data gets collected & verified →
+            </Link>
+            <p className="label-caps !text-[10px]">Pitch prototype · No login required</p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
