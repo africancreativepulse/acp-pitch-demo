@@ -576,23 +576,118 @@ export const CONTRIBUTOR_VERIFICATION_QUEUE: ContributorVerificationEntry[] = [
 // array's old sound-first order.
 // ---------------------------------------------------------------------------
 
-export interface CulturalLayer {
+// Real-app parity fix, found the hard way: this used to model the real
+// app's now-RETIRED landing/CulturalLayers.tsx (flat pct + description +
+// example cards) as if it were still the live #cei section. It isn't --
+// CulturalLayers.tsx was retired and merged INTO CEISection.tsx (see that
+// file's own header comment), which today is a completely different UI:
+// per-dimension Positioning-vs-Reality comparison cards (claimed
+// messaging vs. measured evidence, with a Delta and an expandable verbatim
+// quote), not a static percentage grid. This type/data replace the old
+// CulturalLayer/CULTURAL_LAYERS entirely -- copied verbatim from the real
+// data/ceiPositioningRealitySample.ts (positioning/reality/evidence) with
+// each dimension's own layerNote/layerExample merged in exactly the way
+// CEISection.tsx's own axes mapping merges them (from the retired
+// CulturalLayers.tsx content, real layer.{key}.desc strings) -- English
+// only, matching every other ported string in this file.
+export interface CeiPositioningRealityAxis {
   key: string;
   label: string;
-  pct: number; // 0-100, see file-header comment -- reused from SignalRing's own sample, not new data.
-  description?: string;
-  example?: string;
-  placeholder?: string; // Pulse only
+  description: string;
+  positioning: number; // 0-100, illustrative brand-claim value
+  reality: number; // 0-100, illustrative measured value
   color: string;
+  evidence: { verbatim: string; languageLabel: string; gloss?: string };
+  layerNote?: string;
+  layerExample?: string;
+  layerPlaceholder?: string; // Pulse only -- no retired CulturalLayers card ever existed for it
 }
 
-export const CULTURAL_LAYERS: CulturalLayer[] = [
-  { key: "pulse", label: "Pulse", pct: 85, placeholder: "Data sources being finalized", color: "var(--pulse)" },
-  { key: "taste", label: "Taste", pct: 72, description: "Cuisine, street food, spice culture → Flavor & culinary export", example: "Jollof · Food & lifestyle signals", color: "var(--taste)" },
-  { key: "sound", label: "Sound", pct: 90, description: "Streaming, radio, playlists → Artist & genre predictions", example: "Amapiano · Streaming & radio trend detection", color: "var(--sound)" },
-  { key: "visual", label: "Visual", pct: 78, description: "Fashion, design, NFTs → Aesthetic trends", example: "Kitenge Futurism", color: "var(--visual)" },
-  { key: "language", label: "Language", pct: 65, description: "Slang, creoles, memes → Vernacular shifts", example: "Pidgin-English · Slang & code-switching shifts", color: "var(--language)" },
-  { key: "ritual", label: "Ritual", pct: 82, description: "Events, challenges, traditions → Cultural moments", example: "Event & challenge tracking", color: "var(--ritual)" },
+export const CEI_POSITIONING_REALITY: CeiPositioningRealityAxis[] = [
+  {
+    key: "pulse",
+    label: "Pulse",
+    description: "Trending cultural signals",
+    positioning: 90,
+    reality: 85,
+    color: "var(--pulse)",
+    evidence: {
+      verbatim: "This dropped the same week everyone was already talking about the Afrobeats-meets-alté crossover — good timing, not luck.",
+      languageLabel: "English",
+    },
+    layerPlaceholder: "Data sources being finalized",
+  },
+  {
+    key: "taste",
+    label: "Taste",
+    description: "Cuisine & culinary culture",
+    positioning: 86,
+    reality: 74,
+    color: "var(--taste)",
+    evidence: {
+      verbatim: "They used jollof as a backdrop image, but nothing in the campaign is actually about food — feels like a prop, not the culture.",
+      languageLabel: "English",
+    },
+    layerNote: "Cuisine, street food, spice culture → Flavor & culinary export",
+    layerExample: "Jollof · Food & lifestyle signals",
+  },
+  {
+    key: "sound",
+    label: "Sound",
+    description: "Audio & oral traditions",
+    positioning: 93,
+    reality: 90,
+    color: "var(--sound)",
+    evidence: {
+      verbatim: "The amapiano/afrobeats blend in the background actually matches what's playing on real dance floors right now.",
+      languageLabel: "English",
+    },
+    layerNote: "Streaming, radio, playlists → Artist & genre predictions",
+    layerExample: "Amapiano · Streaming & radio trend detection",
+  },
+  {
+    key: "visual",
+    label: "Visual",
+    description: "Aesthetic identity",
+    positioning: 84,
+    reality: 78,
+    color: "var(--visual)",
+    evidence: {
+      verbatim: "The colors and styling read as generic 'Afrofuturism' stock imagery, not anything specific to Lagos street style.",
+      languageLabel: "English",
+    },
+    layerNote: "Fashion, design, NFTs → Aesthetic trends",
+    layerExample: "Kitenge Futurism",
+  },
+  {
+    key: "language",
+    label: "Language",
+    description: "Linguistic nuance",
+    positioning: 80,
+    reality: 65,
+    color: "var(--language)",
+    evidence: {
+      verbatim: "Wasu daga cikin kalmomin sun ji kamar an fassara su ne kawai, ba yadda ake magana a nan ba.",
+      languageLabel: "Hausa",
+      gloss: "Some of the words felt like they were just translated, not how people actually talk here.",
+    },
+    layerNote: "Slang, creoles, memes → Vernacular shifts",
+    layerExample: "Pidgin-English · Slang & code-switching shifts",
+  },
+  {
+    key: "ritual",
+    label: "Ritual",
+    description: "Habits & ceremonies",
+    positioning: 87,
+    reality: 82,
+    color: "var(--ritual)",
+    evidence: {
+      verbatim: "The event moments they referenced are things people actually do, not just imagined traditions.",
+      languageLabel: "English",
+    },
+    layerNote: "Events, challenges, traditions → Cultural moments",
+    layerExample: "Event & challenge tracking",
+  },
 ];
 
 // ---------------------------------------------------------------------------
