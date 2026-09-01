@@ -5,6 +5,7 @@ import { GlitchText } from "@/components/GlitchText";
 import { SignalRing } from "@/components/SignalRing";
 import { CountUp } from "@/components/CountUp";
 import { DepthGauge } from "@/components/DepthGauge";
+import { WaveformRibbon } from "@/components/WaveformRibbon";
 import { CULTURAL_LAYERS } from "@/data/demo";
 
 /**
@@ -94,7 +95,7 @@ export function Splash() {
           aria-hidden="true"
         />
 
-        <div className="relative z-[1] mx-auto grid w-full max-w-5xl grid-cols-1 items-center gap-14 py-8 md:grid-cols-[1.05fr_0.95fr]">
+        <div className="relative z-[1] mx-auto grid w-full max-w-6xl grid-cols-1 items-center gap-14 py-8 md:grid-cols-[1.05fr_0.95fr]">
           <div>
             <div className="mb-[22px] flex items-center gap-[10px]">
               <div className="h-0.5 w-[34px] bg-pulse" />
@@ -103,14 +104,14 @@ export function Splash() {
               </span>
             </div>
 
-            <h1 className="mb-6 font-display text-[clamp(2.4rem,5vw,4rem)] font-bold leading-[1.05] tracking-tight text-paper">
+            <h1 className="mb-6 font-display text-[clamp(2.6rem,5vw,4.4rem)] font-bold leading-[1.02] tracking-tight text-paper">
               <span className="block">Africa&rsquo;s cultures,</span>
               <span className="block">
                 read like <GlitchText className="text-pulse">signals.</GlitchText>
               </span>
             </h1>
 
-            <p className="mb-9 max-w-[440px] text-[15px] leading-relaxed text-muted">
+            <p className="mb-9 max-w-[480px] text-[17px] leading-relaxed text-muted">
               Scored by contributors on the ground, with every score traceable to what someone
               actually said.
             </p>
@@ -145,6 +146,13 @@ export function Splash() {
           </div>
         </div>
       </div>
+
+      {/* Real-app parity: the glowing waveform divider real Index.tsx
+          renders directly under Hero, before Features -- named in this
+          file's own header comment as part of the real page's section
+          order but never actually built until now. Straight port, see
+          WaveformRibbon.tsx's own header comment. */}
+      <WaveformRibbon />
 
       {/* Real-app parity, Change 1: straight port of the real landing/
           Features.tsx -- real English copy (features.badge/title1/title2/
