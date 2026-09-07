@@ -972,16 +972,80 @@ export const INVITE_CANDIDATES = ["Sipho R.", "Ayanda K.", "Bongani L."];
 
 export type VerificationStatus = "verified" | "pending" | "rejected";
 
+// Full real-app parity build (Track C, tonight's agency-verification-depth
+// session) -- these three illustrative rows now carry the same field depth
+// ContributorVerificationEntry's own illustrative rows already have
+// (address/postalCode/phoneNumber/handles etc.), matching the real app's
+// own now-expanded agency_profiles. workEmail through primaryContactRole
+// are all new; name/city/status/documentLabel are unchanged from before.
 export interface AgencyVerificationEntry {
   id: string;
   name: string;
   city: string;
   status: VerificationStatus;
   documentLabel: string;
+  workEmail: string;
+  registrationNumber: string;
+  vatNumber: string;
+  businessAddress: string;
+  website: string;
+  linkedinUrl: string;
+  phoneNumber: string;
+  primaryContactFirstName: string;
+  primaryContactSurname: string;
+  primaryContactRole: string;
 }
 
 export const AGENCY_VERIFICATION_QUEUE: AgencyVerificationEntry[] = [
-  { id: "av-1", name: "Ndoni Creative", city: "Johannesburg", status: "verified", documentLabel: "CIPC registration certificate" },
-  { id: "av-2", name: "Bright Horizon Media", city: "Nairobi", status: "pending", documentLabel: "Business registration certificate" },
-  { id: "av-3", name: "Lagos Pulse Collective", city: "Lagos", status: "pending", documentLabel: "CAC registration document" },
+  {
+    id: "av-1",
+    name: "Ndoni Creative",
+    city: "Johannesburg",
+    status: "verified",
+    documentLabel: "CIPC registration certificate",
+    workEmail: "hello@ndonicreative.com",
+    registrationNumber: "2018/045213/07",
+    vatNumber: "4780123456",
+    businessAddress: "12 Keyes Avenue, Rosebank, Johannesburg",
+    website: "https://ndonicreative.com",
+    linkedinUrl: "linkedin.com/company/ndoni-creative",
+    phoneNumber: "+27 11 447 2200",
+    primaryContactFirstName: "Zola",
+    primaryContactSurname: "Ndoni",
+    primaryContactRole: "Founder & Managing Director",
+  },
+  {
+    id: "av-2",
+    name: "Bright Horizon Media",
+    city: "Nairobi",
+    status: "pending",
+    documentLabel: "Business registration certificate",
+    workEmail: "info@brighthorizonmedia.co.ke",
+    registrationNumber: "PVT-A1B2C3D4",
+    vatNumber: "P051234567X",
+    businessAddress: "Riverside Drive, Nairobi",
+    website: "https://brighthorizonmedia.co.ke",
+    linkedinUrl: "linkedin.com/company/bright-horizon-media",
+    phoneNumber: "+254 20 445 0198",
+    primaryContactFirstName: "Wanjiru",
+    primaryContactSurname: "Kamau",
+    primaryContactRole: "Client Services Director",
+  },
+  {
+    id: "av-3",
+    name: "Lagos Pulse Collective",
+    city: "Lagos",
+    status: "pending",
+    documentLabel: "CAC registration document",
+    workEmail: "team@lagospulse.ng",
+    registrationNumber: "RC-1834562",
+    vatNumber: "TIN-08765432-0001",
+    businessAddress: "12 Adeola Odeku Street, Victoria Island, Lagos",
+    website: "https://lagospulse.ng",
+    linkedinUrl: "linkedin.com/company/lagos-pulse-collective",
+    phoneNumber: "+234 1 291 0087",
+    primaryContactFirstName: "Chidinma",
+    primaryContactSurname: "Eze",
+    primaryContactRole: "Managing Partner",
+  },
 ];

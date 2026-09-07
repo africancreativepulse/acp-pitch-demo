@@ -11,7 +11,7 @@ import {
   COUNTRIES, COMING_SOON_COUNTRIES, CITIES_BY_COUNTRY, ONBOARDING_LANGUAGES,
   CEI_DEFINITION, CDI_DEFINITION, type Country,
 } from "@/data/demo";
-import { useDemoState } from "@/state/DemoState";
+import { useDemoState, type AgencyProfile } from "@/state/DemoState";
 
 type Role = "agency" | "contributor";
 
@@ -50,6 +50,36 @@ const HANDLE_PLACEHOLDERS: Record<string, string> = {
   "Other": "Any other platform",
 };
 
+// Agency verification depth build (Tracks B+C): the real app's own
+// agency_profiles now holds 11 real fields (company_name/work_email plus
+// the 9 added tonight -- registration_number/vat_number/business_address/
+// website/linkedin_company_url/phone_number/primary_contact_first_name/
+// surname/role), against this demo's own single "tap to upload a document"
+// toggle. Same illustrative-tap-only collection method as the identity
+// fields above -- small pre-written sets, never free text. Distinct
+// company names from AGENCY_VERIFICATION_QUEUE's own illustrative rows
+// (data/demo.ts) on purpose -- those are OTHER agencies' static pending
+// entries; these are what a real live session's own tap produces.
+const COMPANY_NAME_OPTIONS = ["Kente Digital Studio", "Sahara Sound Agency", "Baobab Brand Collective"];
+const WORK_EMAIL_OPTIONS = ["hello@kentedigital.studio", "team@saharasound.africa", "studio@baobabbrand.com"];
+const REGISTRATION_NUMBER_OPTIONS = ["2020/611234/07", "PVT-K9L2M4N6", "RC-2093847"];
+const VAT_NUMBER_OPTIONS = ["4611234789", "P098765432X", "TIN-09876543-0001"];
+const BUSINESS_ADDRESS_OPTIONS = ["14 Bree Street, Cape Town", "Kilimani Road, Nairobi", "9 Broad Street, Lagos"];
+const WEBSITE_OPTIONS = ["https://kentedigital.studio", "https://saharasound.africa", "https://baobabbrand.com"];
+const LINKEDIN_OPTIONS = [
+  "linkedin.com/company/kente-digital-studio",
+  "linkedin.com/company/sahara-sound-agency",
+  "linkedin.com/company/baobab-brand-collective",
+];
+const AGENCY_PHONE_OPTIONS = ["+27 21 555 0142", "+254 20 555 0198", "+234 1 555 0087"];
+// Primary Contact First Name/Surname deliberately reuse FIRST_NAME_OPTIONS/
+// SURNAME_OPTIONS above -- same illustrative-name pool the signing-up
+// individual's own name already draws from (the real app makes the same
+// choice structurally: primary_contact_first_name/surname are a genuinely
+// different concept from the signer's own first_name/surname, but both are
+// "pick a name," so there's no reason to invent a second name pool here).
+const PRIMARY_CONTACT_ROLE_OPTIONS = ["Marketing Director", "Founder", "Operations Lead", "Managing Director"];
+
 /**
  * Ported structural pattern from the real app's own
  * components/onboarding/OnboardingWizard.tsx -- segmented progress bar,
@@ -66,7 +96,12 @@ const HANDLE_PLACEHOLDERS: Record<string, string> = {
  * Unified contributor verification, identity fields (concept sync):
  * agency's own step sequence (Country/City/Language/Verify/Ready, steps
  * 0-4) is UNCHANGED -- copied verbatim, not touched, per the explicit
- * "agency's Onboarding stays untouched" instruction this session. Only
+ * "agency's Onboarding stays untouched" instruction that session. That
+ * instruction has since been explicitly superseded (tonight's agency-
+ * verification-depth session): the step SEQUENCE is still five steps in
+ * the same order, but Verify's own CONTENT is no longer a bare document
+ * toggle -- see this file's own COMPANY_NAME_OPTIONS block further up and
+ * the Verify step's JSX further down for the real build. Only
  * the contributor path's step 0 changes: Country/City/Language now render
  * merged into one combined "Your details" step alongside the new identity
  * fields, matching the real app's own Details step field order (Name,
@@ -90,11 +125,28 @@ const HANDLE_PLACEHOLDERS: Record<string, string> = {
  * old or new real-app order -- it's genuinely optional free text with no
  * defensible tap-only representation, a deliberate omission, not
  * something this restructure touches.
+ *
+ * Confirmation-timing fix (tonight, real-app parity): the real app's own
+ * OnboardingWizard had a genuine bug where its "Submitted for review!"
+ * screen rendered on a pure step transition, before the actual save had
+ * run -- a user closing the tab there lost their whole submission with no
+ * trace. This demo's own Ready screen never claimed "submitted" the same
+ * way (framed as forward-looking orientation, "one quick orientation
+ * before..."), but shared the exact same STRUCTURE: reaching Ready was a
+ * bare setStep() from Expertise's Continue, and the real submit
+ * (submitContributorApplication) only fired on Ready's own separate exit
+ * button. Fixed the same way as the real app: each role's real submit
+ * (submitContributorApplication for contributor, submitAgencyApplication
+ * for agency) now fires directly from its own last input step's own
+ * Continue/Submit button (Expertise, Verify), before setStep(doneStep) is
+ * ever called -- Ready is only ever reached after a real submit already
+ * succeeded. finish() (Ready's own exit button) is now pure navigation for
+ * both roles, nothing left to save by the time it's clicked.
  */
 export function Onboarding() {
   const { role } = useParams<{ role: string }>();
   const navigate = useNavigate();
-  const { submitContributorApplication } = useDemoState();
+  const { submitContributorApplication, submitAgencyApplication } = useDemoState();
   const [step, setStep] = useState(0);
   const [country, setCountry] = useState<Country>("South Africa");
   const [city, setCity] = useState(CITIES_BY_COUNTRY["South Africa"][0]);
@@ -121,6 +173,22 @@ export function Onboarding() {
   const [handles, setHandles] = useState<string[]>([]);
   const toggleHandle = (platform: string) =>
     setHandles((prev) => (prev.includes(platform) ? prev.filter((p) => p !== platform) : [...prev, platform]));
+
+  // Agency-only verification fields (Verify step, Tracks B+C) -- see
+  // COMPANY_NAME_OPTIONS etc.'s own header comment above. All start empty,
+  // genuinely required -- same enforcement style as the contributor
+  // identity fields above (Continue disabled until each gets a real tap).
+  const [companyName, setCompanyName] = useState("");
+  const [workEmail, setWorkEmail] = useState("");
+  const [registrationNumber, setRegistrationNumber] = useState("");
+  const [vatNumber, setVatNumber] = useState("");
+  const [businessAddress, setBusinessAddress] = useState("");
+  const [website, setWebsite] = useState("");
+  const [linkedinUrl, setLinkedinUrl] = useState("");
+  const [agencyPhoneNumber, setAgencyPhoneNumber] = useState("");
+  const [primaryContactFirstName, setPrimaryContactFirstName] = useState("");
+  const [primaryContactSurname, setPrimaryContactSurname] = useState("");
+  const [primaryContactRole, setPrimaryContactRole] = useState("");
 
   // Real-app sync: the live platform's Privacy Policy consent checkbox,
   // unchecked by default -- purely illustrative here, same as everything
@@ -153,13 +221,12 @@ export function Onboarding() {
   // still points at the real destination, same as before, since the gate
   // intercepts it rather than finish() needing to know about review state
   // itself.
+  //
+  // Confirmation-timing fix (see this file's own header comment): both
+  // roles' real submit calls now fire from their own last input step's own
+  // Continue/Submit button (Expertise, Verify), not here. By the time this
+  // runs, there's nothing left to save for either role -- pure navigation.
   const finish = () => {
-    if (typedRole === "contributor") {
-      submitContributorApplication(
-        { firstName, surname, country, city, address, postalCode, phoneNumber, handles, language },
-        badges.map((subCategoryId) => ({ subCategoryId, status: "pending" as const }))
-      );
-    }
     navigate(destination);
   };
 
@@ -182,7 +249,7 @@ export function Onboarding() {
             ))}
           </div>
 
-          {/* ===================== Agency path -- unchanged ===================== */}
+          {/* ===================== Agency path -- Country/City/Language steps unchanged, Verify rebuilt below ===================== */}
 
           {step === 0 && typedRole === "agency" && (
             <div>
@@ -279,8 +346,119 @@ export function Onboarding() {
               <h1 className="mb-4 font-display text-3xl font-bold text-paper">Verify your agency</h1>
               <p className="mb-8 text-muted">
                 Agencies go through document verification before campaigns can go live — this
-                protects the whole marketplace, not just one client.
+                protects the whole marketplace, not just one client. Real fields, same as the live
+                platform; tap to fill each one in.
               </p>
+
+              <div className="mb-8 space-y-6">
+                <div>
+                  <div className="mb-2 text-[11px] font-medium uppercase tracking-[0.1em] text-muted">Company Name</div>
+                  <div className="flex flex-wrap gap-2">
+                    {COMPANY_NAME_OPTIONS.map((n) => (
+                      <Chip key={n} active={companyName === n} accent={accent} onClick={() => setCompanyName(n)}>{n}</Chip>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-6">
+                  <div>
+                    <div className="mb-2 text-[11px] font-medium uppercase tracking-[0.1em] text-muted">Registration Number</div>
+                    <div className="flex flex-wrap gap-2">
+                      {REGISTRATION_NUMBER_OPTIONS.map((n) => (
+                        <Chip key={n} active={registrationNumber === n} accent={accent} onClick={() => setRegistrationNumber(n)}>{n}</Chip>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="mb-2 text-[11px] font-medium uppercase tracking-[0.1em] text-muted">VAT Number</div>
+                    <div className="flex flex-wrap gap-2">
+                      {VAT_NUMBER_OPTIONS.map((n) => (
+                        <Chip key={n} active={vatNumber === n} accent={accent} onClick={() => setVatNumber(n)}>{n}</Chip>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <div className="mb-2 text-[11px] font-medium uppercase tracking-[0.1em] text-muted">Business Address</div>
+                  <div className="flex flex-wrap gap-2">
+                    {BUSINESS_ADDRESS_OPTIONS.map((a) => (
+                      <Chip key={a} active={businessAddress === a} accent={accent} onClick={() => setBusinessAddress(a)}>{a}</Chip>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-6">
+                  <div>
+                    <div className="mb-2 text-[11px] font-medium uppercase tracking-[0.1em] text-muted">Website</div>
+                    <div className="flex flex-wrap gap-2">
+                      {WEBSITE_OPTIONS.map((w) => (
+                        <Chip key={w} active={website === w} accent={accent} onClick={() => setWebsite(w)}>{w}</Chip>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="mb-2 text-[11px] font-medium uppercase tracking-[0.1em] text-muted">LinkedIn Company Page</div>
+                    <div className="flex flex-wrap gap-2">
+                      {LINKEDIN_OPTIONS.map((l) => (
+                        <Chip key={l} active={linkedinUrl === l} accent={accent} onClick={() => setLinkedinUrl(l)}>{l}</Chip>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <div className="mb-2 text-[11px] font-medium uppercase tracking-[0.1em] text-muted">Business Phone Number</div>
+                  <div className="flex flex-wrap gap-2">
+                    {AGENCY_PHONE_OPTIONS.map((p) => (
+                      <Chip key={p} active={agencyPhoneNumber === p} accent={accent} onClick={() => setAgencyPhoneNumber(p)}>{p}</Chip>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <div className="mb-2 text-[11px] font-medium uppercase tracking-[0.1em] text-muted">Work Email</div>
+                  <div className="flex flex-wrap gap-2">
+                    {WORK_EMAIL_OPTIONS.map((e) => (
+                      <Chip key={e} active={workEmail === e} accent={accent} onClick={() => setWorkEmail(e)}>{e}</Chip>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Primary Contact -- a named person at the agency, not
+                    necessarily the signing-up individual (that's First
+                    Name/Surname on the Country/City steps). Own small
+                    section label, same real-app pattern. */}
+                <div className="pt-2">
+                  <div className="mb-3 text-[10px] font-medium uppercase tracking-[0.15em] text-muted">Primary Contact</div>
+                  <div className="mb-6 grid grid-cols-2 gap-6">
+                    <div>
+                      <div className="mb-2 text-[11px] font-medium uppercase tracking-[0.1em] text-muted">First Name</div>
+                      <div className="flex flex-wrap gap-2">
+                        {FIRST_NAME_OPTIONS.map((n) => (
+                          <Chip key={n} active={primaryContactFirstName === n} accent={accent} onClick={() => setPrimaryContactFirstName(n)}>{n}</Chip>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="mb-2 text-[11px] font-medium uppercase tracking-[0.1em] text-muted">Surname</div>
+                      <div className="flex flex-wrap gap-2">
+                        {SURNAME_OPTIONS.map((n) => (
+                          <Chip key={n} active={primaryContactSurname === n} accent={accent} onClick={() => setPrimaryContactSurname(n)}>{n}</Chip>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <div className="mb-2 text-[11px] font-medium uppercase tracking-[0.1em] text-muted">Role at Company</div>
+                    <div className="flex flex-wrap gap-2">
+                      {PRIMARY_CONTACT_ROLE_OPTIONS.map((r) => (
+                        <Chip key={r} active={primaryContactRole === r} accent={accent} onClick={() => setPrimaryContactRole(r)}>{r}</Chip>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
 
               <button
                 type="button"
@@ -295,19 +473,34 @@ export function Onboarding() {
                 </span>
               </button>
 
-              {docUploaded && (
-                <p className="mb-8 text-[12.5px]" style={{ color: accent }}>
-                  Submitted — fast-tracked and verified for this demo. A real submission enters
-                  Admin's own Agency Verification queue instead of resolving instantly.
-                </p>
-              )}
-
               <PrivacyConsentToggle checked={privacyConsent} onToggle={() => setPrivacyConsent((v) => !v)} accent={accent} />
 
               <div className="flex gap-3">
                 <Button variant="ghost" color={accent} onClick={() => setStep(2)} className="!rounded-none">← Back</Button>
-                <Button color={accent} onClick={() => setStep(4)} className="!rounded-none !px-8" disabled={!docUploaded}>
-                  Continue →
+                {/* This is the real submit -- Track C's whole live pipeline
+                    starts here. Fires submitAgencyApplication before
+                    advancing to Ready, so Ready is only ever reached after
+                    a real submission already succeeded (see this file's
+                    own header comment on the confirmation-timing fix). */}
+                <Button
+                  color={accent}
+                  onClick={() => {
+                    submitAgencyApplication({
+                      companyName, workEmail, registrationNumber, vatNumber, businessAddress,
+                      website, linkedinUrl, phoneNumber: agencyPhoneNumber,
+                      primaryContactFirstName, primaryContactSurname, primaryContactRole,
+                      country, city, language, docUploaded,
+                    });
+                    setStep(4);
+                  }}
+                  className="!rounded-none !px-8"
+                  disabled={
+                    !companyName || !workEmail || !registrationNumber || !vatNumber || !businessAddress ||
+                    !website || !linkedinUrl || !agencyPhoneNumber ||
+                    !primaryContactFirstName || !primaryContactSurname || !primaryContactRole || !docUploaded
+                  }
+                >
+                  Submit for Review →
                 </Button>
               </div>
             </div>
@@ -479,8 +672,23 @@ export function Onboarding() {
 
               <div className="flex gap-3">
                 <Button variant="ghost" color={accent} onClick={() => setStep(0)} className="!rounded-none">← Back</Button>
-                <Button color={accent} onClick={() => setStep(2)} className="!rounded-none !px-8">
-                  Continue →
+                {/* This is the real submit -- see this file's own header
+                    comment on the confirmation-timing fix. Fires
+                    submitContributorApplication before advancing to Ready,
+                    so Ready is only ever reached after a real submission
+                    already succeeded. */}
+                <Button
+                  color={accent}
+                  onClick={() => {
+                    submitContributorApplication(
+                      { firstName, surname, country, city, address, postalCode, phoneNumber, handles, language },
+                      badges.map((subCategoryId) => ({ subCategoryId, status: "pending" as const }))
+                    );
+                    setStep(2);
+                  }}
+                  className="!rounded-none !px-8"
+                >
+                  Submit for Review →
                 </Button>
               </div>
             </div>

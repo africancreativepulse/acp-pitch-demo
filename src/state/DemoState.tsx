@@ -72,6 +72,36 @@ export interface ContributorIdentity {
   language: string;
 }
 
+// Full real-app parity build (Tracks B+C, tonight's agency-verification-
+// depth session): agency's own Verify step used to collect nothing but a
+// fake document-upload toggle -- this is the same field-for-field
+// treatment ContributorIdentity already got, now field-for-field matching
+// the real app's own now-expanded agency_profiles (company_name/work_email
+// plus the 9 fields added tonight: registration_number/vat_number/
+// business_address/website/linkedin_company_url/phone_number/
+// primary_contact_first_name/surname/role). Same "small illustrative
+// pre-written set, never free text" collection method as ContributorIdentity
+// -- see Onboarding.tsx's own *_OPTIONS constants.
+export type AgencyVerificationStatus = "pending" | "verified" | "rejected";
+
+export interface AgencyProfile {
+  companyName: string;
+  workEmail: string;
+  registrationNumber: string;
+  vatNumber: string;
+  businessAddress: string;
+  website: string;
+  linkedinUrl: string;
+  phoneNumber: string;
+  primaryContactFirstName: string;
+  primaryContactSurname: string;
+  primaryContactRole: string;
+  country: string;
+  city: string;
+  language: string;
+  docUploaded: boolean;
+}
+
 interface DemoState {
   draftCampaigns: DraftCampaign[];
   addCampaign: (c: Omit<DraftCampaign, "id" | "createdAt">) => void;
@@ -121,6 +151,34 @@ interface DemoState {
   // is the honest tap-only representation: flips the gate back to
   // pending and un-rejects any badge that was cascaded to "rejected".
   resubmitContributorVerification: () => void;
+  // Agency's own live pipeline (Track C), mirroring every field/action
+  // above exactly: null until Onboarding's agency flow actually runs once,
+  // "verified" default (not "pending") -- matching that DemoHeader's own
+  // "Sign In as Agency" shortcut represents Ndoni Creative, an already-
+  // existing, already-verified agency, same reasoning
+  // contributorVerificationStatus's own default follows for the
+  // Contributor shortcut. Only Onboarding's agency finish() (via
+  // submitAgencyApplication) ever sets this to "pending" -- AgencyGate.tsx
+  // is what actually enforces the block, same as ContributorGate.tsx.
+  agencyProfile: AgencyProfile | null;
+  agencyVerificationStatus: AgencyVerificationStatus;
+  // The one real submission action -- mirrors submitContributorApplication.
+  // Called from the Verify step's own Continue button now, not deferred to
+  // the Ready screen's exit button (see Onboarding.tsx's own header comment
+  // on tonight's confirmation-timing fix, applied to agency's brand-new
+  // pipeline from the start rather than shipping the same bug it was built
+  // to avoid).
+  submitAgencyApplication: (profile: AgencyProfile) => void;
+  // The one real admin action -- mirrors decideContributorVerification.
+  // "verified" (not "approved") to match the real app's own
+  // agency_profiles.verification_status vocabulary, and this demo's own
+  // pre-existing AGENCY_VERIFICATION_QUEUE status values.
+  decideAgencyVerification: (status: "verified" | "rejected") => void;
+  // Tap-only stand-in for "the agency edited something and it auto-
+  // resubmitted" -- mirrors resubmitContributorVerification. No badges to
+  // un-reject here (agency has none), so this is simpler: just flips the
+  // gate back to pending.
+  resubmitAgencyVerification: () => void;
   // Real-app parity: the live Navbar's own LanguageSwitcher persists the
   // chosen language app-wide via I18nProvider's context, not per-component
   // local state -- selecting a language on one screen still shows it
@@ -163,6 +221,9 @@ export function DemoStateProvider({ children }: { children: ReactNode }) {
   const [contributorIdentity, setContributorIdentity] = useState<ContributorIdentity | null>(null);
   const [contributorVerificationStatus, setContributorVerificationStatus] =
     useState<ContributorVerificationStatus>("approved");
+  const [agencyProfile, setAgencyProfile] = useState<AgencyProfile | null>(null);
+  const [agencyVerificationStatus, setAgencyVerificationStatus] =
+    useState<AgencyVerificationStatus>("verified");
   const [uiLanguage, setUiLanguage] = useState("en");
   const [previewContributorDashboard, setPreviewContributorDashboard] = useState(false);
 
@@ -195,6 +256,14 @@ export function DemoStateProvider({ children }: { children: ReactNode }) {
         setContributorVerificationStatus("pending");
         setContributorBadges((prev) => prev.map((b) => (b.status === "rejected" ? { ...b, status: "pending" } : b)));
       },
+      agencyProfile,
+      agencyVerificationStatus,
+      submitAgencyApplication: (profile) => {
+        setAgencyProfile(profile);
+        setAgencyVerificationStatus("pending");
+      },
+      decideAgencyVerification: (status) => setAgencyVerificationStatus(status),
+      resubmitAgencyVerification: () => setAgencyVerificationStatus("pending"),
       uiLanguage,
       setUiLanguage,
       previewContributorDashboard,
@@ -206,6 +275,8 @@ export function DemoStateProvider({ children }: { children: ReactNode }) {
       contributorBadges,
       contributorIdentity,
       contributorVerificationStatus,
+      agencyProfile,
+      agencyVerificationStatus,
       uiLanguage,
       previewContributorDashboard,
     ]

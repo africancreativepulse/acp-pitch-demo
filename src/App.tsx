@@ -31,6 +31,7 @@ import { TranslationQA } from "@/screens/TranslationQA";
 // per-badge BadgeVerification screen.
 import { ContributorVerification } from "@/screens/ContributorVerification";
 import { ContributorGate } from "@/components/ContributorGate";
+import { AgencyGate } from "@/components/AgencyGate";
 
 export default function App() {
   return (
@@ -48,14 +49,19 @@ export default function App() {
           <Routes>
             <Route path="/" element={<Splash />} />
             <Route path="/onboarding/:role" element={<Onboarding />} />
-            <Route path="/agency" element={<AgencyCommand />} />
-            <Route path="/agency/new" element={<CampaignBuilder />} />
+            {/* AgencyGate (Track C): wraps every agency-only route so a
+                pending/rejected agency can't reach any of them -- matches
+                ContributorGate's own full-block pattern. Excludes
+                ?admin=1 (Admin's own oversight view of these same two
+                routes) -- see AgencyGate.tsx's own header comment. */}
+            <Route path="/agency" element={<AgencyGate><AgencyCommand /></AgencyGate>} />
+            <Route path="/agency/new" element={<AgencyGate><CampaignBuilder /></AgencyGate>} />
             {/* Single route now, matching the real app's own
                 CampaignDetail.tsx -- tabs (Overview/CEI & Taste/Soul
                 Gap/CDI/Evidence) are local component state, not sub-routes.
                 The old /evidence/:dimension route is gone; SignalRing's tap
                 now sets that state directly instead of navigating. */}
-            <Route path="/agency/campaign/:id" element={<CampaignDetail />} />
+            <Route path="/agency/campaign/:id" element={<AgencyGate><CampaignDetail /></AgencyGate>} />
             <Route path="/contribute" element={<ContributorGate><ContributorCapture /></ContributorGate>} />
             <Route path="/operations" element={<OperationsHub />} />
             <Route path="/operations/field" element={<FieldCapture />} />
@@ -64,20 +70,22 @@ export default function App() {
             <Route path="/operations/admin/agencies" element={<AgencyVerification />} />
             <Route path="/operations/research" element={<ResearchHub />} />
             {/* Navigation-parity pass (today) */}
-            {/* ContributorGate: wraps every contributor route so a pending/
-                rejected contributor can't reach any of them, not just the
-                one entry point -- matches the real app's own full-block
-                ProtectedRoute. /profile/:role and /files/:role are shared
-                across roles (agency/admin/field workers use them too); the
-                gate itself only actually blocks when the route's own :role
-                param is "contributor" -- see ContributorGate.tsx. */}
-            <Route path="/profile/:role" element={<ContributorGate><Profile /></ContributorGate>} />
-            <Route path="/agency/overview" element={<AgencyOverview />} />
-            <Route path="/agency/insights" element={<AgencyInsights />} />
+            {/* ContributorGate/AgencyGate: wraps every contributor/agency
+                route so a pending/rejected one can't reach any of them, not
+                just the one entry point -- matches the real app's own
+                full-block ProtectedRoute. /profile/:role and /files/:role
+                are shared across roles (agency/admin/field workers use them
+                too); each gate only actually blocks when the route's own
+                :role param matches its own role -- see each gate's own
+                header comment. Nesting order between the two gates doesn't
+                matter (a route's :role param can never satisfy both). */}
+            <Route path="/profile/:role" element={<AgencyGate><ContributorGate><Profile /></ContributorGate></AgencyGate>} />
+            <Route path="/agency/overview" element={<AgencyGate><AgencyOverview /></AgencyGate>} />
+            <Route path="/agency/insights" element={<AgencyGate><AgencyInsights /></AgencyGate>} />
             <Route path="/contribute/overview" element={<ContributorGate><ContributorOverview /></ContributorGate>} />
             <Route path="/contribute/browse" element={<ContributorGate><Browse /></ContributorGate>} />
             <Route path="/contribute/analytics" element={<ContributorGate><ContributorAnalytics /></ContributorGate>} />
-            <Route path="/files/:role" element={<ContributorGate><Files /></ContributorGate>} />
+            <Route path="/files/:role" element={<AgencyGate><ContributorGate><Files /></ContributorGate></AgencyGate>} />
             <Route path="/earnings/:role" element={<Earnings />} />
             <Route path="/operations/admin/overview" element={<AdminOverview />} />
             <Route path="/operations/admin/translation-qa" element={<TranslationQA />} />
