@@ -1,4 +1,5 @@
-import { CheckCircle2, XCircle, ShieldCheck, FileText } from "lucide-react";
+import { CheckCircle2, XCircle, ShieldCheck, FileText, Eye } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { DashboardShell } from "@/components/DashboardShell";
 import { IconButton } from "@/components/IconButton";
 import { Badge } from "@/components/Badge";
@@ -46,8 +47,14 @@ const HANDLE_DISPLAY: Record<string, string> = {
  * already runs for field back-checks.
  */
 export function ContributorVerification() {
-  const { contributorIdentity, contributorBadges, contributorVerificationStatus, decideContributorVerification } =
-    useDemoState();
+  const navigate = useNavigate();
+  const {
+    contributorIdentity,
+    contributorBadges,
+    contributorVerificationStatus,
+    decideContributorVerification,
+    setPreviewContributorDashboard,
+  } = useDemoState();
 
   // Real gap closed: this card used to show only Country/City/Language --
   // now shows the full identity bundle the real app's own unified
@@ -112,11 +119,36 @@ export function ContributorVerification() {
           </span>
         </div>
         <h1 className="mb-2 font-display text-[22px] font-bold text-paper">Contributor Verification</h1>
-        <p className="mb-8 max-w-lg text-[13px] leading-relaxed text-muted">
+        <p className="mb-5 max-w-lg text-[13px] leading-relaxed text-muted">
           A contributor's signup is one reviewed submission — identity and every expert badge they picked,
           approved or rejected together, not badge by badge. The Guest Contributor card below is this
           demo's own live session; deciding it genuinely changes whether they can reach their own dashboard next.
         </p>
+
+        {/* Lindiwe K./Sipho N./Amahle P. below are static example data with
+            nothing behind them by design (see their own disabled decision
+            buttons further down) -- this is the honest way to still show
+            "what an approved contributor's dashboard looks like" without
+            either a full tab reload (loses every other bit of live demo
+            state) or touching the live session's own real
+            contributorVerificationStatus, which might be deliberately
+            sitting pending/rejected mid-demo right now. Sets DemoState's
+            own independent previewContributorDashboard flag -- see its
+            header comment -- then heads straight to the dashboard itself;
+            ContributorGate.tsx renders the "Preview mode" disclosure
+            banner on every contributor screen for as long as it's on. */}
+        <button
+          type="button"
+          onClick={() => {
+            setPreviewContributorDashboard(true);
+            navigate("/contribute/overview");
+          }}
+          className="mb-8 inline-flex items-center gap-2 font-mono text-xs uppercase tracking-[0.15em] hover:underline"
+          style={{ color: ACCENT }}
+        >
+          <Eye className="h-3.5 w-3.5" />
+          Preview Contributor Dashboard →
+        </button>
 
         <StatGrid className="mb-9">
           <StatCard label="Total Contributors" value={rows.length} />

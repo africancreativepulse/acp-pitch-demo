@@ -41,6 +41,22 @@ import { useCanGoBack } from "@/state/NavHistory";
  *   ported homepage (Change 1 scope explicitly excludes it).
  * - Book a Demo repointed to /wrap-up (real target /book-demo doesn't
  *   exist here, and a "book a demo" CTA inside a live demo is circular).
+ * - Real regression found + fixed: the Features/CEI/CDI links and Book a
+ *   Demo used to render as plain `<a href>`/Button-as-anchor tags. That's
+ *   harmless while already on Splash (same-pathname hash navigation is a
+ *   same-document browser operation, no reload) but genuinely broken from
+ *   anywhere else in the app (Change 2 put this Navbar on all ~25
+ *   screens): a real `<a>` to a different pathname is a full browser
+ *   navigation, hard-reloading the whole SPA and wiping every bit of
+ *   DemoState -- draft campaigns, review decisions, the live contributor's
+ *   own pending/approved status, all of it -- a real trap mid-presentation.
+ *   Both now go through react-router (`<Link>` for the nav links, `navigate()`
+ *   for Book a Demo, since Button has no Link-rendering mode) -- client-side,
+ *   state-preserving. React Router's own client-side nav doesn't replicate
+ *   the browser's native same-document hash-scroll for free the way a real
+ *   `<a>` does, so Splash.tsx now carries a small `useEffect` keyed on
+ *   `location.hash` that does the actual scrollIntoView -- see its own
+ *   comment there.
  * - Sign In reuses DemoHeader's own existing working dropdown (sign in
  *   as Agency/Contributor) instead of a real /auth route that doesn't
  *   exist here -- and shows unconditionally now, everywhere, rather than
@@ -131,14 +147,14 @@ export function Navbar({
           {NAV_LINKS.map((link) => {
             const isActive = activeSection === link.id;
             return (
-              <a
+              <Link
                 key={link.id}
-                href={link.href}
+                to={link.href}
                 className={`border-b-2 pb-1 ${linkClass(isActive)}`}
                 style={{ ["--nav-accent" as string]: link.color, borderColor: isActive ? link.color : "transparent" }}
               >
                 {link.label}
-              </a>
+              </Link>
             );
           })}
 
@@ -168,7 +184,7 @@ export function Navbar({
             )}
           </div>
 
-          <Button href="/wrap-up" className="!px-[18px] !py-[9px]">
+          <Button type="button" onClick={() => navigate("/wrap-up")} className="!px-[18px] !py-[9px]">
             Book a Demo
           </Button>
 
@@ -198,9 +214,9 @@ export function Navbar({
           {NAV_LINKS.map((link) => {
             const isActive = activeSection === link.id;
             return (
-              <a
+              <Link
                 key={link.id}
-                href={link.href}
+                to={link.href}
                 onClick={() => setOpen(false)}
                 className={`block border-s-2 py-2 ps-3 font-mono text-xs uppercase tracking-[0.15em] transition-colors hover:text-[var(--nav-accent)] ${
                   isActive ? "text-[var(--nav-accent)]" : "text-muted"
@@ -208,7 +224,7 @@ export function Navbar({
                 style={{ ["--nav-accent" as string]: link.color, borderColor: isActive ? link.color : "transparent" }}
               >
                 {link.label}
-              </a>
+              </Link>
             );
           })}
           <div className="flex flex-col gap-3">
@@ -223,7 +239,14 @@ export function Navbar({
                 </Link>
               </div>
             </div>
-            <Button href="/wrap-up" className="w-full">
+            <Button
+              type="button"
+              onClick={() => {
+                navigate("/wrap-up");
+                setOpen(false);
+              }}
+              className="w-full"
+            >
               Book a Demo
             </Button>
           </div>

@@ -131,6 +131,23 @@ interface DemoState {
   // Defaults "en" (English), matching the real I18nProvider's own default.
   uiLanguage: string;
   setUiLanguage: (code: string) => void;
+  // Admin's "Preview Contributor Dashboard" (ContributorVerification.tsx) --
+  // a real gap the illustrative Lindiwe K./Sipho N./Amahle P. rows exposed:
+  // they're static example data with nothing behind them by design (see
+  // their own disabled approve/reject buttons), so there was no way to
+  // show "what an approved contributor's dashboard looks like" without
+  // either a full tab reload (loses every other bit of live demo state --
+  // draft campaigns, review decisions, everything) or re-approving the
+  // live session's own card (works, but conflates "just show the look" with
+  // the real reactive-unlock loop, and doesn't help if that live card is
+  // deliberately sitting pending/rejected mid-demo). Deliberately its own
+  // independent field, not reusing/aliasing contributorVerificationStatus --
+  // ContributorGate.tsx unlocks on EITHER being true, but they're free to
+  // disagree (preview on while the live session is genuinely still
+  // pending/rejected is the whole point) and toggling this one never
+  // touches the real gate's own state.
+  previewContributorDashboard: boolean;
+  setPreviewContributorDashboard: (on: boolean) => void;
 }
 
 const Ctx = createContext<DemoState | null>(null);
@@ -147,6 +164,7 @@ export function DemoStateProvider({ children }: { children: ReactNode }) {
   const [contributorVerificationStatus, setContributorVerificationStatus] =
     useState<ContributorVerificationStatus>("approved");
   const [uiLanguage, setUiLanguage] = useState("en");
+  const [previewContributorDashboard, setPreviewContributorDashboard] = useState(false);
 
   const value = useMemo<DemoState>(
     () => ({
@@ -179,8 +197,18 @@ export function DemoStateProvider({ children }: { children: ReactNode }) {
       },
       uiLanguage,
       setUiLanguage,
+      previewContributorDashboard,
+      setPreviewContributorDashboard,
     }),
-    [draftCampaigns, reviewStatus, contributorBadges, contributorIdentity, contributorVerificationStatus, uiLanguage]
+    [
+      draftCampaigns,
+      reviewStatus,
+      contributorBadges,
+      contributorIdentity,
+      contributorVerificationStatus,
+      uiLanguage,
+      previewContributorDashboard,
+    ]
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

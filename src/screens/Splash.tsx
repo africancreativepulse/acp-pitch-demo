@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useLocation } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
 import { DotGrid } from "@/components/DotGrid";
 import { GlitchText } from "@/components/GlitchText";
@@ -151,6 +151,28 @@ export function Splash() {
   // starts expanded; a copy-paste-looking but real default from the live
   // source, kept verbatim rather than "corrected" to null.
   const [selectedCeiKey, setSelectedCeiKey] = useState<string | null>("soulgap");
+
+  // Real regression fix: Navbar.tsx's Features/CEI/CDI links now navigate
+  // here via react-router's <Link> instead of a raw <a href="/#section">
+  // (see Navbar.tsx's own header comment for why the raw-anchor version
+  // was a real hard-reload risk on every non-Splash screen once Change 2
+  // put this Navbar everywhere). The tradeoff: a browser-native same-
+  // document hash link scrolls to the target for free; a client-side
+  // react-router navigation just updates the URL/location object, no
+  // scroll. This replaces that lost behavior -- whenever the hash changes
+  // (including the very first render here, e.g. arriving from a totally
+  // different screen via one of those links), smooth-scroll to the
+  // matching section. rAF-deferred one frame so the section's own layout
+  // has actually painted before scrollIntoView measures it.
+  const location = useLocation();
+  useEffect(() => {
+    if (!location.hash) return;
+    const id = location.hash.slice(1);
+    const raf = requestAnimationFrame(() => {
+      document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [location.hash]);
 
   return (
     <div className="relative flex min-h-screen flex-col bg-ink">

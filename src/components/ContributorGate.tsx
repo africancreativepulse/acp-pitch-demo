@@ -1,11 +1,41 @@
 import type { ReactNode } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { Clock, XCircle } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Button } from "@/components/Button";
 import { useDemoState } from "@/state/DemoState";
 
 const ACCENT = "var(--sound)";
+
+/**
+ * Admin's "Preview Contributor Dashboard" entry point (ContributorVerification.tsx)
+ * lets a presenter see the real dashboard's look without a genuine live
+ * approval, driven by DemoState's own independent previewContributorDashboard
+ * flag (see that field's own header comment for why it's separate from the
+ * real gate). This banner is the disclosure that makes the override honest --
+ * "clearly distinct from claiming it's a specific row's actual account," per
+ * the explicit brief -- rendered above the entire dashboard tree (Navbar
+ * included), same var(--language) amber this codebase already uses for
+ * every other "pending/needs attention" signal (STATUS_META in
+ * ContributorVerification.tsx, this file's own pending-state icon below).
+ */
+function PreviewBanner({ onExit }: { onExit: () => void }) {
+  return (
+    <div
+      className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 border-b px-6 py-2.5 text-center font-mono text-[11px] uppercase tracking-[0.12em]"
+      style={{
+        borderColor: "color-mix(in srgb, var(--language) 35%, transparent)",
+        backgroundColor: "color-mix(in srgb, var(--language) 12%, transparent)",
+        color: "var(--language)",
+      }}
+    >
+      <span>Preview mode — illustrative contributor dashboard, not a specific account</span>
+      <button type="button" onClick={onExit} className="underline hover:no-underline">
+        Exit Preview
+      </button>
+    </div>
+  );
+}
 
 /**
  * Unified contributor verification (concept sync with tonight's real-app
@@ -27,14 +57,38 @@ const ACCENT = "var(--sound)";
  * shouldn't see the sidebar/nav for a dashboard they can't enter yet,
  * same reasoning the real app's AgencyPendingReview/ContributorPending
  * Review use a minimal standalone layout instead of the normal shell.
+ *
+ * Unlocks on either a genuine approval OR admin's own
+ * previewContributorDashboard override (see that field's own header
+ * comment in DemoState.tsx) -- the two are intentionally independent, so
+ * toggling preview on never touches the live session's real
+ * contributorVerificationStatus, and a genuinely approved session never
+ * shows the preview banner (nothing to disclose -- it's the real account).
  */
 export function ContributorGate({ children }: { children: ReactNode }) {
+  const navigate = useNavigate();
   const { role: paramRole } = useParams<{ role?: string }>();
-  const { contributorVerificationStatus, resubmitContributorVerification } = useDemoState();
+  const { contributorVerificationStatus, resubmitContributorVerification, previewContributorDashboard, setPreviewContributorDashboard } =
+    useDemoState();
 
   const appliesHere = paramRole === undefined || paramRole === "contributor";
-  if (!appliesHere || contributorVerificationStatus === "approved") {
-    return <>{children}</>;
+  const genuinelyApproved = contributorVerificationStatus === "approved";
+  const previewing = appliesHere && previewContributorDashboard && !genuinelyApproved;
+
+  if (!appliesHere || genuinelyApproved || previewContributorDashboard) {
+    return (
+      <>
+        {previewing && (
+          <PreviewBanner
+            onExit={() => {
+              setPreviewContributorDashboard(false);
+              navigate("/operations/admin/contributors");
+            }}
+          />
+        )}
+        {children}
+      </>
+    );
   }
 
   const rejected = contributorVerificationStatus === "rejected";
