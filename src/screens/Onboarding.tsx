@@ -11,7 +11,7 @@ import {
   COUNTRIES, COMING_SOON_COUNTRIES, CITIES_BY_COUNTRY, ONBOARDING_LANGUAGES,
   CEI_DEFINITION, CDI_DEFINITION, type Country,
 } from "@/data/demo";
-import { useDemoState, type AgencyProfile } from "@/state/DemoState";
+import { useDemoState } from "@/state/DemoState";
 
 type Role = "agency" | "contributor";
 

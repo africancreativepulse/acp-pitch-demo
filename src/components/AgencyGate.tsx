@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { Link, useParams, useSearchParams } from "react-router-dom";
 import { Clock, XCircle } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Button } from "@/components/Button";
@@ -43,7 +43,6 @@ const ACCENT = "var(--visual)";
  * without needing a separate preview flag.
  */
 export function AgencyGate({ children }: { children: ReactNode }) {
-  const navigate = useNavigate();
   const { role: paramRole } = useParams<{ role?: string }>();
   const [searchParams] = useSearchParams();
   const { agencyVerificationStatus, resubmitAgencyVerification } = useDemoState();
