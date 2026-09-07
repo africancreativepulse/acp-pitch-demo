@@ -179,10 +179,12 @@ export function Splash() {
       {/* Real-app parity, Change 2: the real marketing Navbar itself now
           lives here too, not just DemoHeader's own borrowed Sign In
           affordance -- see Navbar.tsx's own header comment. Sign In is
-          unconditional on Navbar now (no prop needed); Back/Wrap Up still
+          unconditional on Navbar now (no prop needed); Back still
           suppressed here, same reasoning as before (fresh load has
-          nowhere real to go back to, and the tour hasn't started yet). */}
-      <Navbar showBack={false} showWrapUp={false} />
+          nowhere real to go back to). Wrap Up itself is gone -- removed
+          entirely along with Book a Demo, see Navbar.tsx's own header
+          comment. */}
+      <Navbar showBack={false} />
 
       {/* Real-app parity: real Hero.tsx uses pb-16 pt-[150px] md:pb-24 --
           150px of top clearance because its OWN fixed navbar overlays the

@@ -20,7 +20,7 @@ export function PrivacyPolicy() {
   return (
     <div className="flex min-h-screen flex-col bg-ink">
       {/* Real-app parity, Change 2 -- see Navbar.tsx's own header comment. */}
-      <Navbar showWrapUp={false} />
+      <Navbar />
 
       <main className="mx-auto w-full max-w-lg flex-1 px-6 py-16">
         <div className="mb-2 label-caps">Privacy Policy</div>

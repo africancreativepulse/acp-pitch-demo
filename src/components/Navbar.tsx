@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, Flag, Menu, X } from "lucide-react";
+import { ArrowLeft, Menu, X } from "lucide-react";
 import { AcpLogo } from "@/components/AcpLogo";
 import { Button } from "@/components/Button";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
@@ -39,38 +39,44 @@ import { useCanGoBack } from "@/state/NavHistory";
  *   itself for the same reason -- expected, harmless everywhere else.
  * - #pricing dropped -- no Pricing section exists in this demo's own
  *   ported homepage (Change 1 scope explicitly excludes it).
- * - Book a Demo repointed to /wrap-up (real target /book-demo doesn't
- *   exist here, and a "book a demo" CTA inside a live demo is circular).
- * - Real regression found + fixed: the Features/CEI/CDI links and Book a
- *   Demo used to render as plain `<a href>`/Button-as-anchor tags. That's
- *   harmless while already on Splash (same-pathname hash navigation is a
- *   same-document browser operation, no reload) but genuinely broken from
- *   anywhere else in the app (Change 2 put this Navbar on all ~25
- *   screens): a real `<a>` to a different pathname is a full browser
- *   navigation, hard-reloading the whole SPA and wiping every bit of
- *   DemoState -- draft campaigns, review decisions, the live contributor's
- *   own pending/approved status, all of it -- a real trap mid-presentation.
- *   Both now go through react-router (`<Link>` for the nav links, `navigate()`
- *   for Book a Demo, since Button has no Link-rendering mode) -- client-side,
- *   state-preserving. React Router's own client-side nav doesn't replicate
- *   the browser's native same-document hash-scroll for free the way a real
- *   `<a>` does, so Splash.tsx now carries a small `useEffect` keyed on
- *   `location.hash` that does the actual scrollIntoView -- see its own
- *   comment there.
+ * - Real regression found + fixed (now moot, see below, but the lesson
+ *   still applies to Features/CEI/CDI): a plain `<a href>`/Button-as-
+ *   anchor tag is harmless while already on Splash (same-pathname hash
+ *   navigation is a same-document browser operation, no reload) but
+ *   genuinely broken from anywhere else in the app (Change 2 put this
+ *   Navbar on all ~25 screens): a real `<a>` to a different pathname is
+ *   a full browser navigation, hard-reloading the whole SPA and wiping
+ *   every bit of DemoState -- draft campaigns, review decisions, the
+ *   live contributor's own pending/approved status, all of it -- a real
+ *   trap mid-presentation. Features/CEI/CDI go through react-router's
+ *   `<Link>` for exactly this reason -- client-side, state-preserving.
+ *   React Router's own client-side nav doesn't replicate the browser's
+ *   native same-document hash-scroll for free the way a real `<a>` does,
+ *   so Splash.tsx carries a small `useEffect` keyed on `location.hash`
+ *   that does the actual scrollIntoView -- see its own comment there.
  * - Sign In reuses DemoHeader's own existing working dropdown (sign in
  *   as Agency/Contributor) instead of a real /auth route that doesn't
  *   exist here -- and shows unconditionally now, everywhere, rather than
  *   being suppressed per-screen the way DemoHeader's own showSignIn prop
  *   worked (confirmed: navbar shows as-is everywhere, including
  *   mid-dashboard, no adaptive hiding).
- * - Back and Wrap Up -- real demo-only navigation aids DemoHeader itself
- *   already added beyond the real component's own scope (see
- *   DemoHeader's own header comment) -- kept here for the same reason:
- *   genuinely necessary for this demo's own multi-step tour, not part of
- *   the real Navbar's own content. showBack/showWrapUp match DemoHeader's
- *   own props exactly (same names, same default true) so existing call
- *   sites migrate with minimal changes -- Splash suppresses both, WrapUp
- *   itself also suppresses Wrap Up.
+ * - Back -- a real demo-only navigation aid DemoHeader itself already
+ *   added beyond the real component's own scope (see DemoHeader's own
+ *   header comment) -- kept here for the same reason: genuinely
+ *   necessary for this demo's own multi-step tour, not part of the real
+ *   Navbar's own content. showBack matches DemoHeader's own prop exactly
+ *   (same name, same default true) so existing call sites migrate with
+ *   minimal changes -- Splash suppresses it.
+ * - Book a Demo and Wrap Up -- removed entirely, per direct instruction
+ *   (both the buttons/links and their underlying /wrap-up screen/route).
+ *   Every reference was audited first (Navbar's own four render sites,
+ *   App.tsx's route+import, Splash.tsx's and PrivacyPolicy.tsx's own
+ *   showWrapUp props) -- nothing else in the app linked to /wrap-up or
+ *   had its own Book a Demo CTA, and the "Restart the Tour" link that
+ *   used to live on the (now-deleted) WrapUp.tsx screen only ever
+ *   pointed at "/", never referenced from anywhere else, so nothing was
+ *   left dangling. A stray deep link to /wrap-up now falls through to
+ *   App.tsx's own catch-all (`*` -> `/`) instead of erroring.
  */
 const NAV_LINKS = [
   { href: "/#features", id: "features", label: "Features", color: "var(--visual)" },
@@ -80,10 +86,8 @@ const NAV_LINKS = [
 
 export function Navbar({
   showBack = true,
-  showWrapUp = true,
 }: {
   showBack?: boolean;
-  showWrapUp?: boolean;
 }) {
   const navigate = useNavigate();
   const canGoBack = useCanGoBack();
@@ -183,26 +187,10 @@ export function Navbar({
               </div>
             )}
           </div>
-
-          <Button type="button" onClick={() => navigate("/wrap-up")} className="!px-[18px] !py-[9px]">
-            Book a Demo
-          </Button>
-
-          {showWrapUp && (
-            <Link to="/wrap-up" className="flex items-center gap-1.5 text-[13px] text-muted transition-colors hover:text-paper">
-              <Flag className="h-3.5 w-3.5" />
-              Wrap Up
-            </Link>
-          )}
         </div>
 
         <div className="flex items-center gap-3 md:hidden">
           <LanguageSwitcher />
-          {showWrapUp && (
-            <Link to="/wrap-up" className="text-muted transition-colors hover:text-paper" aria-label="Wrap Up">
-              <Flag className="h-4 w-4" />
-            </Link>
-          )}
           <button className="text-paper transition-colors hover:text-pulse" onClick={() => setOpen(!open)} aria-label="Toggle menu">
             {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
@@ -227,28 +215,16 @@ export function Navbar({
               </Link>
             );
           })}
-          <div className="flex flex-col gap-3">
-            <div>
-              <div className="mb-2 font-mono text-[11px] uppercase tracking-[0.1em] text-muted">Sign in as</div>
-              <div className="flex gap-4 text-[13px]">
-                <Link to="/agency" onClick={() => setOpen(false)} className="text-visual hover:underline">
-                  Agency
-                </Link>
-                <Link to="/contribute" onClick={() => setOpen(false)} className="text-sound hover:underline">
-                  Contributor
-                </Link>
-              </div>
+          <div>
+            <div className="mb-2 font-mono text-[11px] uppercase tracking-[0.1em] text-muted">Sign in as</div>
+            <div className="flex gap-4 text-[13px]">
+              <Link to="/agency" onClick={() => setOpen(false)} className="text-visual hover:underline">
+                Agency
+              </Link>
+              <Link to="/contribute" onClick={() => setOpen(false)} className="text-sound hover:underline">
+                Contributor
+              </Link>
             </div>
-            <Button
-              type="button"
-              onClick={() => {
-                navigate("/wrap-up");
-                setOpen(false);
-              }}
-              className="w-full"
-            >
-              Book a Demo
-            </Button>
           </div>
         </div>
       )}

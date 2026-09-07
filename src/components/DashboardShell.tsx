@@ -221,8 +221,8 @@ export function DashboardShell({ role, children }: { role: ShellRole; children: 
           a deliberate divergence from the real app's own dashboards,
           which use sidebar-only nav) -- replacing DemoHeader here. See
           Navbar.tsx's own header comment for the full reasoning and the
-          real inconsistencies it resolves (Book a Demo, Sign In, dropped
-          #pricing, sticky vs. fixed). */}
+          real inconsistencies it resolves (Sign In, dropped #pricing,
+          sticky vs. fixed). */}
       <Navbar />
       <div className="relative flex flex-1">
         {/* Desktop sidebar -- same w-60/border-e/bg-panel proportions as the

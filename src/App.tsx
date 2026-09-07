@@ -13,7 +13,6 @@ import { SupervisorReview } from "@/screens/SupervisorReview";
 import { AdminOversight } from "@/screens/AdminOversight";
 import { ResearchHub } from "@/screens/ResearchHub";
 import { AgencyVerification } from "@/screens/AgencyVerification";
-import { WrapUp } from "@/screens/WrapUp";
 import { PrivacyPolicy } from "@/screens/PrivacyPolicy";
 // Navigation-parity pass (today) -- every real per-role nav item now has
 // a genuine, reachable screen. See DashboardShell.tsx's own NAV comment
@@ -83,7 +82,6 @@ export default function App() {
             <Route path="/operations/admin/overview" element={<AdminOverview />} />
             <Route path="/operations/admin/translation-qa" element={<TranslationQA />} />
             <Route path="/operations/admin/contributors" element={<ContributorVerification />} />
-            <Route path="/wrap-up" element={<WrapUp />} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
