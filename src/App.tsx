@@ -32,6 +32,10 @@ import { TranslationQA } from "@/screens/TranslationQA";
 import { ContributorVerification } from "@/screens/ContributorVerification";
 import { ContributorGate } from "@/components/ContributorGate";
 import { AgencyGate } from "@/components/AgencyGate";
+// Real-app parity (nav/cosmetic audit): the live site's /about and /contact,
+// confirmed missing entirely -- see each screen's own header comment.
+import { About } from "@/screens/About";
+import { Contact } from "@/screens/Contact";
 
 export default function App() {
   return (
@@ -91,6 +95,8 @@ export default function App() {
             <Route path="/operations/admin/translation-qa" element={<TranslationQA />} />
             <Route path="/operations/admin/contributors" element={<ContributorVerification />} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/contact" element={<Contact />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </NavHistoryProvider>

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { ArrowRight } from "lucide-react";
 import { DashboardShell } from "@/components/DashboardShell";
 import { Button } from "@/components/Button";
 import { CategoryPicker } from "@/components/CategoryPicker";
@@ -195,8 +196,15 @@ export function CampaignBuilder() {
             </Field>
 
             <div>
+              {/* Real-app parity: real CreateCampaign.tsx's own Next buttons
+                  use a lucide ArrowRight icon, not a literal arrow
+                  character -- this demo has no RTL/i18n system for that
+                  icon's own rtl:-scale-x-100 mirroring to matter (same
+                  disclosed gap Splash.tsx's own header comment already
+                  names for its "→" button copy), but the icon itself is a
+                  cheap, real-app-matching swap regardless. */}
               <Button color={ACCENT} disabled={!step1Valid} onClick={() => setStep(1)}>
-                Next: Tasks →
+                Next: Tasks <ArrowRight className="ms-2 inline h-4 w-4" />
               </Button>
               {!step1Valid && (
                 <p className="mt-2 text-xs text-pulse">Pick at least one target city to continue.</p>
@@ -250,7 +258,7 @@ export function CampaignBuilder() {
             <div className="flex flex-wrap items-center gap-4 pt-2">
               <Button variant="ghost" color={ACCENT} onClick={() => setStep(0)}>← Back</Button>
               <Button color={ACCENT} disabled={tasks.length === 0} onClick={() => setStep(2)}>
-                Next: Review →
+                Next: Review <ArrowRight className="ms-2 inline h-4 w-4" />
               </Button>
             </div>
           </div>

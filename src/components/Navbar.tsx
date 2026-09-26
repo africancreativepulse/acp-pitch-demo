@@ -148,6 +148,19 @@ export function Navbar({
         </div>
 
         <div className="hidden items-center gap-8 md:flex">
+          {/* Real-app parity: real Navbar.tsx's own About link -- kept
+              outside NAV_LINKS (that array drives the scroll-spy above,
+              which only makes sense for actual same-page anchor sections),
+              placed first per the real component's own explicit ordering.
+              border-b-2 border-transparent pb-1 matches NAV_LINKS' own
+              reserved underline space -- the real component's own fix for
+              a genuine, confirmed pixel-level misalignment without it. */}
+          <Link
+            to="/about"
+            className="border-b-2 border-transparent pb-1 font-mono text-xs uppercase tracking-[0.12em] text-muted transition-colors hover:text-paper"
+          >
+            About
+          </Link>
           {NAV_LINKS.map((link) => {
             const isActive = activeSection === link.id;
             return (
@@ -161,6 +174,15 @@ export function Navbar({
               </Link>
             );
           })}
+          {/* Real-app parity: real Navbar.tsx's own Contact link -- same
+              real-route-not-anchor reasoning and alignment fix as About
+              above. */}
+          <Link
+            to="/contact"
+            className="border-b-2 border-transparent pb-1 font-mono text-xs uppercase tracking-[0.12em] text-muted transition-colors hover:text-paper"
+          >
+            Contact
+          </Link>
 
           <LanguageSwitcher />
 
@@ -199,6 +221,15 @@ export function Navbar({
 
       {open && (
         <div className="space-y-4 border-b border-line bg-ink px-6 pb-6 md:hidden">
+          {/* Real-app parity: same About link as the desktop nav above,
+              first in the list, same ordering as desktop. */}
+          <Link
+            to="/about"
+            onClick={() => setOpen(false)}
+            className="block border-s-2 border-transparent py-2 ps-3 font-mono text-xs uppercase tracking-[0.15em] text-muted transition-colors hover:text-paper"
+          >
+            About
+          </Link>
           {NAV_LINKS.map((link) => {
             const isActive = activeSection === link.id;
             return (
@@ -215,6 +246,13 @@ export function Navbar({
               </Link>
             );
           })}
+          <Link
+            to="/contact"
+            onClick={() => setOpen(false)}
+            className="block border-s-2 border-transparent py-2 ps-3 font-mono text-xs uppercase tracking-[0.15em] text-muted transition-colors hover:text-paper"
+          >
+            Contact
+          </Link>
           <div>
             <div className="mb-2 font-mono text-[11px] uppercase tracking-[0.1em] text-muted">Sign in as</div>
             <div className="flex gap-4 text-[13px]">

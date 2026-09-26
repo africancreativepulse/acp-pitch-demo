@@ -606,6 +606,16 @@ export function Splash() {
                     CEI Framework
                   </a>
                 </li>
+                {/* Real-app parity: real Footer.tsx's own "Contact Us" link,
+                    added to the Platform column (the only column with real,
+                    non-"Soon" destinations) alongside the real /about,
+                    /contact port -- see About.tsx/Contact.tsx's own header
+                    comments. */}
+                <li>
+                  <Link to="/contact" className="transition-colors hover:text-ritual">
+                    Contact Us
+                  </Link>
+                </li>
               </ul>
             </div>
             <div>

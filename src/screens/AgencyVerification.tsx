@@ -1,12 +1,16 @@
 import { CheckCircle2, XCircle, ShieldCheck } from "lucide-react";
-import { DashboardShell } from "@/components/DashboardShell";
+import { DashboardShell, ROLE_ACCENT } from "@/components/DashboardShell";
 import { IconButton } from "@/components/IconButton";
 import { Badge } from "@/components/Badge";
 import { StatGrid, StatCard } from "@/components/StatCard";
 import { AGENCY_VERIFICATION_QUEUE } from "@/data/demo";
 import { useDemoState, type AgencyVerificationStatus } from "@/state/DemoState";
 
-const ACCENT = "var(--ritual)";
+// Nav/cosmetic audit: was a hardcoded "var(--ritual)" literal -- same
+// resolved color as ROLE_ACCENT.admin (this is an admin-only screen), but
+// sourced inconsistently with every other admin screen (AdminOverview.tsx,
+// ContributorVerification.tsx) that already imports the shared constant.
+const ACCENT = ROLE_ACCENT.admin;
 
 const STATUS_META: Record<AgencyVerificationStatus, { label: string; color: string }> = {
   verified: { label: "verified", color: "var(--sound)" },

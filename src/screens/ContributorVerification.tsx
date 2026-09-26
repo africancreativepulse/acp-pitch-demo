@@ -1,6 +1,6 @@
 import { CheckCircle2, XCircle, ShieldCheck, FileText, Eye } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { DashboardShell } from "@/components/DashboardShell";
+import { DashboardShell, ROLE_ACCENT } from "@/components/DashboardShell";
 import { IconButton } from "@/components/IconButton";
 import { Badge } from "@/components/Badge";
 import { StatGrid, StatCard } from "@/components/StatCard";
@@ -8,7 +8,9 @@ import { CONTRIBUTOR_VERIFICATION_QUEUE, type BadgeEvidenceEntry } from "@/data/
 import { subCategoryLabel } from "@/data/taxonomy";
 import { useDemoState, type ContributorVerificationStatus } from "@/state/DemoState";
 
-const ACCENT = "var(--ritual)";
+// Nav/cosmetic audit: was a hardcoded "var(--ritual)" literal -- see
+// AgencyVerification.tsx's own comment on the same fix.
+const ACCENT = ROLE_ACCENT.admin;
 
 const STATUS_META: Record<ContributorVerificationStatus, { label: string; color: string }> = {
   approved: { label: "approved", color: "var(--sound)" },
