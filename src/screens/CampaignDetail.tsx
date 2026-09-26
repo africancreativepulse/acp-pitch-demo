@@ -10,6 +10,7 @@ import { ScorePill } from "@/components/ScorePill";
 import { VerifiedBadge } from "@/components/Badge";
 import { WaveformStatic } from "@/components/WaveformStatic";
 import { InfoHint } from "@/components/InfoHint";
+import { PositioningRealityBars } from "@/components/PositioningRealityBars";
 import { cn } from "@/lib/cn";
 import {
   SONDELA,
@@ -19,13 +20,45 @@ import {
   SOULGAP_COLOR,
   CEI_DEFINITION,
   CDI_DEFINITION,
+  COUNTRIES,
   cdiBand,
   decayBand,
   quadrantRead,
+  SOUL_GAP_AXIS_META,
+  SOUL_GAP_AXIS_ORDER,
+  SONDELA_SOUL_GAP_READS,
+  soulGapLevelToPercent,
+  soulGapComposite,
+  deriveSoulGapFlags,
   type CeiKey,
   type EvidenceItem,
+  type SoulGapAxisKey,
 } from "@/data/demo";
 import { subCategoryLabel } from "@/data/taxonomy";
+import type { CeiPositioningRealityAxis } from "@/data/demo";
+
+// Real-app parity (deferred feature-parity bucket, item 3): the real
+// lib/soul-gap engine's five anchored axes, replacing this tab's old
+// single magnitude+headline stub -- see data/demo.ts's own
+// SONDELA_SOUL_GAP_READS header comment for the full reasoning. Same
+// PositioningRealityBars component the CEI tab already uses (a genuine
+// port, not a second implementation) -- only the data and the single
+// SOULGAP_COLOR (not per-axis colors) differ, matching the real
+// soulGapAxisCards()'s own choice.
+function soulGapAxisCards(): CeiPositioningRealityAxis[] {
+  return SOUL_GAP_AXIS_ORDER.map((key) => {
+    const read = SONDELA_SOUL_GAP_READS[key];
+    return {
+      key,
+      label: SOUL_GAP_AXIS_META[key].name,
+      description: SOUL_GAP_AXIS_META[key].description,
+      positioning: soulGapLevelToPercent(read.positioningLevel),
+      reality: soulGapLevelToPercent(read.realityLevel),
+      color: SOULGAP_COLOR,
+      evidence: read.realityEvidence,
+    };
+  });
+}
 
 const ACCENT = "var(--visual)";
 type SwitcherKey = CeiKey | "soulgap";
@@ -33,10 +66,10 @@ type SwitcherKey = CeiKey | "soulgap";
 // Real, working CSV export -- not simulated. Builds every evidence item
 // (all six CEI dimensions plus the standalone Soul Gap panel) into an
 // actual downloadable file via a Blob URL, entirely client-side. Matches
-// the real app's own shipped capability (Export CSV); PDF stays a
-// disabled "coming soon" button below since the real app's own PDF
-// export is genuinely deferred too, not because this demo is cutting a
-// corner the real product doesn't also have.
+// the real app's own shipped capability (Export CSV); PDF export is now
+// real too -- see downloadCampaignPdf below, added once the real app's
+// own PDF export shipped (this button used to say "coming soon" on the
+// strength of that no longer being true).
 function downloadEvidenceCsv() {
   const rows: string[][] = [["Dimension", "Kind", "Content", "City", "Contributor", "Date", "Verified"]];
   const contentOf = (item: EvidenceItem) => (item.kind === "quote" ? item.quote : item.caption);
@@ -58,6 +91,94 @@ function downloadEvidenceCsv() {
   a.download = "sondela-cover-evidence.csv";
   a.click();
   URL.revokeObjectURL(url);
+}
+
+// Real-app parity (nav/cosmetic audit): the live app shipped real PDF
+// export (generateReportPdf.ts) months ago -- this button used to say
+// "genuinely still in progress on the real platform too", which is now
+// stale, not an honest disclosure. Real, working, jsPDF-generated export,
+// not simulated -- same "native, hand-drawn" approach the real report
+// generator moved to (its own header comment: html2canvas raster capture
+// was dropped in favor of drawing content directly), just scoped to this
+// demo's own single-campaign dataset rather than the real generator's
+// full multi-section report. jsPDF is a genuinely new dependency for this
+// project (previously zero heavy deps beyond lucide/react-router) --
+// deliberately NOT also adding html2canvas/react-simple-maps/world-atlas
+// for the map itself; see MarketFootprint.tsx's own header comment for
+// why that part gets a hand-built equivalent instead of a literal port.
+async function downloadCampaignPdf(cei: Record<CeiKey, number>, ceiOverall: number, cdi: number, soulGapMagnitude: string) {
+  const { jsPDF } = await import("jspdf");
+  const doc = new jsPDF({ unit: "pt", format: "a4" });
+  const margin = 48;
+  let y = margin;
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(20);
+  doc.text("African Creative Pulse", margin, y);
+  y += 22;
+  doc.setFontSize(14);
+  doc.text(`${SONDELA.client} — Campaign Summary`, margin, y);
+  y += 20;
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(10);
+  doc.setTextColor(120, 120, 120);
+  // splitTextToSize, not a single text() call -- this line ran off the
+  // right edge of the page uncaught (a real bug, caught by actually
+  // opening a generated PDF, not just eyeballing the code): pageWidth
+  // minus both margins is the real available width, same reasoning the
+  // real generateReportPdf.ts applies everywhere it wraps body text.
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const summaryLine = `"${SONDELA.concept}" · ${SONDELA.cities.join(" · ")} · Collected via ${SONDELA.methodology}`;
+  const summaryLines = doc.splitTextToSize(summaryLine, pageWidth - margin * 2);
+  doc.text(summaryLines, margin, y);
+  y += summaryLines.length * 13 + 15;
+
+  doc.setTextColor(20, 20, 20);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(12);
+  doc.text("Scores at a Glance", margin, y);
+  y += 18;
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(11);
+  doc.text(`CEI Overall: ${ceiOverall.toFixed(1)}   ·   CDI: ${cdi.toFixed(1)}/10   ·   Soul Gap: ${soulGapMagnitude}`, margin, y);
+  y += 26;
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(12);
+  doc.text("CEI Dimension Breakdown", margin, y);
+  y += 16;
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(11);
+  CEI_ORDER.forEach((key) => {
+    doc.text(CEI_LABEL[key], margin, y);
+    doc.text(cei[key].toFixed(1), margin + 400, y);
+    y += 16;
+  });
+  y += 12;
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(12);
+  doc.text("Market Footprint", margin, y);
+  y += 16;
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  // Same "never omit a live market" principle as the on-screen
+  // MarketFootprint component -- every one of ACP's real live countries
+  // listed, not just the one this campaign happens to run in.
+  const perRow = 3;
+  COUNTRIES.forEach((country, i) => {
+    const col = i % perRow;
+    const row = Math.floor(i / perRow);
+    doc.text(`• ${country}`, margin + col * 170, y + row * 14);
+  });
+  y += Math.ceil(COUNTRIES.length / perRow) * 14 + 20;
+
+  doc.setFontSize(8);
+  doc.setTextColor(150, 150, 150);
+  doc.text("Illustrative sample, not measured results · Pitch prototype · No login required", margin, y);
+
+  doc.save(`${SONDELA.client.toLowerCase().replace(/\s+/g, "-")}-summary.pdf`);
 }
 
 // Real tabs, verbatim from the real app's agency/CampaignDetail.tsx
@@ -96,6 +217,7 @@ export function CampaignDetail() {
   const [activeDimension, setActiveDimension] = useState<SwitcherKey>("ritual");
   const [urgent, setUrgent] = useState(false);
   const [showToast, setShowToast] = useState(false);
+  const [selectedSoulGapAxis, setSelectedSoulGapAxis] = useState<SoulGapAxisKey | null>(null);
 
   // Part D, item 13 -- a real device push notification, shown as a
   // moment rather than claimed in copy. Ties to badge matching (Part C,
@@ -115,6 +237,8 @@ export function CampaignDetail() {
   const cdi = SONDELA.cdi;
   const decay = SONDELA.decay;
   const soulGap = SONDELA.soulGap;
+  const soulGapCompositeScore = soulGapComposite(SONDELA_SOUL_GAP_READS);
+  const soulGapFlags = deriveSoulGapFlags(SONDELA_SOUL_GAP_READS);
 
   const ringData = CEI_ORDER.map((key) => ({
     key,
@@ -178,12 +302,14 @@ export function CampaignDetail() {
             <Button variant="ghost" color={ACCENT} className="!px-3 !py-1.5 !text-[11px]" onClick={downloadEvidenceCsv}>
               <Download className="me-1.5 h-3.5 w-3.5" /> Export CSV
             </Button>
-            <span
-              className="inline-flex cursor-not-allowed items-center gap-1 rounded-sm border border-line px-[14px] py-2 font-display text-[11px] font-semibold uppercase tracking-[0.06em] text-muted"
-              title="PDF export is genuinely still in progress on the real platform too -- not a corner cut for this demo."
+            <Button
+              variant="ghost"
+              color={ACCENT}
+              className="!px-3 !py-1.5 !text-[11px]"
+              onClick={() => downloadCampaignPdf(cei, ceiOverall, cdi, soulGap.magnitude)}
             >
-              Export PDF · Coming Soon
-            </span>
+              <Download className="me-1.5 h-3.5 w-3.5" /> Export PDF
+            </Button>
           </div>
         </div>
 
@@ -292,27 +418,58 @@ export function CampaignDetail() {
         )}
 
         {tab === "soulgap" && (
-          <div className="rounded border border-line p-6" style={{ borderColor: `${SOULGAP_COLOR}40` }}>
+          <div className="rounded border border-line p-6 shadow-[0_8px_24px_rgba(0,0,0,0.25)]">
             <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
               <div>
                 <h3 className="mb-1 font-display text-sm font-bold text-paper">Soul Gap</h3>
-                <p className="text-xs text-muted">Distance between what's claimed and what's felt — a derived metric, not one of the six CEI dimensions.</p>
+                <p className="text-xs text-muted">Distance between what's claimed and what's felt, across five anchored axes — a derived metric, not one of the six CEI dimensions.</p>
               </div>
-              <span
-                className="rounded-full px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide"
-                style={{ backgroundColor: `${SOULGAP_COLOR}22`, color: SOULGAP_COLOR }}
-              >
-                {soulGap.magnitude}
-              </span>
+              <div className="text-end">
+                <div className="font-mono text-2xl font-bold text-paper">
+                  {soulGapCompositeScore > 0 ? "+" : ""}{soulGapCompositeScore.toFixed(1)}
+                </div>
+                <div className="text-[10px] uppercase tracking-[0.1em] text-muted">Soul Gap composite (−4..+4)</div>
+              </div>
             </div>
-            <p className="max-w-2xl font-display text-xl font-semibold leading-snug text-paper">{soulGap.headline}</p>
-            <button
-              onClick={() => goToEvidence("soulgap")}
-              className="mt-4 text-[13px] font-semibold hover:underline"
-              style={{ color: SOULGAP_COLOR }}
-            >
-              See where this comes from →
-            </button>
+
+            {soulGapFlags.length > 0 && (
+              <div className="mb-4 space-y-2">
+                {soulGapFlags.map((flag, i) => (
+                  <div
+                    key={i}
+                    className="flex items-start gap-2.5 rounded border px-4 py-3"
+                    style={
+                      flag.severity === "critical"
+                        ? { borderColor: "rgba(255,90,41,0.45)", backgroundColor: "rgba(255,90,41,0.08)" }
+                        : { borderColor: "rgba(255,201,60,0.4)", backgroundColor: "rgba(255,201,60,0.07)" }
+                    }
+                  >
+                    <BellRing className="mt-0.5 h-4 w-4 shrink-0" style={{ color: flag.severity === "critical" ? "var(--pulse)" : "var(--language)" }} />
+                    <div>
+                      <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.08em]" style={{ color: flag.severity === "critical" ? "var(--pulse)" : "var(--language)" }}>
+                        {flag.severity} — Heritage Connection ({flag.source})
+                      </span>
+                      <p className="mt-1 text-xs leading-relaxed text-paper">{flag.reason}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <PositioningRealityBars
+              axes={soulGapAxisCards()}
+              selectedKey={selectedSoulGapAxis}
+              onSelect={(key) => setSelectedSoulGapAxis(key === selectedSoulGapAxis ? null : (key as SoulGapAxisKey | null))}
+            />
+
+            {selectedSoulGapAxis && (
+              <div className="mt-3 rounded-md border border-dashed border-line bg-panel p-4">
+                <div className="mb-1 font-mono text-[10px] uppercase tracking-[0.14em] text-muted">Positioning Evidence</div>
+                <p className="text-sm italic leading-relaxed text-paper">
+                  &ldquo;{SONDELA_SOUL_GAP_READS[selectedSoulGapAxis].positioningEvidence.verbatim}&rdquo;
+                </p>
+              </div>
+            )}
           </div>
         )}
 

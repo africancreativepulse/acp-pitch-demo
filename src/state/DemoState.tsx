@@ -206,6 +206,26 @@ interface DemoState {
   // touches the real gate's own state.
   previewContributorDashboard: boolean;
   setPreviewContributorDashboard: (on: boolean) => void;
+  // AgencyFieldwork.tsx's own "Find Agents" pool invites (nav/cosmetic
+  // audit, deferred bucket item 4) -- keyed by campaign id, one array of
+  // FIELD_AGENT_POOL ids per campaign. A real, working mutation (not a
+  // static-looking button): inviting an agent from the pool actually
+  // persists for the rest of the session, same "real interaction, not
+  // just a visual" standard every other DemoState field here already
+  // holds itself to.
+  assignedFieldAgents: Record<string, string[]>;
+  assignFieldAgent: (campaignId: string, poolAgentId: string) => void;
+  // Real connection (nav/cosmetic audit, deferred bucket item 5): lifted
+  // out of ResearchHub.tsx's own local useState, which used to resolve a
+  // promotion tap instantly with no real approval step -- that screen's
+  // own closing line already named this as the honest gap ("a real
+  // request here would enter an actual approval queue, not resolve
+  // instantly"). Admin's new AdminFieldwork Promotions tab is that real
+  // queue: ResearchHub's own Promote button now writes "pending" here
+  // instead of a local Set, and reads back whatever admin decides.
+  promotionRequests: Record<string, "pending" | "approved" | "rejected">;
+  requestPromotion: (rosterMemberId: string) => void;
+  decidePromotion: (rosterMemberId: string, status: "approved" | "rejected") => void;
 }
 
 const Ctx = createContext<DemoState | null>(null);
@@ -226,6 +246,8 @@ export function DemoStateProvider({ children }: { children: ReactNode }) {
     useState<AgencyVerificationStatus>("verified");
   const [uiLanguage, setUiLanguage] = useState("en");
   const [previewContributorDashboard, setPreviewContributorDashboard] = useState(false);
+  const [assignedFieldAgents, setAssignedFieldAgents] = useState<Record<string, string[]>>({});
+  const [promotionRequests, setPromotionRequests] = useState<Record<string, "pending" | "approved" | "rejected">>({});
 
   const value = useMemo<DemoState>(
     () => ({
@@ -268,6 +290,17 @@ export function DemoStateProvider({ children }: { children: ReactNode }) {
       setUiLanguage,
       previewContributorDashboard,
       setPreviewContributorDashboard,
+      assignedFieldAgents,
+      assignFieldAgent: (campaignId, poolAgentId) =>
+        setAssignedFieldAgents((prev) => ({
+          ...prev,
+          [campaignId]: [...(prev[campaignId] ?? []), poolAgentId],
+        })),
+      promotionRequests,
+      requestPromotion: (rosterMemberId) =>
+        setPromotionRequests((prev) => ({ ...prev, [rosterMemberId]: "pending" })),
+      decidePromotion: (rosterMemberId, status) =>
+        setPromotionRequests((prev) => ({ ...prev, [rosterMemberId]: status })),
     }),
     [
       draftCampaigns,
@@ -279,6 +312,8 @@ export function DemoStateProvider({ children }: { children: ReactNode }) {
       agencyVerificationStatus,
       uiLanguage,
       previewContributorDashboard,
+      assignedFieldAgents,
+      promotionRequests,
     ]
   );
 

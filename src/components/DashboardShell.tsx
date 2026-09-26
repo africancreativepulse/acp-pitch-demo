@@ -2,7 +2,7 @@ import { useState, type ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard, FileText, Users, Shield, MapPin, Menu, X, LogOut, ShieldCheck,
-  User, FolderOpen, BarChart3, TrendingUp, Languages, Award,
+  User, FolderOpen, BarChart3, TrendingUp, Languages, Award, Tent,
 } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { NotificationBell } from "@/components/NotificationBell";
@@ -88,6 +88,17 @@ const NAV: Record<ShellRole, { label: string; icon: typeof LayoutDashboard; path
   agency: [
     { label: "Overview", icon: LayoutDashboard, path: "/agency/overview" },
     { label: "Campaigns", icon: FileText, path: "/agency" },
+    // Real-app parity (nav/cosmetic audit, deferred bucket item 4): the
+    // real agencyNav's own "Fieldwork" item (nav.fieldwork,
+    // /dashboard/fieldwork) -- this slot used to be relabeled
+    // "Operations Layer" and repointed at the demo-only /operations hub
+    // instead of a real management screen; reversed now that
+    // AgencyFieldwork.tsx exists for real. Icon deliberately NOT the
+    // real app's own Users (already used below for Operations Layer,
+    // kept as its own separate item -- two Users icons in one sidebar
+    // would be genuinely hard to tell apart at a glance, a demo-only
+    // problem the real app's own single-icon sidebar never has).
+    { label: "Fieldwork", icon: Tent, path: "/agency/fieldwork" },
     { label: "Operations Layer", icon: Users, path: "/operations" },
     { label: "Insights", icon: BarChart3, path: "/agency/insights" },
     { label: "Files", icon: FolderOpen, path: "/files/agency" },

@@ -5,6 +5,7 @@ import { DashboardShell } from "@/components/DashboardShell";
 import { Button } from "@/components/Button";
 import { StatGrid, StatCard } from "@/components/StatCard";
 import { RESEARCH_AREA, RESEARCH_ROSTER, INVITE_CANDIDATES, type RosterStatus } from "@/data/demo";
+import { useDemoState } from "@/state/DemoState";
 
 const ACCENT = "var(--taste)";
 
@@ -41,11 +42,13 @@ export function ResearchHub() {
   const roster = RESEARCH_ROSTER;
   const [showInvite, setShowInvite] = useState(false);
   const [invited, setInvited] = useState<Set<string>>(new Set());
-  const [promoted, setPromoted] = useState<Set<string>>(new Set());
+  // Real connection (nav/cosmetic audit, deferred bucket item 5): promotion
+  // requests now live in shared DemoState, not local component state --
+  // AdminFieldwork.tsx's own Promotions tab is the real approval queue
+  // this screen's own closing line used to say didn't exist yet.
+  const { promotionRequests, requestPromotion } = useDemoState();
 
   const invite = (name: string) => setInvited((prev) => new Set(prev).add(name));
-
-  const requestPromotion = (id: string) => setPromoted((prev) => new Set(prev).add(id));
 
   const available = roster.filter((m) => m.status === "available").length;
   const onAssignment = roster.filter((m) => m.status === "on_assignment").length;
@@ -140,10 +143,16 @@ export function ResearchHub() {
                   compare against Team Overview on Supervisor Review. */}
               <span className="text-xs text-muted">{m.recruitedBy}</span>
               {m.role === "field_agent" ? (
-                promoted.has(m.id) ? (
+                promotionRequests[m.id] === "pending" ? (
                   <span className="flex w-fit items-center gap-1 text-xs" style={{ color: ACCENT }}>
-                    <CheckCircle2 className="h-3.5 w-3.5" /> Promotion requested
+                    <CheckCircle2 className="h-3.5 w-3.5" /> Pending admin review
                   </span>
+                ) : promotionRequests[m.id] === "approved" ? (
+                  <span className="flex w-fit items-center gap-1 text-xs text-sound">
+                    <CheckCircle2 className="h-3.5 w-3.5" /> Promoted
+                  </span>
+                ) : promotionRequests[m.id] === "rejected" ? (
+                  <span className="w-fit text-xs text-muted">Not approved</span>
                 ) : (
                   <button
                     onClick={() => requestPromotion(m.id)}
@@ -170,8 +179,8 @@ export function ResearchHub() {
         </p>
 
         <p className="mt-4 text-[11.5px] leading-relaxed text-muted">
-          Illustrative roster and promotion flow — a real request here would enter an actual approval
-          queue, not resolve instantly.
+          Illustrative roster — real, working promotion flow: a request here lands in Admin's own
+          Promotions queue for real review, not an instant resolve.
         </p>
       </div>
     </DashboardShell>

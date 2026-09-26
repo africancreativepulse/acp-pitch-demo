@@ -36,6 +36,11 @@ import { AgencyGate } from "@/components/AgencyGate";
 // confirmed missing entirely -- see each screen's own header comment.
 import { About } from "@/screens/About";
 import { Contact } from "@/screens/Contact";
+// Real-app parity (nav/cosmetic audit, deferred bucket item 4): confirmed
+// missing entirely -- see AgencyFieldwork.tsx's own header comment.
+import { AgencyFieldwork } from "@/screens/AgencyFieldwork";
+import { CreateFieldCampaign } from "@/screens/CreateFieldCampaign";
+import { FieldworkAnalytics } from "@/screens/FieldworkAnalytics";
 
 export default function App() {
   return (
@@ -86,6 +91,9 @@ export default function App() {
             <Route path="/profile/:role" element={<AgencyGate><ContributorGate><Profile /></ContributorGate></AgencyGate>} />
             <Route path="/agency/overview" element={<AgencyGate><AgencyOverview /></AgencyGate>} />
             <Route path="/agency/insights" element={<AgencyGate><AgencyInsights /></AgencyGate>} />
+            <Route path="/agency/fieldwork" element={<AgencyGate><AgencyFieldwork /></AgencyGate>} />
+            <Route path="/agency/fieldwork/new" element={<AgencyGate><CreateFieldCampaign /></AgencyGate>} />
+            <Route path="/agency/fieldwork/analytics" element={<AgencyGate><FieldworkAnalytics /></AgencyGate>} />
             <Route path="/contribute/overview" element={<ContributorGate><ContributorOverview /></ContributorGate>} />
             <Route path="/contribute/browse" element={<ContributorGate><Browse /></ContributorGate>} />
             <Route path="/contribute/analytics" element={<ContributorGate><ContributorAnalytics /></ContributorGate>} />

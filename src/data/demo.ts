@@ -1049,3 +1049,469 @@ export const AGENCY_VERIFICATION_QUEUE: AgencyVerificationEntry[] = [
     primaryContactRole: "Managing Partner",
   },
 ];
+
+// ---------------------------------------------------------------------------
+// Admin Overview charts (nav/cosmetic audit, deferred bucket item 2) --
+// the real page's own "Users by Role" bar list and Translation Coverage
+// donut both need a dataset this demo has never modeled (a full user base;
+// per-language translation coverage). Invented but plausible, same
+// standard the two secondary portfolio campaigns above already set for
+// this project -- not inflated, not a literal copy of any real production
+// snapshot. Campaign Mix, by contrast, is NOT invented here -- AdminOverview.tsx
+// derives it live from the real CAMPAIGNS/MZANSI_WELLNESS records already
+// in this file, same "real numbers already fetched, not a new query" the
+// real page's own comment documents.
+// ---------------------------------------------------------------------------
+
+// Real app's own ROLE_ORDER (pages/admin/AdminOverview.tsx) is exactly
+// these five -- head_of_research is a real, newer live role this constant
+// doesn't include either (a live-app gap, not a demo one) -- matching it
+// exactly here is genuine parity, not an oversight.
+export const ADMIN_ROLE_ORDER = ["contributor", "agency", "field_agent", "supervisor", "admin"] as const;
+export const ADMIN_ROLE_LABEL: Record<(typeof ADMIN_ROLE_ORDER)[number], string> = {
+  contributor: "Contributor",
+  agency: "Agency",
+  field_agent: "Field Agent",
+  supervisor: "Supervisor",
+  admin: "Admin",
+};
+export const ADMIN_ROLE_COUNTS: Record<(typeof ADMIN_ROLE_ORDER)[number], number> = {
+  contributor: 34,
+  agency: 6,
+  field_agent: 9,
+  supervisor: 3,
+  admin: 3,
+};
+
+// Shared with TranslationQA.tsx -- same real-app reasoning as
+// AdminOverview.tsx's own translation-coverage comment ("same calc as
+// TranslationQA.tsx, reused rather than re-derived so the two screens can
+// never disagree"). This demo is deliberately English-only (no i18n
+// system behind any of it -- see Onboarding.tsx's own header comment);
+// these percentages are an honest illustrative stand-in for what the real
+// platform's actual per-language coverage looks like, not a measurement
+// of content that exists here.
+export const TRANSLATION_COVERAGE: Record<string, number> = {
+  English: 100,
+  isiZulu: 94,
+  Yoruba: 91,
+  Swahili: 96,
+  Hausa: 88,
+  Afrikaans: 97,
+};
+
+// ---------------------------------------------------------------------------
+// Soul Gap 5-axis (nav/cosmetic audit, deferred bucket item 3) -- the real
+// lib/soul-gap engine's own five anchored axes (anchors.ts), replacing the
+// old single magnitude+headline stub this demo's CampaignDetail Soul Gap
+// tab still showed. Scoped to Sondela Cover only, same real distinction
+// data/demo.ts's own top comment already draws: Sondela is "the one fully
+// detailed, real-numbers campaign" with its own Cultural Read/Evidence
+// pair; Kasi Brew/Tholulwazi Data stay summary-level only (SONDELA.soulGap's
+// existing magnitude/headline shape is untouched -- still what AgencyCommand's
+// snapshot panel and AgencyInsights.tsx's Soul Gap Snapshot both read; this
+// is a genuinely separate, additive field, not a replacement).
+//
+// Levels are illustrative but plausible (this project's standing rule for
+// invented campaign data), grounded in Sondela's own real headline
+// ("the campaign speaks to an individual; the audience is thinking about
+// everyone who'll be in the room") -- Aspiration Match and Representation
+// show the widest brand-overclaims-reality gaps, matching that story.
+// Heritage Connection's positioning read is deliberately level 1 --
+// demonstrates the real flag system (deriveSoulGapFlags in the real app
+// fires independently of the composite whenever a positioning read is
+// level 1, exactly the "brand's own material treats sacred/restricted
+// content decoratively" case lib/soul-gap/flags.ts documents).
+//
+// Two of the five reality quotes below reuse SONDELA's own real, existing
+// evidence entries (ritual/pulse dimensions) rather than inventing new
+// ones where an established quote already fits the axis -- Community
+// Belonging and Aspiration Match respectively.
+export type SoulGapAxisKey = "authenticity" | "representation" | "heritageConnection" | "aspirationMatch" | "communityBelonging";
+
+export const SOUL_GAP_AXIS_META: Record<SoulGapAxisKey, { name: string; description: string }> = {
+  authenticity: {
+    name: "Authenticity",
+    description: "Whether the cultural reference feels genuinely sourced, or borrowed wholesale with nothing real behind it.",
+  },
+  representation: {
+    name: "Representation",
+    description: "Depicts people and communities with real specificity, or falls back on flattened, stereotyped shorthand.",
+  },
+  heritageConnection: {
+    name: "Heritage Connection",
+    description: "Engages the actual lineage — history, practice, meaning — behind a cultural reference, or just its surface signifiers.",
+  },
+  aspirationMatch: {
+    name: "Aspiration Match",
+    description: "Matches what the audience actually aspires to, or imports an aspiration from somewhere else.",
+  },
+  communityBelonging: {
+    name: "Community Belonging",
+    description: "Reads as made by or with the community, or observed and rendered from outside it.",
+  },
+};
+
+interface SoulGapAxisRead {
+  positioningLevel: 1 | 2 | 3 | 4 | 5;
+  realityLevel: 1 | 2 | 3 | 4 | 5;
+  positioningEvidence: { verbatim: string; languageLabel: string; gloss?: string };
+  realityEvidence: { verbatim: string; languageLabel: string; gloss?: string };
+}
+
+export const SONDELA_SOUL_GAP_READS: Record<SoulGapAxisKey, SoulGapAxisRead> = {
+  authenticity: {
+    positioningLevel: 4,
+    realityLevel: 3,
+    positioningEvidence: { verbatim: "Real cover for real families — because life doesn't wait.", languageLabel: "English" },
+    realityEvidence: {
+      verbatim: "Ikhava iyasebenza kahle, kodwa akuyona into esiyikhulumayo njalo emphakathini.",
+      languageLabel: "isiZulu",
+      gloss: "The cover works fine, but it's not something we openly talk about in the community.",
+    },
+  },
+  representation: {
+    positioningLevel: 4,
+    realityLevel: 1,
+    positioningEvidence: { verbatim: "Built for the modern South African family, wherever you call home.", languageLabel: "English" },
+    realityEvidence: {
+      verbatim: "Umndeni abawukhombisayo awufani nathi — thina sihlala nezizukulwane ezintathu ndlini nye.",
+      languageLabel: "isiZulu",
+      gloss: "The family they show isn't like ours — we live three generations under one roof.",
+    },
+  },
+  heritageConnection: {
+    positioningLevel: 1,
+    realityLevel: 2,
+    positioningEvidence: { verbatim: "Peace of mind, today.", languageLabel: "English" },
+    realityEvidence: {
+      verbatim: "Bathi ipholisi, kodwa abakaze bakhulume ngendlela esenza ngayo izilo zomngcwabo.",
+      languageLabel: "isiZulu",
+      gloss: "They call it a policy, but they've never spoken to how we actually do funeral rites.",
+    },
+  },
+  aspirationMatch: {
+    positioningLevel: 4,
+    realityLevel: 1,
+    positioningEvidence: { verbatim: "Financial freedom starts with the right cover.", languageLabel: "English" },
+    // Reused verbatim from SONDELA.evidence.pulse -- same real quote, same
+    // contributor/city, genuinely the closest fit for this axis.
+    realityEvidence: { verbatim: "Everyone's talking about their stokvel right now, not their policy number.", languageLabel: "English" },
+  },
+  communityBelonging: {
+    positioningLevel: 4,
+    realityLevel: 2,
+    positioningEvidence: { verbatim: "Millions of families already trust us.", languageLabel: "English" },
+    // Reused verbatim from SONDELA.evidence.ritual -- same real quote, same
+    // contributor/city.
+    realityEvidence: {
+      verbatim: "Ukufa akusiyo into oyenza wedwa. Umuntu ufihlwa yikhaya lonke.",
+      languageLabel: "isiZulu",
+      gloss: "Dying isn't a solo thing. A person is buried by the whole household.",
+    },
+  },
+};
+
+export const SOUL_GAP_AXIS_ORDER: SoulGapAxisKey[] = ["authenticity", "representation", "heritageConnection", "aspirationMatch", "communityBelonging"];
+
+// levelToPercent: identical formula to the real app's own soulGapLevelToPercent
+// (pages/agency/CampaignDetail.tsx) -- ((level-1)/4)*100, so level 1..5 maps
+// to 0/25/50/75/100, the 0-100 scale PositioningRealityBars needs.
+export const soulGapLevelToPercent = (level: number) => Math.round(((level - 1) / 4) * 100);
+
+export interface SoulGapFlag {
+  axis: SoulGapAxisKey;
+  source: "positioning" | "reality";
+  severity: "critical" | "severe";
+  reason: string;
+}
+
+/** Same derivation the real lib/soul-gap/flags.ts uses -- heritageConnection
+ *  level 1 on either side, independent of the composite. */
+export function deriveSoulGapFlags(reads: Record<SoulGapAxisKey, SoulGapAxisRead>): SoulGapFlag[] {
+  const flags: SoulGapFlag[] = [];
+  const hc = reads.heritageConnection;
+  if (hc.positioningLevel === 1) {
+    flags.push({
+      axis: "heritageConnection",
+      source: "positioning",
+      severity: "critical",
+      reason:
+        "Heritage Connection scored at level 1 on the positioning read: the brand's own material treats sacred or restricted content decoratively. Directly verifiable against the brand artifact, raised at full severity regardless of reality sample size.",
+    });
+  }
+  if (hc.realityLevel === 1) {
+    flags.push({
+      axis: "heritageConnection",
+      source: "reality",
+      severity: "severe",
+      reason: "Heritage Connection scored at level 1 on the reality read: contributor evidence indicates the work reads as extractive of sacred or restricted material.",
+    });
+  }
+  return flags;
+}
+
+export function soulGapComposite(reads: Record<SoulGapAxisKey, SoulGapAxisRead>): number {
+  const deltas = SOUL_GAP_AXIS_ORDER.map((key) => reads[key].positioningLevel - reads[key].realityLevel);
+  return Math.round((deltas.reduce((sum, d) => sum + d, 0) / deltas.length) * 10) / 10;
+}
+
+// ---------------------------------------------------------------------------
+// Agency Field Operations (nav/cosmetic audit, deferred bucket item 4) --
+// AgencyFieldwork.tsx/CreateFieldCampaign.tsx/FieldworkAnalytics.tsx all
+// confirmed missing entirely. Scoped to this demo's two real field-eligible
+// campaigns (SONDELA's own "Digital + Field Hybrid", THOLULWAZI_DATA's own
+// "Field Only" -- Kasi Brew is Digital Only, never field-eligible). Zones
+// and agents are invented but plausible, grounded in each campaign's own
+// real `cities` array rather than new invented geography. Thabo M. is
+// reused verbatim from FIELD_WORKER (SupervisorReview.tsx/FieldCapture.tsx's
+// own real narrative continuity) -- same person, not a coincidence.
+// ---------------------------------------------------------------------------
+
+export type FieldAgentExperience = "novice" | "intermediate" | "expert";
+export type FieldAssignmentStatus = "invited" | "accepted" | "active" | "completed";
+
+export interface FieldAgentRosterEntry {
+  id: string;
+  name: string;
+  city: string;
+  experience: FieldAgentExperience;
+  languages: string[];
+  campaignId: string; // SONDELA.id | THOLULWAZI_DATA.id
+  zone: string;
+  status: FieldAssignmentStatus;
+  todayCount: number;
+  totalCount: number;
+  target: number;
+  qualityScore: number; // 0-100, avg across this agent's own responses
+}
+
+export const FIELD_AGENT_ROSTER: FieldAgentRosterEntry[] = [
+  {
+    id: "fa-thabo",
+    name: "Thabo M.",
+    city: "Soweto, Johannesburg",
+    experience: "intermediate",
+    languages: ["isiZulu", "English"],
+    campaignId: "sondela-cover",
+    zone: "Soweto, Ward 14",
+    status: "active",
+    todayCount: 4,
+    totalCount: 62,
+    target: 80,
+    qualityScore: 91,
+  },
+  {
+    id: "fa-zanele",
+    name: "Zanele K.",
+    city: "uMlazi, Durban",
+    experience: "expert",
+    languages: ["isiZulu", "English"],
+    campaignId: "sondela-cover",
+    zone: "uMlazi, Ward 3",
+    status: "active",
+    todayCount: 6,
+    totalCount: 74,
+    target: 80,
+    qualityScore: 96,
+  },
+  {
+    id: "fa-kagiso",
+    name: "Kagiso N.",
+    city: "Mamelodi, Pretoria",
+    experience: "novice",
+    languages: ["Sepedi", "English"],
+    campaignId: "tholulwazi-data",
+    zone: "Mamelodi, Ward 8",
+    status: "active",
+    todayCount: 2,
+    totalCount: 31,
+    target: 60,
+    qualityScore: 84,
+  },
+  {
+    id: "fa-nomsa",
+    name: "Nomsa D.",
+    city: "KwaMashu, Durban",
+    experience: "intermediate",
+    languages: ["isiZulu", "English"],
+    campaignId: "tholulwazi-data",
+    zone: "KwaMashu, Ward 5",
+    status: "invited",
+    todayCount: 0,
+    totalCount: 0,
+    target: 60,
+    qualityScore: 0,
+  },
+];
+
+// Verified, unassigned agents an agency could invite onto a field campaign
+// -- the "Find Agents" pool the real AgencyFieldwork.tsx's own Agent
+// Assignment tab searches.
+export const FIELD_AGENT_POOL = [
+  { id: "pool-1", name: "Lindiwe P.", city: "Soweto, Johannesburg", experience: "expert" as FieldAgentExperience, languages: ["isiZulu", "English"] },
+  { id: "pool-2", name: "Sipho R.", city: "Khayelitsha, Cape Town", experience: "intermediate" as FieldAgentExperience, languages: ["isiXhosa", "English"] },
+  { id: "pool-3", name: "Amahle T.", city: "Mamelodi, Pretoria", experience: "novice" as FieldAgentExperience, languages: ["Sepedi", "English"] },
+];
+
+// Daily collection trend + demographic split, per field campaign --
+// illustrative but plausible, feeds FieldworkAnalytics.tsx's own chart
+// port. 7-day window ending "today" (relative labels, not fixed dates --
+// this demo has no real submission timestamps to derive them from).
+export const FIELD_DAILY_TREND: Record<string, { day: string; completed: number }[]> = {
+  "sondela-cover": [
+    { day: "Mon", completed: 14 }, { day: "Tue", completed: 19 }, { day: "Wed", completed: 22 },
+    { day: "Thu", completed: 17 }, { day: "Fri", completed: 25 }, { day: "Sat", completed: 21 }, { day: "Sun", completed: 18 },
+  ],
+  "tholulwazi-data": [
+    { day: "Mon", completed: 6 }, { day: "Tue", completed: 8 }, { day: "Wed", completed: 5 },
+    { day: "Thu", completed: 9 }, { day: "Fri", completed: 11 }, { day: "Sat", completed: 7 }, { day: "Sun", completed: 4 },
+  ],
+};
+
+export const FIELD_DEMOGRAPHIC_SPLIT: Record<string, { name: string; value: number }[]> = {
+  "sondela-cover": [
+    { name: "Women", value: 79 },
+    { name: "Men", value: 61 },
+  ],
+  "tholulwazi-data": [
+    { name: "Women", value: 18 },
+    { name: "Men", value: 24 },
+  ],
+};
+
+export interface FieldQualityAlert {
+  id: string;
+  campaignId: string;
+  description: string;
+  alertType: string;
+  severity: "critical" | "warning";
+}
+
+export const FIELD_QUALITY_ALERTS: FieldQualityAlert[] = [
+  {
+    id: "fqa-1",
+    campaignId: "sondela-cover",
+    description: "3 responses submitted under 90 seconds apart from the same device.",
+    alertType: "suspiciously_fast",
+    severity: "warning",
+  },
+];
+
+// ---------------------------------------------------------------------------
+// Admin Fieldwork Controls (nav/cosmetic audit, deferred bucket item 5) --
+// AdminOversight.tsx confirmed missing 6 of the real page's 7 tabs
+// (agents/campaigns/payments/disputes/areas/promotions -- only alerts
+// existed). Illustrative but plausible data for the tabs with no existing
+// dataset to reuse; Alerts/Promotions reuse REVIEW_QUEUE/promotionRequests
+// (real, already-wired state), not new invented data.
+// ---------------------------------------------------------------------------
+
+export interface AgentVerificationEntry {
+  id: string;
+  name: string;
+  city: string;
+  experience: FieldAgentExperience;
+  submittedDaysAgo: number;
+}
+
+export const AGENT_VERIFICATION_QUEUE: AgentVerificationEntry[] = [
+  { id: "av-agent-1", name: "Bongiwe S.", city: "Gugulethu, Cape Town", experience: "intermediate", submittedDaysAgo: 2 },
+  { id: "av-agent-2", name: "Karabo M.", city: "Katlehong, Ekurhuleni", experience: "novice", submittedDaysAgo: 5 },
+];
+
+export interface FieldPaymentEntry {
+  id: string;
+  agentName: string;
+  campaignClient: string;
+  amount: number;
+  currency: string;
+  daysPending: number;
+}
+
+// PAYMENT_AGING_DAYS: same 3-day threshold the real AdminFieldwork.tsx
+// documents for its own aging queue -- a payment approved longer ago than
+// this needs a second look, not left indefinitely in "approved" limbo.
+export const PAYMENT_AGING_DAYS = 3;
+
+export const FIELD_PAYMENTS_QUEUE: FieldPaymentEntry[] = [
+  { id: "fp-1", agentName: "Thabo M.", campaignClient: "Sondela Cover", amount: 1240, currency: "ZAR", daysPending: 1 },
+  { id: "fp-2", agentName: "Zanele K.", campaignClient: "Sondela Cover", amount: 1480, currency: "ZAR", daysPending: 4 },
+  { id: "fp-3", agentName: "Kagiso N.", campaignClient: "Tholulwazi Data", amount: 620, currency: "ZAR", daysPending: 6 },
+];
+
+export interface PaymentDisputeEntry {
+  id: string;
+  agentName: string;
+  campaignClient: string;
+  amount: number;
+  currency: string;
+  reason: string;
+}
+
+export const PAYMENT_DISPUTES_QUEUE: PaymentDisputeEntry[] = [
+  {
+    id: "pd-1",
+    agentName: "Kagiso N.",
+    campaignClient: "Tholulwazi Data",
+    amount: 180,
+    currency: "ZAR",
+    reason: "Agent reports 9 completed interviews logged, only 7 counted toward this payment.",
+  },
+];
+
+// ---------------------------------------------------------------------------
+// Translation QA (nav/cosmetic audit, deferred bucket item 6) -- confirmed
+// the biggest structural gap between the two apps: the real page audits
+// coverage across the real platform's full 16-language i18n system (real
+// key/value pairs, a real "Auto-fill via AI" edge function, and a live
+// preview that force-renders real landing sections in any language). This
+// demo has no i18n system anywhere by design (English-only throughout --
+// see Navbar.tsx's own header comment), so none of that has real data
+// behind it here. What ports faithfully: the real coverage-matrix grid
+// itself (all 16 real languages, real names/flags -- not the 6-language
+// ONBOARDING_LANGUAGES subset, which exists for a different, narrower
+// purpose) and the same red/yellow/green threshold read. Auto-fill and
+// Live Preview are represented as honest, labeled placeholders rather
+// than either faked or silently dropped -- see TranslationQA.tsx's own
+// header comment for the full reasoning.
+// ---------------------------------------------------------------------------
+
+export interface QaLanguage {
+  code: string;
+  name: string;
+  flag: string;
+}
+
+// Real names/flags/codes, matching the live platform's own full i18n
+// language list exactly (src/i18n/translations.ts) -- not invented.
+export const QA_LANGUAGES: QaLanguage[] = [
+  { code: "en", name: "English", flag: "🇬🇧" },
+  { code: "sw", name: "Kiswahili", flag: "🇰🇪" },
+  { code: "yo", name: "Yorùbá", flag: "🇳🇬" },
+  { code: "ha", name: "Hausa", flag: "🇳🇬" },
+  { code: "ig", name: "Igbo", flag: "🇳🇬" },
+  { code: "am", name: "አማርኛ", flag: "🇪🇹" },
+  { code: "fr", name: "Français", flag: "🇫🇷" },
+  { code: "zu", name: "isiZulu", flag: "🇿🇦" },
+  { code: "xh", name: "isiXhosa", flag: "🇿🇦" },
+  { code: "af", name: "Afrikaans", flag: "🇿🇦" },
+  { code: "st", name: "Sesotho", flag: "🇿🇦" },
+  { code: "pt", name: "Português", flag: "🇵🇹" },
+  { code: "wo", name: "Wolof", flag: "🇸🇳" },
+  { code: "rw", name: "Kinyarwanda", flag: "🇷🇼" },
+  { code: "tw", name: "Twi", flag: "🇬🇭" },
+  { code: "ar", name: "العربية", flag: "🇪🇬" },
+];
+
+// Illustrative but plausible -- same standard as TRANSLATION_COVERAGE
+// above (which this supersedes for TranslationQA.tsx specifically; that
+// smaller map stays as AdminOverview's own quick-glance source, unchanged).
+// Total key count (870) is a round illustrative number in the same
+// ballpark as the real platform's own i18n key count -- not a literal
+// copy of a real production figure.
+export const QA_TOTAL_KEYS = 870;
+export const QA_COVERAGE_PCT: Record<string, number> = {
+  en: 100, sw: 96, yo: 91, ha: 88, ig: 93, am: 82, fr: 100, zu: 94, xh: 90,
+  af: 97, st: 85, pt: 100, wo: 79, rw: 84, tw: 81, ar: 76,
+};
