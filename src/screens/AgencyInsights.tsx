@@ -63,78 +63,122 @@ const CAMPAIGNS: AnyCampaign[] = [SONDELA, KASI_BREW, THOLULWAZI_DATA];
  *   list below is each campaign's own real `cities` array, the closest
  *   honest equivalent this demo's data model actually has.
  */
+// Real-app parity fix: this used to be a plain-Helvetica, no-grid, no-
+// logo, no-footer PDF -- genuinely missed, not a considered
+// simplification (this file's own header comment above never mentioned
+// pdfChrome.ts at all). The real generatePortfolioPdf() (Insights.tsx)
+// shares ONE real brand-chrome module across every PDF the live product
+// generates (the CEI Report and this portfolio export alike) -- see
+// pdfChrome.ts's own header comment for why that extraction exists.
+// That module is pure client-side jsPDF + embedded font/logo data, zero
+// backend coupling, so it's a genuine port, not an approximation: same
+// dark grid background, same real embedded fonts (Space Grotesk/Inter/
+// JetBrains Mono), same real logo mark, same cover-page template.
+//
+// One real, deliberate divergence from the live page's own
+// implementation: the real generatePortfolioPdf() captures its already-
+// rendered StatGrid/ranked-list DOM via html2canvas (with real, hard-won
+// workarounds for color-mix()-unsupported-by-html2canvas and a
+// text-overflow:ellipsis clipping bug). This demo draws the same content
+// natively instead, using PdfChrome's own text/pill primitives --
+// matching the *other* real PDF's approach (generateReportPdf.ts's own
+// comment: "now native, hand-drawn charts... instead" of html2canvas),
+// and avoiding reproducing those specific DOM-capture workarounds for a
+// demo with no real backend session to capture from anyway. The visual
+// system (chrome) is identical either way; only the content-drawing
+// mechanism differs.
 async function downloadPortfolioPdf(
   avgCei: number,
   cdiReviewCount: number,
   soulGapFlaggedCount: number,
   ranked: { title: string; overall: number }[],
 ) {
-  const { jsPDF } = await import("jspdf");
+  const { jsPDF, GState } = await import("jspdf");
+  const { registerReportFonts, FONT_BODY, FONT_MONO } = await import("@/lib/reportGeneration/fonts/registerReportFonts");
+  const { PdfChrome, drawCoverPage, drawFooter } = await import("@/lib/reportGeneration/pdfChrome");
+
   const doc = new jsPDF({ unit: "pt", format: "a4" });
-  const margin = 48;
-  const pageWidth = doc.internal.pageSize.getWidth();
-  let y = margin;
+  registerReportFonts(doc);
+  const chrome = new PdfChrome(doc, GState, { margin: 48 });
 
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(20);
-  doc.text("African Creative Pulse", margin, y);
-  y += 22;
-  doc.setFontSize(14);
-  doc.text("Portfolio Insights — CEI Scores", margin, y);
-  y += 20;
+  const todayIso = new Date().toISOString().slice(0, 10);
+  const [year, month] = todayIso.split("-").map(Number);
+  const quarter = Math.ceil((month || 1) / 3);
+  const needsReview = cdiReviewCount > 0;
 
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(10);
-  doc.setTextColor(120, 120, 120);
-  const introLines = doc.splitTextToSize(
-    `${ranked.length} campaigns scored across this portfolio, averaging a CEI of ${avgCei.toFixed(1)}${cdiReviewCount > 0 ? `, with ${cdiReviewCount} flagged for CDI review` : ""}.`,
-    pageWidth - margin * 2,
-  );
-  doc.text(introLines, margin, y);
-  y += introLines.length * 13 + 20;
-
-  doc.setTextColor(20, 20, 20);
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(12);
-  doc.text("Portfolio Summary", margin, y);
-  y += 16;
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(11);
-  doc.text(`Campaigns Scored: ${ranked.length}   ·   Avg CEI: ${avgCei.toFixed(1)}   ·   CDI Review Needed: ${cdiReviewCount}   ·   Soul Gap Flags: ${soulGapFlaggedCount}`, margin, y);
-  y += 28;
-
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(12);
-  doc.text("Top Performing Campaigns", margin, y);
-  y += 16;
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(11);
-  ranked.forEach((c, i) => {
-    doc.text(`${String(i + 1).padStart(2, "0")}. ${c.title}`, margin, y);
-    doc.text(Math.round(c.overall).toString(), margin + 400, y);
-    y += 16;
+  drawCoverPage(chrome, {
+    badgeText: needsReview ? "REVIEW FLAGGED" : "ALL CLEAR",
+    badgeColor: needsReview ? "#FFC93C" : "#2DD4A6",
+    reportId: `PORTFOLIO-ndoni-creative-${todayIso}`,
+    issuedOn: todayIso,
+    eyebrow: `PORTFOLIO INSIGHTS · Q${quarter} ${year}`,
+    title: "Ndoni Creative",
+    bodyText: `${ranked.length} campaigns scored across this portfolio, averaging a CEI of ${avgCei.toFixed(1)}${cdiReviewCount > 0 ? `, with ${cdiReviewCount} flagged for CDI review` : ""}.`,
+    preparedForLines: ["Ndoni Creative"],
+    // No real signed-in user in this demo (no auth session) -- same
+    // fallback the real cover uses when it has no real sender profile.
+    preparedByLines: ["African Creative Pulse"],
+    footerLeft: "CONFIDENTIAL · PREPARED SOLELY FOR THE NAMED RECIPIENT",
+    footerRight: "NOT FOR REDISTRIBUTION",
   });
-  y += 12;
 
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(12);
-  doc.text("Market Footprint", margin, y);
-  y += 16;
-  doc.setFont("helvetica", "normal");
+  chrome.newPage();
+  chrome.sectionHeading("Portfolio Summary");
+  doc.setFont(FONT_MONO, "normal");
+  doc.setFontSize(10);
+  [
+    ["Campaigns Scored", String(ranked.length)],
+    ["Avg CEI Score", avgCei.toFixed(1)],
+    ["CDI Review Needed", String(cdiReviewCount)],
+    ["Soul Gap Flags", String(soulGapFlaggedCount)],
+  ].forEach(([label, value]) => {
+    chrome.mutedText(label, chrome.MARGIN, chrome.y);
+    doc.setTextColor(246, 241, 233);
+    doc.text(value, chrome.MARGIN + 160, chrome.y);
+    chrome.y += 18;
+  });
+  chrome.y += 16;
+
+  chrome.hairline(chrome.y);
+  chrome.y += 30;
+
+  chrome.sectionHeading("Top Performing Campaigns");
+  ranked.forEach((c, i) => {
+    chrome.ensureSpace(24);
+    doc.setFont(FONT_MONO, "normal");
+    doc.setFontSize(9);
+    chrome.mutedText(String(i + 1).padStart(2, "0"), chrome.MARGIN, chrome.y);
+    doc.setFont(FONT_BODY, "semibold");
+    doc.setFontSize(11);
+    doc.setTextColor(246, 241, 233);
+    doc.text(c.title, chrome.MARGIN + 24, chrome.y);
+    doc.setFont(FONT_MONO, "medium");
+    chrome.rightAligned(Math.round(c.overall).toString(), chrome.PAGE_W - chrome.MARGIN, chrome.y);
+    chrome.y += 20;
+  });
+  chrome.y += 20;
+
+  chrome.ensureSpace(80);
+  chrome.sectionHeading("Market Footprint");
+  doc.setFont(FONT_BODY, "normal");
   doc.setFontSize(9);
   const perRow = 3;
+  const colW = chrome.CONTENT_W / perRow;
   COUNTRIES.forEach((country, i) => {
     const col = i % perRow;
     const row = Math.floor(i / perRow);
-    doc.text(`• ${country}`, margin + col * 170, y + row * 14);
+    chrome.mutedText(`• ${country}`, chrome.MARGIN + col * colW, chrome.y + row * 16);
   });
-  y += Math.ceil(COUNTRIES.length / perRow) * 14 + 20;
+  chrome.y += Math.ceil(COUNTRIES.length / perRow) * 16 + 20;
 
+  doc.setFont(FONT_MONO, "normal");
   doc.setFontSize(8);
-  doc.setTextColor(150, 150, 150);
-  doc.text("Illustrative sample, not measured results · Pitch prototype · No login required", margin, y);
+  chrome.mutedText("Illustrative sample, not measured results · Pitch prototype · No login required", chrome.MARGIN, chrome.y);
 
-  doc.save(`acp-portfolio-insights-${new Date().toISOString().slice(0, 10)}.pdf`);
+  const pageCount = doc.getNumberOfPages();
+  for (let i = 2; i <= pageCount; i++) drawFooter(chrome, i, pageCount);
+
+  doc.save(`acp-portfolio-insights-${todayIso}.pdf`);
 }
 
 function exportCampaignScoresCsv(ranked: AnyCampaign[]) {

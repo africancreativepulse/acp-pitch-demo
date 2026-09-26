@@ -106,77 +106,96 @@ function downloadEvidenceCsv() {
 // deliberately NOT also adding html2canvas/react-simple-maps/world-atlas
 // for the map itself; see MarketFootprint.tsx's own header comment for
 // why that part gets a hand-built equivalent instead of a literal port.
+// Real-app parity fix: this used to be a plain-Helvetica, no-grid, no-
+// logo, no-footer PDF -- genuinely missed, not a considered
+// simplification (same real gap as AgencyInsights.tsx's own portfolio
+// export -- see that file's own downloadPortfolioPdf header comment for
+// the full reasoning on why pdfChrome.ts is a genuine, fully portable
+// port here, not an approximation). Same real dark grid background, real
+// embedded fonts, real logo, real cover-page template every branded PDF
+// the live product generates shares.
 async function downloadCampaignPdf(cei: Record<CeiKey, number>, ceiOverall: number, cdi: number, soulGapMagnitude: string) {
-  const { jsPDF } = await import("jspdf");
+  const { jsPDF, GState } = await import("jspdf");
+  const { registerReportFonts, FONT_BODY, FONT_MONO } = await import("@/lib/reportGeneration/fonts/registerReportFonts");
+  const { PdfChrome, drawCoverPage, drawFooter } = await import("@/lib/reportGeneration/pdfChrome");
+
   const doc = new jsPDF({ unit: "pt", format: "a4" });
-  const margin = 48;
-  let y = margin;
+  registerReportFonts(doc);
+  const chrome = new PdfChrome(doc, GState, { margin: 48 });
 
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(20);
-  doc.text("African Creative Pulse", margin, y);
-  y += 22;
-  doc.setFontSize(14);
-  doc.text(`${SONDELA.client} — Campaign Summary`, margin, y);
-  y += 20;
+  const todayIso = new Date().toISOString().slice(0, 10);
+  const [year, month] = todayIso.split("-").map(Number);
+  const quarter = Math.ceil((month || 1) / 3);
+  const needsReview = cdiBand(cdi) === "red";
 
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(10);
-  doc.setTextColor(120, 120, 120);
-  // splitTextToSize, not a single text() call -- this line ran off the
-  // right edge of the page uncaught (a real bug, caught by actually
-  // opening a generated PDF, not just eyeballing the code): pageWidth
-  // minus both margins is the real available width, same reasoning the
-  // real generateReportPdf.ts applies everywhere it wraps body text.
-  const pageWidth = doc.internal.pageSize.getWidth();
-  const summaryLine = `"${SONDELA.concept}" · ${SONDELA.cities.join(" · ")} · Collected via ${SONDELA.methodology}`;
-  const summaryLines = doc.splitTextToSize(summaryLine, pageWidth - margin * 2);
-  doc.text(summaryLines, margin, y);
-  y += summaryLines.length * 13 + 15;
-
-  doc.setTextColor(20, 20, 20);
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(12);
-  doc.text("Scores at a Glance", margin, y);
-  y += 18;
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(11);
-  doc.text(`CEI Overall: ${ceiOverall.toFixed(1)}   ·   CDI: ${cdi.toFixed(1)}/10   ·   Soul Gap: ${soulGapMagnitude}`, margin, y);
-  y += 26;
-
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(12);
-  doc.text("CEI Dimension Breakdown", margin, y);
-  y += 16;
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(11);
-  CEI_ORDER.forEach((key) => {
-    doc.text(CEI_LABEL[key], margin, y);
-    doc.text(cei[key].toFixed(1), margin + 400, y);
-    y += 16;
+  drawCoverPage(chrome, {
+    badgeText: needsReview ? "REVIEW FLAGGED" : "ALL CLEAR",
+    badgeColor: needsReview ? "#FFC93C" : "#2DD4A6",
+    reportId: `CEI-${SONDELA.id}-${todayIso}`,
+    issuedOn: todayIso,
+    eyebrow: `CAMPAIGN SUMMARY · Q${quarter} ${year}`,
+    title: SONDELA.client,
+    bodyText: `"${SONDELA.concept}" — CEI Overall ${ceiOverall.toFixed(1)}, CDI ${cdi.toFixed(1)}/10, Soul Gap ${soulGapMagnitude}. Collected via ${SONDELA.methodology} across ${SONDELA.cities.join(", ")}.`,
+    preparedForLines: [SONDELA.client],
+    preparedByLines: ["Ndoni Creative"],
+    footerLeft: "CONFIDENTIAL · PREPARED SOLELY FOR THE NAMED RECIPIENT",
+    footerRight: "NOT FOR REDISTRIBUTION",
   });
-  y += 12;
 
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(12);
-  doc.text("Market Footprint", margin, y);
-  y += 16;
-  doc.setFont("helvetica", "normal");
+  chrome.newPage();
+  chrome.sectionHeading("Scores at a Glance");
+  doc.setFont(FONT_MONO, "normal");
+  doc.setFontSize(10);
+  [
+    ["CEI Overall", ceiOverall.toFixed(1)],
+    ["CDI", `${cdi.toFixed(1)}/10`],
+    ["Soul Gap", soulGapMagnitude],
+  ].forEach(([label, value]) => {
+    chrome.mutedText(label, chrome.MARGIN, chrome.y);
+    doc.setTextColor(246, 241, 233);
+    doc.text(value, chrome.MARGIN + 160, chrome.y);
+    chrome.y += 18;
+  });
+  chrome.y += 16;
+
+  chrome.hairline(chrome.y);
+  chrome.y += 30;
+
+  chrome.sectionHeading("CEI Dimension Breakdown");
+  CEI_ORDER.forEach((key) => {
+    chrome.ensureSpace(20);
+    doc.setFont(FONT_BODY, "normal");
+    doc.setFontSize(11);
+    doc.setTextColor(246, 241, 233);
+    doc.text(CEI_LABEL[key], chrome.MARGIN, chrome.y);
+    doc.setFont(FONT_MONO, "medium");
+    chrome.rightAligned(cei[key].toFixed(1), chrome.PAGE_W - chrome.MARGIN, chrome.y);
+    chrome.y += 18;
+  });
+  chrome.y += 16;
+
+  chrome.ensureSpace(80);
+  chrome.sectionHeading("Market Footprint");
+  doc.setFont(FONT_BODY, "normal");
   doc.setFontSize(9);
   // Same "never omit a live market" principle as the on-screen
   // MarketFootprint component -- every one of ACP's real live countries
   // listed, not just the one this campaign happens to run in.
   const perRow = 3;
+  const colW = chrome.CONTENT_W / perRow;
   COUNTRIES.forEach((country, i) => {
     const col = i % perRow;
     const row = Math.floor(i / perRow);
-    doc.text(`• ${country}`, margin + col * 170, y + row * 14);
+    chrome.mutedText(`• ${country}`, chrome.MARGIN + col * colW, chrome.y + row * 16);
   });
-  y += Math.ceil(COUNTRIES.length / perRow) * 14 + 20;
+  chrome.y += Math.ceil(COUNTRIES.length / perRow) * 16 + 20;
 
+  doc.setFont(FONT_MONO, "normal");
   doc.setFontSize(8);
-  doc.setTextColor(150, 150, 150);
-  doc.text("Illustrative sample, not measured results · Pitch prototype · No login required", margin, y);
+  chrome.mutedText("Illustrative sample, not measured results · Pitch prototype · No login required", chrome.MARGIN, chrome.y);
+
+  const pageCount = doc.getNumberOfPages();
+  for (let i = 2; i <= pageCount; i++) drawFooter(chrome, i, pageCount);
 
   doc.save(`${SONDELA.client.toLowerCase().replace(/\s+/g, "-")}-summary.pdf`);
 }
